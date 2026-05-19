@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 
 import { CartContext } from "../context/CartContext";
+
 import { AuthContext } from "../context/AuthContext";
 
 import { signOut } from "firebase/auth";
@@ -19,11 +20,13 @@ import { auth } from "../firebase/firebase";
 
 function Navbar() {
 
-  const { totalItems } =
-  useContext(CartContext);
+  const {
+    totalItems,
+    setCartItems,
+  } = useContext(CartContext);
 
-const { currentUser } =
-  useContext(AuthContext);
+  const { currentUser } =
+    useContext(AuthContext);
 
   const [menuOpen, setMenuOpen] =
     useState(false);
@@ -36,19 +39,27 @@ const { currentUser } =
   };
 
   // LOGOUT
-const handleLogout = async () => {
+  const handleLogout = async () => {
 
-  try {
+    try {
 
-    await signOut(auth);
+      // CLEAR CART STATE
+      setCartItems([]);
 
-  } catch (error) {
+      // CLEAR LOCAL STORAGE
+      localStorage.removeItem(
+        "grocery-cart"
+      );
 
-    console.error(error);
+      await signOut(auth);
 
-  }
+    } catch (error) {
 
-};
+      console.error(error);
+
+    }
+
+  };
 
   return (
 
@@ -123,71 +134,89 @@ const handleLogout = async () => {
 
           </li>
 
+          {/* MY ORDERS */}
+          {currentUser && (
+
+            <li>
+
+              <Link
+                to="/my-orders"
+                className="text-gray-700 hover:text-green-600 transition duration-300"
+              >
+
+                My Orders
+
+              </Link>
+
+            </li>
+
+          )}
+
           {/* AUTH BUTTONS */}
-{!currentUser ? (
+          {!currentUser ? (
 
-  <>
+            <>
 
-    <li>
+              <li>
 
-      <Link
-        to="/login"
-        className="text-gray-700 hover:text-green-600 transition duration-300"
-      >
+                <Link
+                  to="/login"
+                  className="text-gray-700 hover:text-green-600 transition duration-300"
+                >
 
-        Login
+                  Login
 
-      </Link>
+                </Link>
 
-    </li>
+              </li>
 
-    <li>
+              <li>
 
-      <Link
-        to="/signup"
-        className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-2xl shadow-lg transition duration-300"
-      >
+                <Link
+                  to="/signup"
+                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-2xl shadow-lg transition duration-300"
+                >
 
-        Signup
+                  Signup
 
-      </Link>
+                </Link>
 
-    </li>
+              </li>
 
-  </>
+            </>
 
-) : (
+          ) : (
 
-  <>
+            <>
 
-    {/* USER */}
-    <li className="text-green-700 font-semibold">
+              {/* USER */}
+              <li className="text-green-700 font-semibold">
 
-      Hello,{" "}
+                Hello,{" "}
 
-      {currentUser.email
-        .split("@")[0]
-      }
+                {currentUser.email
+                  .split("@")[0]
+                }
 
-    </li>
+              </li>
 
-    {/* LOGOUT */}
-    <li>
+              {/* LOGOUT */}
+              <li>
 
-      <button
-        onClick={handleLogout}
-        className="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-2xl shadow-lg transition duration-300"
-      >
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-2xl shadow-lg transition duration-300"
+                >
 
-        Logout
+                  Logout
 
-      </button>
+                </button>
 
-    </li>
+              </li>
 
-  </>
+            </>
 
-)}
+          )}
 
           {/* CART */}
           <li>
@@ -264,69 +293,84 @@ const handleLogout = async () => {
 
           </HashLink>
 
+          {/* MY ORDERS */}
+          {currentUser && (
+
+            <Link
+              to="/my-orders"
+              className="block text-gray-700 hover:text-green-600 transition"
+              onClick={closeMenu}
+            >
+
+              My Orders
+
+            </Link>
+
+          )}
+
           {/* MOBILE AUTH */}
-{!currentUser ? (
+          {!currentUser ? (
 
-  <>
+            <>
 
-    {/* LOGIN */}
-    <Link
-      to="/login"
-      className="block text-gray-700 hover:text-green-600 transition"
-      onClick={closeMenu}
-    >
+              {/* LOGIN */}
+              <Link
+                to="/login"
+                className="block text-gray-700 hover:text-green-600 transition"
+                onClick={closeMenu}
+              >
 
-      Login
+                Login
 
-    </Link>
+              </Link>
 
-    {/* SIGNUP */}
-    <Link
-      to="/signup"
-      className="block bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-2xl w-fit transition"
-      onClick={closeMenu}
-    >
+              {/* SIGNUP */}
+              <Link
+                to="/signup"
+                className="block bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-2xl w-fit transition"
+                onClick={closeMenu}
+              >
 
-      Signup
+                Signup
 
-    </Link>
+              </Link>
 
-  </>
+            </>
 
-) : (
+          ) : (
 
-  <>
+            <>
 
-    {/* USER */}
-    <div className="text-green-700 font-semibold">
+              {/* USER */}
+              <div className="text-green-700 font-semibold">
 
-      Hello,{" "}
+                Hello,{" "}
 
-      {currentUser.email
-        .split("@")[0]
-      }
+                {currentUser.email
+                  .split("@")[0]
+                }
 
-    </div>
+              </div>
 
-    {/* LOGOUT */}
-    <button
-      onClick={() => {
+              {/* LOGOUT */}
+              <button
+                onClick={() => {
 
-        handleLogout();
+                  handleLogout();
 
-        closeMenu();
+                  closeMenu();
 
-      }}
-      className="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-2xl transition"
-    >
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-2xl transition"
+              >
 
-      Logout
+                Logout
 
-    </button>
+              </button>
 
-  </>
+            </>
 
-)}
+          )}
 
           {/* CART */}
           <Link
