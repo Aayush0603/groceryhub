@@ -105,7 +105,7 @@ function Contact() {
 
             <p className="text-gray-600 leading-7">
 
-              +91 9876543210
+              +91 9172607711
 
             </p>
 
