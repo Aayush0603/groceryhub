@@ -164,29 +164,29 @@ function Checkout() {
 
       // SAVE ORDER
       await addDoc(
-        collection(db, "orders"),
-        {
+  collection(db, "orders"),
+  {
 
-          userId:
-            auth.currentUser?.uid,
+    userId:
+      auth.currentUser?.uid,
 
-          customerInfo,
+    customerInfo,
 
-          cartItems,
+    cartItems,
 
-          subtotal: totalPrice,
+    subtotal: totalPrice,
 
-          deliveryCharge,
+    deliveryCharge,
 
-          finalTotal,
+    finalTotal,
 
-          status: "Pending",
+    status: "Pending",
 
-          createdAt:
-            serverTimestamp(),
+    createdAt:
+      serverTimestamp(),
 
-        }
-      );
+  }
+);
 
       toast.success(
         "Order Placed Successfully"
