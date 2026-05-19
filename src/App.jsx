@@ -18,6 +18,8 @@ import {
   FaTimes,
 } from "react-icons/fa";
 
+import { useContext } from "react";
+
 import { signOut } from "firebase/auth";
 
 import { auth } from "./firebase/firebase";
@@ -52,6 +54,8 @@ import AdminOrders from "./pages/AdminOrders";
 
 import AdminCustomers from "./pages/AdminCustomers";
 
+import { CartContext } from "./context/CartContext";
+
 // CUSTOMER LAYOUT
 function CustomerLayout() {
 
@@ -78,16 +82,21 @@ function AdminLayout() {
 
   const navigate = useNavigate();
 
+  const { setCartItems } =
+  useContext(CartContext);
+
   // MOBILE SIDEBAR
   const [sidebarOpen, setSidebarOpen] =
     useState(false);
 
-  // LOGOUT
   const handleLogout = async () => {
 
   try {
 
-    // CLEAR CART
+    // CLEAR CART STATE
+    setCartItems([]);
+
+    // CLEAR LOCAL STORAGE
     localStorage.removeItem(
       "grocery-cart"
     );
@@ -103,7 +112,6 @@ function AdminLayout() {
   }
 
 };
-
   // ACTIVE LINK STYLE
   const activeClass =
     "bg-gray-800 text-white";
