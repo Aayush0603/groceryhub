@@ -236,7 +236,7 @@ function Checkout() {
         `💰 *Final Total:* ₹${finalTotal}`;
 
       const phoneNumber =
-        "919876543210";
+        "919172607711";
 
       const whatsappURL =
         `https://wa.me/${phoneNumber}?text=${message}`;
