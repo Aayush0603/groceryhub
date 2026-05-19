@@ -35,6 +35,37 @@ function Checkout() {
     clearCart,
   } = useContext(CartContext);
 
+  // EMPTY CART SAFETY
+  if (
+    !cartItems ||
+    cartItems.length === 0
+  ) {
+
+    return (
+
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 text-center">
+
+        <h1 className="text-5xl font-extrabold text-gray-900 mb-6">
+
+          Your Cart is Empty 🛒
+
+        </h1>
+
+        <Link
+          to="/"
+          className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl text-xl font-bold transition duration-300"
+        >
+
+          Continue Shopping
+
+        </Link>
+
+      </div>
+
+    );
+
+  }
+
   // DELIVERY CHARGE
   const deliveryCharge =
     totalPrice >= 500 ? 0 : 40;
@@ -128,7 +159,7 @@ function Checkout() {
 
       setLoading(true);
 
-      // SAVE ORDER TO FIRESTORE
+      // SAVE ORDER
       await addDoc(
         collection(db, "orders"),
         {
@@ -155,11 +186,10 @@ function Checkout() {
         "Order Placed Successfully"
       );
 
-      // ORDER MESSAGE
+      // WHATSAPP MESSAGE
       let message =
         `🛒 *New Grocery Order* %0A%0A`;
 
-      // CUSTOMER DETAILS
       message +=
         `👤 Name: ${customerInfo.name}%0A`;
 
@@ -185,15 +215,13 @@ function Checkout() {
       message +=
         `%0A🛍️ *Products:* %0A`;
 
-      // PRODUCTS
-      cartItems.forEach((item) => {
+      cartItems?.forEach((item) => {
 
         message +=
           `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}%0A`;
 
       });
 
-      // PRICE DETAILS
       message +=
         `%0A💵 Subtotal: ₹${totalPrice}%0A`;
 
@@ -207,17 +235,14 @@ function Checkout() {
       message +=
         `💰 *Final Total:* ₹${finalTotal}`;
 
-      // YOUR WHATSAPP NUMBER
       const phoneNumber =
         "919876543210";
 
       const whatsappURL =
         `https://wa.me/${phoneNumber}?text=${message}`;
 
-      // SHOW SUCCESS MODAL
       setOrderSuccess(true);
 
-      // OPEN WHATSAPP AFTER DELAY
       setTimeout(() => {
 
         window.open(
@@ -225,7 +250,6 @@ function Checkout() {
           "_blank"
         );
 
-        // CLEAR CART
         clearCart();
 
       }, 2000);
@@ -248,9 +272,267 @@ function Checkout() {
 
   return (
 
-    <section className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 py-32">
+    <section className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 py-28 px-6">
 
-      {/* KEEP YOUR REMAINING UI EXACTLY SAME */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+
+        {/* LEFT */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            x: -50,
+          }}
+          animate={{
+            opacity: 1,
+            x: 0,
+          }}
+          className="bg-white rounded-3xl shadow-2xl p-10"
+        >
+
+          <div className="flex items-center gap-4 mb-10">
+
+            <Link
+              to="/cart"
+              className="w-14 h-14 rounded-2xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-2xl transition duration-300"
+            >
+
+              <FaArrowLeft />
+
+            </Link>
+
+            <h1 className="text-5xl font-extrabold text-gray-900">
+
+              Checkout
+
+            </h1>
+
+          </div>
+
+          {/* FORM */}
+          <div className="space-y-6">
+
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={customerInfo.name}
+              onChange={handleChange}
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+            />
+
+            <input
+              type="number"
+              name="phone"
+              placeholder="Phone Number"
+              value={customerInfo.phone}
+              onChange={handleChange}
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+            />
+
+            <textarea
+              name="address"
+              placeholder="Full Address"
+              rows="4"
+              value={customerInfo.address}
+              onChange={handleChange}
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+            />
+
+            <input
+              type="text"
+              name="city"
+              placeholder="City"
+              value={customerInfo.city}
+              onChange={handleChange}
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+            />
+
+            <input
+              type="number"
+              name="pincode"
+              placeholder="Pincode"
+              value={customerInfo.pincode}
+              onChange={handleChange}
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+            />
+
+            <textarea
+              name="notes"
+              placeholder="Additional Notes (Optional)"
+              rows="3"
+              value={customerInfo.notes}
+              onChange={handleChange}
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+            />
+
+          </div>
+
+        </motion.div>
+
+        {/* RIGHT */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            x: 50,
+          }}
+          animate={{
+            opacity: 1,
+            x: 0,
+          }}
+          className="bg-white rounded-3xl shadow-2xl p-10 h-fit"
+        >
+
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-10">
+
+            Order Summary
+
+          </h2>
+
+          <div className="space-y-6">
+
+            {cartItems?.map((item) => (
+
+              <div
+                key={item.id}
+                className="flex justify-between items-center border-b border-gray-100 pb-5"
+              >
+
+                <div>
+
+                  <h3 className="text-xl font-bold text-gray-900">
+
+                    {item.name}
+
+                  </h3>
+
+                  <p className="text-gray-500 mt-1">
+
+                    Qty:
+                    {" "}
+                    {item.quantity}
+
+                  </p>
+
+                </div>
+
+                <h2 className="text-2xl font-extrabold text-green-700">
+
+                  ₹
+                  {item.price *
+                    item.quantity}
+
+                </h2>
+
+              </div>
+
+            ))}
+
+          </div>
+
+          {/* TOTALS */}
+          <div className="mt-10 space-y-5">
+
+            <div className="flex justify-between text-xl">
+
+              <span>
+
+                Subtotal
+
+              </span>
+
+              <span>
+
+                ₹{totalPrice}
+
+              </span>
+
+            </div>
+
+            <div className="flex justify-between text-xl">
+
+              <span>
+
+                Delivery
+
+              </span>
+
+              <span>
+
+                {deliveryCharge === 0
+                  ? "FREE"
+                  : `₹${deliveryCharge}`}
+
+              </span>
+
+            </div>
+
+            <div className="border-t border-gray-200 pt-5 flex justify-between items-center">
+
+              <h1 className="text-3xl font-extrabold text-gray-900">
+
+                Total
+
+              </h1>
+
+              <h1 className="text-4xl font-extrabold text-green-700">
+
+                ₹{finalTotal}
+
+              </h1>
+
+            </div>
+
+          </div>
+
+          {/* BUTTON */}
+          <button
+            onClick={placeOrder}
+            disabled={loading}
+            className="w-full mt-10 bg-green-600 hover:bg-green-700 text-white py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4"
+          >
+
+            <FaWhatsapp />
+
+            {loading
+              ? "Placing Order..."
+              : "Place Order"}
+
+          </button>
+
+        </motion.div>
+
+      </div>
+
+      {/* SUCCESS MODAL */}
+      {orderSuccess && (
+
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
+
+          <div className="bg-white rounded-3xl p-10 text-center max-w-lg w-full">
+
+            <div className="w-24 h-24 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-5xl mx-auto mb-8">
+
+              ✓
+
+            </div>
+
+            <h1 className="text-4xl font-extrabold text-gray-900 mb-5">
+
+              Order Placed Successfully
+
+            </h1>
+
+            <p className="text-gray-600 text-lg">
+
+              Redirecting to WhatsApp...
+
+            </p>
+
+          </div>
+
+        </div>
+
+      )}
 
     </section>
 
