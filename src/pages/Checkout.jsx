@@ -11,9 +11,6 @@ import toast from "react-hot-toast";
 
 import {
   FaWhatsapp,
-  FaMapMarkerAlt,
-  FaPhoneAlt,
-  FaUser,
   FaArrowLeft,
 } from "react-icons/fa";
 
@@ -23,12 +20,11 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-import {
-  db,
-  auth,
-} from "../firebase/firebase";
+import { db } from "../firebase/firebase";
 
 import { CartContext } from "../context/CartContext";
+
+import { AuthContext } from "../context/AuthContext";
 
 function Checkout() {
 
@@ -37,6 +33,10 @@ function Checkout() {
     totalPrice,
     clearCart,
   } = useContext(CartContext);
+
+  // CURRENT USER
+  const { currentUser } =
+    useContext(AuthContext);
 
   // EMPTY CART SAFETY
   if (
@@ -164,29 +164,30 @@ function Checkout() {
 
       // SAVE ORDER
       await addDoc(
-  collection(db, "orders"),
-  {
+        collection(db, "orders"),
+        {
 
-    userId:
-      auth.currentUser?.uid,
+          // SAVE USER ID
+          userId:
+            currentUser?.uid,
 
-    customerInfo,
+          customerInfo,
 
-    cartItems,
+          cartItems,
 
-    subtotal: totalPrice,
+          subtotal: totalPrice,
 
-    deliveryCharge,
+          deliveryCharge,
 
-    finalTotal,
+          finalTotal,
 
-    status: "Pending",
+          status: "Pending",
 
-    createdAt:
-      serverTimestamp(),
+          createdAt:
+            serverTimestamp(),
 
-  }
-);
+        }
+      );
 
       toast.success(
         "Order Placed Successfully"
@@ -241,22 +242,25 @@ function Checkout() {
       message +=
         `💰 *Final Total:* ₹${finalTotal}`;
 
+      // YOUR WHATSAPP NUMBER
       const phoneNumber =
         "919172607711";
 
       const whatsappURL =
         `https://wa.me/${phoneNumber}?text=${message}`;
 
+      // SHOW SUCCESS MODAL
       setOrderSuccess(true);
 
+      // REDIRECT TO WHATSAPP
       setTimeout(() => {
 
-  window.location.href =
-    whatsappURL;
+        clearCart();
 
-  clearCart();
+        window.location.href =
+          whatsappURL;
 
-}, 1500);
+      }, 1500);
 
     } catch (error) {
 
