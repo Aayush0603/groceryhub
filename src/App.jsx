@@ -85,19 +85,24 @@ function AdminLayout() {
   // LOGOUT
   const handleLogout = async () => {
 
-    try {
+  try {
 
-      await signOut(auth);
+    // CLEAR CART
+    localStorage.removeItem(
+      "grocery-cart"
+    );
 
-      navigate("/login");
+    await signOut(auth);
 
-    } catch (error) {
+    navigate("/login");
 
-      console.error(error);
+  } catch (error) {
 
-    }
+    console.error(error);
 
-  };
+  }
+
+};
 
   // ACTIVE LINK STYLE
   const activeClass =
