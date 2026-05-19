@@ -23,7 +23,10 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-import { db } from "../firebase/firebase";
+import {
+  db,
+  auth,
+} from "../firebase/firebase";
 
 import { CartContext } from "../context/CartContext";
 
@@ -163,6 +166,9 @@ function Checkout() {
       await addDoc(
         collection(db, "orders"),
         {
+
+          userId:
+            auth.currentUser?.uid,
 
           customerInfo,
 
