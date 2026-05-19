@@ -1,0 +1,474 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+
+import { db } from "../firebase/firebase";
+
+import {
+  FaShoppingBag,
+  FaUser,
+  FaPhoneAlt,
+  FaMapMarkerAlt,
+  FaMoneyBillWave,
+} from "react-icons/fa";
+
+function AdminOrders() {
+
+  // ORDERS
+  const [orders, setOrders] =
+    useState([]);
+
+  // FILTER
+  const [statusFilter, setStatusFilter] =
+    useState("All");
+
+  // LOADING
+  const [loading, setLoading] =
+    useState(true);
+
+  // FETCH ORDERS
+  const fetchOrders = async () => {
+
+    try {
+
+      const querySnapshot =
+        await getDocs(
+          collection(db, "orders")
+        );
+
+      const fetchedOrders =
+        querySnapshot.docs.map((doc) => ({
+
+          id: doc.id,
+
+          ...doc.data(),
+
+        }));
+
+      setOrders(fetchedOrders);
+
+    } catch (error) {
+
+      console.error(error);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  // LOAD ORDERS
+  useEffect(() => {
+
+    fetchOrders();
+
+  }, []);
+
+  // UPDATE STATUS
+  const updateStatus = async (
+    id,
+    status
+  ) => {
+
+    try {
+
+      const orderRef =
+        doc(db, "orders", id);
+
+      await updateDoc(
+        orderRef,
+        { status }
+      );
+
+      fetchOrders();
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  };
+
+  // FILTERED ORDERS
+  const filteredOrders =
+    statusFilter === "All"
+      ? orders
+      : orders.filter(
+          (order) =>
+            order.status ===
+            statusFilter
+        );
+
+  // STATUS COLORS
+  const getStatusStyle = (
+    status
+  ) => {
+
+    switch (status) {
+
+      case "Pending":
+        return "bg-yellow-100 text-yellow-700";
+
+      case "Processing":
+        return "bg-blue-100 text-blue-700";
+
+      case "Out for Delivery":
+        return "bg-purple-100 text-purple-700";
+
+      case "Delivered":
+        return "bg-green-100 text-green-700";
+
+      case "Cancelled":
+        return "bg-red-100 text-red-700";
+
+      default:
+        return "bg-gray-100 text-gray-700";
+
+    }
+
+  };
+
+  // LOADING
+  if (loading) {
+
+    return (
+
+      <div className="min-h-screen flex items-center justify-center text-3xl font-bold">
+
+        Loading Orders...
+
+      </div>
+
+    );
+
+  }
+
+  return (
+
+    <section className="min-h-screen bg-gray-100 p-6 lg:p-10">
+
+      {/* HEADER */}
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-12">
+
+        <div>
+
+          <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900">
+
+            Orders Management 📦
+
+          </h1>
+
+          <p className="text-gray-600 mt-3 text-lg">
+
+            Manage customer orders and deliveries.
+
+          </p>
+
+        </div>
+
+        {/* FILTER BUTTONS */}
+        <div className="flex flex-wrap gap-4">
+
+          {[
+            "All",
+            "Pending",
+            "Processing",
+            "Out for Delivery",
+            "Delivered",
+            "Cancelled",
+          ].map((status) => (
+
+            <button
+              key={status}
+              onClick={() =>
+                setStatusFilter(status)
+              }
+              className={`px-5 py-3 rounded-2xl font-bold transition duration-300
+              ${
+                statusFilter === status
+                  ? "bg-gray-900 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+
+              {status}
+
+            </button>
+
+          ))}
+
+        </div>
+
+      </div>
+
+      {/* NO ORDERS */}
+      {filteredOrders.length === 0 && (
+
+        <div className="bg-white rounded-3xl shadow-xl p-20 text-center">
+
+          <FaShoppingBag className="text-7xl text-gray-300 mx-auto mb-6" />
+
+          <h2 className="text-4xl font-bold text-gray-800">
+
+            No Orders Found
+
+          </h2>
+
+          <p className="text-gray-500 mt-4">
+
+            No orders available for this filter.
+
+          </p>
+
+        </div>
+
+      )}
+
+      {/* ORDERS LIST */}
+      <div className="space-y-10">
+
+        {filteredOrders.map((order) => (
+
+          <div
+            key={order.id}
+            className="bg-white rounded-3xl shadow-xl overflow-hidden"
+          >
+
+            {/* TOP BAR */}
+            <div className="bg-gray-900 text-white px-8 py-5 flex flex-col lg:flex-row justify-between gap-5">
+
+              <div>
+
+                <h2 className="text-2xl font-bold">
+
+                  Order ID
+
+                </h2>
+
+                <p className="text-gray-300 mt-1 break-all">
+
+                  {order.id}
+
+                </p>
+
+              </div>
+
+              {/* STATUS */}
+              <div className="flex flex-col lg:items-end gap-4">
+
+                <div
+                  className={`px-6 py-3 rounded-2xl font-bold text-lg ${getStatusStyle(order.status)}`}
+                >
+
+                  {order.status}
+
+                </div>
+
+                <select
+                  value={order.status}
+                  onChange={(e) =>
+                    updateStatus(
+                      order.id,
+                      e.target.value
+                    )
+                  }
+                  className="bg-white border border-gray-200 rounded-2xl px-5 py-3 outline-none text-gray-800 font-semibold"
+                >
+
+                  <option>
+
+                    Pending
+
+                  </option>
+
+                  <option>
+
+                    Processing
+
+                  </option>
+
+                  <option>
+
+                    Out for Delivery
+
+                  </option>
+
+                  <option>
+
+                    Delivered
+
+                  </option>
+
+                  <option>
+
+                    Cancelled
+
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+            {/* CONTENT */}
+            <div className="p-8">
+
+              {/* CUSTOMER INFO */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+
+                <div className="bg-gray-50 rounded-2xl p-5">
+
+                  <div className="flex items-center gap-3 text-gray-500 mb-3">
+
+                    <FaUser />
+
+                    Customer
+
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900">
+
+                    {order.customerInfo?.name}
+
+                  </h3>
+
+                </div>
+
+                <div className="bg-gray-50 rounded-2xl p-5">
+
+                  <div className="flex items-center gap-3 text-gray-500 mb-3">
+
+                    <FaPhoneAlt />
+
+                    Phone
+
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900">
+
+                    {order.customerInfo?.phone}
+
+                  </h3>
+
+                </div>
+
+                <div className="bg-gray-50 rounded-2xl p-5 md:col-span-2">
+
+                  <div className="flex items-center gap-3 text-gray-500 mb-3">
+
+                    <FaMapMarkerAlt />
+
+                    Delivery Address
+
+                  </div>
+
+                  <h3 className="text-lg font-bold text-gray-900 leading-8">
+
+                    {order.customerInfo?.address},{" "}
+                    {order.customerInfo?.city} -{" "}
+                    {order.customerInfo?.pincode}
+
+                  </h3>
+
+                </div>
+
+              </div>
+
+              {/* PRODUCTS */}
+              <div>
+
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+
+                  Ordered Products
+
+                </h2>
+
+                <div className="space-y-5">
+
+                  {order.cartItems?.map((item) => (
+
+                    <div
+                      key={item.id}
+                      className="bg-gray-50 rounded-2xl p-6 flex flex-col lg:flex-row justify-between gap-5"
+                    >
+
+                      <div>
+
+                        <h3 className="text-2xl font-bold text-gray-900">
+
+                          {item.name}
+
+                        </h3>
+
+                        <p className="text-gray-500 mt-2 text-lg">
+
+                          Quantity:
+                          {" "}
+                          {item.quantity}
+
+                        </p>
+
+                      </div>
+
+                      <div className="flex items-center gap-3 text-green-700 font-extrabold text-3xl">
+
+                        <FaMoneyBillWave />
+
+                        ₹
+                        {item.price *
+                          item.quantity}
+
+                      </div>
+
+                    </div>
+
+                  ))}
+
+                </div>
+
+              </div>
+
+              {/* TOTAL */}
+              <div className="mt-10 border-t border-gray-200 pt-8 flex justify-between items-center">
+
+                <h2 className="text-3xl font-bold text-gray-900">
+
+                  Final Total
+
+                </h2>
+
+                <h2 className="text-5xl font-extrabold text-green-700">
+
+                  ₹{order.finalTotal}
+
+                </h2>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </section>
+
+  );
+
+}
+
+export default AdminOrders;
