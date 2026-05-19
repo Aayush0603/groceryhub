@@ -245,14 +245,12 @@ function Checkout() {
 
       setTimeout(() => {
 
-        window.open(
-          whatsappURL,
-          "_blank"
-        );
+  window.location.href =
+    whatsappURL;
 
-        clearCart();
+  clearCart();
 
-      }, 2000);
+}, 1500);
 
     } catch (error) {
 
