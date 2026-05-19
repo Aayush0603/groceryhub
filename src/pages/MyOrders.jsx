@@ -55,15 +55,6 @@ function MyOrders() {
           })
         );
 
-      console.log(
-        "ALL ORDERS:",
-        allOrders
-      );
-
-      console.log(
-        "CURRENT USER:",
-        currentUser?.uid
-      );
 
       // FILTER USER ORDERS
       const userOrders =
@@ -73,11 +64,6 @@ function MyOrders() {
             order.userId ===
             currentUser?.uid
         );
-
-      console.log(
-        "USER ORDERS:",
-        userOrders
-      );
 
       setOrders(userOrders);
 
