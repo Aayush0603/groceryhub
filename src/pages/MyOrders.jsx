@@ -6,22 +6,25 @@ import {
 import {
   collection,
   getDocs,
-  query,
-  where,
-  orderBy,
 } from "firebase/firestore";
 
 import {
   db,
-  auth,
 } from "../firebase/firebase";
+
+import { AuthContext } from "../context/AuthContext";
+
+import { useContext } from "react";
 
 import {
   FaShoppingBag,
-  FaBoxOpen,
 } from "react-icons/fa";
 
 function MyOrders() {
+
+  // CURRENT USER
+  const { currentUser } =
+    useContext(AuthContext);
 
   // ORDERS
   const [orders, setOrders] =
@@ -34,84 +37,72 @@ function MyOrders() {
   // FETCH ORDERS
   const fetchOrders = async () => {
 
-  try {
+    try {
 
-    const querySnapshot =
-      await getDocs(
-        collection(db, "orders")
+      const querySnapshot =
+        await getDocs(
+          collection(db, "orders")
+        );
+
+      const allOrders =
+        querySnapshot.docs.map(
+          (doc) => ({
+
+            id: doc.id,
+
+            ...doc.data(),
+
+          })
+        );
+
+      console.log(
+        "ALL ORDERS:",
+        allOrders
       );
 
-    const fetchedOrders =
-      querySnapshot.docs
-        .map((doc) => ({
+      console.log(
+        "CURRENT USER:",
+        currentUser?.uid
+      );
 
-          id: doc.id,
-
-          ...doc.data(),
-
-        }))
-        .filter(
+      // FILTER USER ORDERS
+      const userOrders =
+        allOrders.filter(
           (order) =>
 
             order.userId ===
-            auth.currentUser?.uid
-        )
-        .sort(
-          (a, b) =>
-
-            b.createdAt?.seconds -
-            a.createdAt?.seconds
+            currentUser?.uid
         );
 
-    setOrders(fetchedOrders);
+      console.log(
+        "USER ORDERS:",
+        userOrders
+      );
 
-  } catch (error) {
+      setOrders(userOrders);
 
-    console.error(error);
+    } catch (error) {
 
-  } finally {
+      console.error(error);
 
-    setLoading(false);
+    } finally {
 
-  }
-
-};
-
-  // LOAD ORDERS
-  useEffect(() => {
-
-    fetchOrders();
-
-  }, []);
-
-  // STATUS COLORS
-  const getStatusStyle = (
-    status
-  ) => {
-
-    switch (status) {
-
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-
-      case "Processing":
-        return "bg-blue-100 text-blue-700";
-
-      case "Out for Delivery":
-        return "bg-purple-100 text-purple-700";
-
-      case "Delivered":
-        return "bg-green-100 text-green-700";
-
-      case "Cancelled":
-        return "bg-red-100 text-red-700";
-
-      default:
-        return "bg-gray-100 text-gray-700";
+      setLoading(false);
 
     }
 
   };
+
+  // LOAD ORDERS
+  useEffect(() => {
+
+    if (currentUser) {
+
+      fetchOrders();
+
+    }
+
+  }, [currentUser]);
 
   // LOADING
   if (loading) {
@@ -160,9 +151,15 @@ function MyOrders() {
 
             <h2 className="text-4xl font-bold text-gray-800">
 
-              No Orders Yet
+              No Orders Found
 
             </h2>
+
+            <p className="text-gray-500 mt-4 text-lg">
+
+              Place an order to see it here.
+
+            </p>
 
           </div>
 
@@ -179,7 +176,7 @@ function MyOrders() {
             >
 
               {/* TOP */}
-              <div className="bg-gray-900 text-white px-8 py-6 flex flex-col lg:flex-row justify-between gap-5">
+              <div className="bg-green-600 text-white px-8 py-6 flex justify-between items-center">
 
                 <div>
 
@@ -189,7 +186,7 @@ function MyOrders() {
 
                   </h2>
 
-                  <p className="text-gray-300 mt-2 break-all">
+                  <p className="mt-2 break-all">
 
                     {order.id}
 
@@ -197,10 +194,7 @@ function MyOrders() {
 
                 </div>
 
-                {/* STATUS */}
-                <div
-                  className={`px-6 py-3 rounded-2xl font-bold text-lg h-fit ${getStatusStyle(order.status)}`}
-                >
+                <div className="bg-white text-green-700 px-5 py-2 rounded-2xl font-bold text-lg">
 
                   {order.status}
 
@@ -224,7 +218,7 @@ function MyOrders() {
 
                       <div
                         key={item.id}
-                        className="bg-gray-50 rounded-2xl p-6 flex flex-col lg:flex-row justify-between gap-5"
+                        className="bg-gray-50 rounded-2xl p-6 flex justify-between items-center"
                       >
 
                         <div>
@@ -245,7 +239,7 @@ function MyOrders() {
 
                         </div>
 
-                        <div className="flex items-center gap-3 text-green-700 font-extrabold text-3xl">
+                        <div className="text-green-700 font-extrabold text-3xl">
 
                           ₹
                           {item.price *
