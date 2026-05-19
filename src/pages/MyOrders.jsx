@@ -34,52 +34,48 @@ function MyOrders() {
   // FETCH ORDERS
   const fetchOrders = async () => {
 
-    try {
+  try {
 
-      const q = query(
-
-        collection(db, "orders"),
-
-        where(
-          "userId",
-          "==",
-          auth.currentUser?.uid
-        ),
-
-        orderBy(
-          "createdAt",
-          "desc"
-        )
-
+    const querySnapshot =
+      await getDocs(
+        collection(db, "orders")
       );
 
-      const querySnapshot =
-        await getDocs(q);
+    const fetchedOrders =
+      querySnapshot.docs
+        .map((doc) => ({
 
-      const fetchedOrders =
-        querySnapshot.docs.map(
-          (doc) => ({
+          id: doc.id,
 
-            id: doc.id,
+          ...doc.data(),
 
-            ...doc.data(),
+        }))
+        .filter(
+          (order) =>
 
-          })
+            order.userId ===
+            auth.currentUser?.uid
+        )
+        .sort(
+          (a, b) =>
+
+            b.createdAt?.seconds -
+            a.createdAt?.seconds
         );
 
-      setOrders(fetchedOrders);
+    setOrders(fetchedOrders);
 
-    } catch (error) {
+  } catch (error) {
 
-      console.error(error);
+    console.error(error);
 
-    } finally {
+  } finally {
 
-      setLoading(false);
+    setLoading(false);
 
-    }
+  }
 
-  };
+};
 
   // LOAD ORDERS
   useEffect(() => {
