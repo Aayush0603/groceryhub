@@ -40,11 +40,10 @@ function Checkout() {
     clearCart,
   } = useContext(CartContext);
 
-  // CURRENT USER
   const { currentUser } =
     useContext(AuthContext);
 
-  // EMPTY CART SAFETY
+  // EMPTY CART
   if (
     !cartItems ||
     cartItems.length === 0
@@ -75,7 +74,7 @@ function Checkout() {
 
   }
 
-  // DELIVERY CHARGE
+  // DELIVERY
   const deliveryCharge =
     totalPrice >= 500 ? 0 : 40;
 
@@ -83,19 +82,16 @@ function Checkout() {
   const finalTotal =
     totalPrice + deliveryCharge;
 
-  // SUCCESS MODAL
+  // STATES
   const [orderSuccess, setOrderSuccess] =
     useState(false);
 
-  // LOADING
   const [loading, setLoading] =
     useState(false);
 
-  // PAYMENT METHOD
   const [paymentMethod, setPaymentMethod] =
     useState("Cash on Delivery");
 
-  // CUSTOMER INFO
   const [customerInfo, setCustomerInfo] =
     useState({
 
@@ -185,98 +181,118 @@ function Checkout() {
   const saveOrder =
     async () => {
 
-      if (!currentUser) {
+      try {
 
-  toast.error(
-    "Please login again"
-  );
+        // USER CHECK
+        if (!currentUser) {
 
-  return;
+          toast.error(
+            "Please login again"
+          );
 
-}
-
-      // SAVE ORDER
-      await addDoc(
-        collection(db, "orders"),
-        {
-
-          userId:
-          currentUser.uid,
-
-          customerInfo,
-
-          cartItems,
-
-          subtotal:
-            totalPrice,
-
-          deliveryCharge,
-
-          finalTotal,
-
-          paymentMethod,
-
-          status:
-            "Pending",
-
-          createdAt:
-            serverTimestamp(),
+          return false;
 
         }
-      );
 
-      // UPDATE STOCK
-      for (const item of cartItems) {
+        // SAVE ORDER
+        await addDoc(
+          collection(db, "orders"),
+          {
 
-        const productRef =
-          doc(
-            db,
-            "products",
-            item.id
-          );
+            userId:
+              currentUser.uid,
 
-        const productSnap =
-          await getDoc(
-            productRef
-          );
+            customerInfo,
 
-        if (
-          productSnap.exists()
-        ) {
+            cartItems,
 
-          const productData =
-            productSnap.data();
+            subtotal:
+              totalPrice,
 
-          const updatedStock =
-            Math.max(
-              (
-                productData.stock ||
-                0
-              ) - item.quantity,
-              0
+            deliveryCharge,
+
+            finalTotal,
+
+            paymentMethod,
+
+            status:
+              "Pending",
+
+            createdAt:
+              serverTimestamp(),
+
+          }
+        );
+
+        // UPDATE STOCK
+        for (const item of cartItems) {
+
+          const productRef =
+            doc(
+              db,
+              "products",
+              item.id
             );
 
-          await updateDoc(
-            productRef,
-            {
+          const productSnap =
+            await getDoc(
+              productRef
+            );
 
-              stock:
-                updatedStock,
+          if (
+            productSnap.exists()
+          ) {
 
-            }
-          );
+            const productData =
+              productSnap.data();
+
+            const updatedStock =
+              Math.max(
+                (
+                  productData.stock ||
+                  0
+                ) - item.quantity,
+                0
+              );
+
+            await updateDoc(
+              productRef,
+              {
+
+                stock:
+                  updatedStock,
+
+              }
+            );
+
+          }
 
         }
+
+        toast.success(
+          "Order Placed Successfully"
+        );
+
+        return true;
+
+      } catch (error) {
+
+        console.error(
+          "SAVE ORDER ERROR:",
+          error
+        );
+
+        toast.error(
+          "Failed to save order"
+        );
+
+        return false;
 
       }
 
-      toast.success(
-        "Order Placed Successfully"
-      );
-
     };
 
-  // HANDLE ONLINE PAYMENT
+  // ONLINE PAYMENT
   const handleOnlinePayment =
     async () => {
 
@@ -320,7 +336,16 @@ function Checkout() {
               response
             ) {
 
-              await saveOrder();
+              const orderSaved =
+                await saveOrder();
+
+              if (
+                !orderSaved
+              ) {
+
+                return;
+
+              }
 
               clearCart();
 
@@ -379,7 +404,7 @@ function Checkout() {
   const placeOrder =
     async () => {
 
-      // REQUIRED FIELDS
+      // VALIDATION
       if (
         !customerInfo.name ||
         !customerInfo.phone ||
@@ -396,7 +421,6 @@ function Checkout() {
 
       }
 
-      // PHONE VALIDATION
       if (
         customerInfo.phone.length !==
         10
@@ -410,7 +434,6 @@ function Checkout() {
 
       }
 
-      // PINCODE VALIDATION
       if (
         customerInfo.pincode.length !==
         6
@@ -460,7 +483,6 @@ function Checkout() {
           const productData =
             productSnap.data();
 
-          // OUT OF STOCK
           if (
             productData.stock <= 0
           ) {
@@ -475,7 +497,6 @@ function Checkout() {
 
           }
 
-          // LOW STOCK
           if (
             item.quantity >
             productData.stock
@@ -499,7 +520,14 @@ function Checkout() {
           "Cash on Delivery"
         ) {
 
-          await saveOrder();
+          const orderSaved =
+            await saveOrder();
+
+          if (!orderSaved) {
+
+            return;
+
+          }
 
           // WHATSAPP MESSAGE
           let message =
@@ -748,7 +776,6 @@ function Checkout() {
 
               <div className="space-y-4">
 
-                {/* COD */}
                 <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-green-500 transition duration-300">
 
                   <input
@@ -774,7 +801,6 @@ function Checkout() {
 
                 </label>
 
-                {/* ONLINE */}
                 <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-green-500 transition duration-300">
 
                   <input
@@ -794,9 +820,7 @@ function Checkout() {
 
                   <span className="text-xl font-semibold text-gray-800">
 
-                    Online Payment
-                    {" "}
-                    (Razorpay)
+                    Online Payment (Razorpay)
 
                   </span>
 
