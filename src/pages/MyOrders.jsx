@@ -1,6 +1,7 @@
 import {
   useEffect,
   useState,
+  useContext,
 } from "react";
 
 import {
@@ -14,10 +15,9 @@ import {
 
 import { AuthContext } from "../context/AuthContext";
 
-import { useContext } from "react";
-
 import {
   FaShoppingBag,
+  FaCheckCircle,
 } from "react-icons/fa";
 
 function MyOrders() {
@@ -55,7 +55,6 @@ function MyOrders() {
           })
         );
 
-
       // FILTER USER ORDERS
       const userOrders =
         allOrders.filter(
@@ -90,6 +89,53 @@ function MyOrders() {
 
   }, [currentUser]);
 
+  // ORDER TRACKING STEPS
+  const trackingSteps = [
+
+    "Pending",
+
+    "Processing",
+
+    "Packed",
+
+    "Out for Delivery",
+
+    "Delivered",
+
+  ];
+
+  // STATUS COLORS
+  const getStatusStyle = (
+    status
+  ) => {
+
+    switch (status) {
+
+      case "Pending":
+        return "bg-yellow-100 text-yellow-700";
+
+      case "Processing":
+        return "bg-blue-100 text-blue-700";
+
+      case "Packed":
+        return "bg-indigo-100 text-indigo-700";
+
+      case "Out for Delivery":
+        return "bg-purple-100 text-purple-700";
+
+      case "Delivered":
+        return "bg-green-100 text-green-700";
+
+      case "Cancelled":
+        return "bg-red-100 text-red-700";
+
+      default:
+        return "bg-gray-100 text-gray-700";
+
+    }
+
+  };
+
   // LOADING
   if (loading) {
 
@@ -122,7 +168,7 @@ function MyOrders() {
 
           <p className="text-gray-600 mt-4 text-lg">
 
-            Track your previous grocery orders.
+            Track your grocery orders live.
 
           </p>
 
@@ -154,114 +200,192 @@ function MyOrders() {
         {/* ORDERS */}
         <div className="space-y-10">
 
-          {orders.map((order) => (
+          {orders.map((order) => {
 
-            <div
-              key={order.id}
-              className="bg-white rounded-3xl shadow-xl overflow-hidden"
-            >
+            const currentStep =
+              trackingSteps.indexOf(
+                order.status
+              );
 
-              {/* TOP */}
-              <div className="bg-green-600 text-white px-8 py-6 flex justify-between items-center">
+            return (
 
-                <div>
+              <div
+                key={order.id}
+                className="bg-white rounded-3xl shadow-xl overflow-hidden"
+              >
 
-                  <h2 className="text-2xl font-bold">
+                {/* TOP */}
+                <div className="bg-green-600 text-white px-8 py-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
 
-                    Order ID
+                  <div>
 
-                  </h2>
+                    <h2 className="text-2xl font-bold">
 
-                  <p className="mt-2 break-all">
+                      Order ID
 
-                    {order.id}
+                    </h2>
 
-                  </p>
+                    <p className="mt-2 break-all">
+
+                      {order.id}
+
+                    </p>
+
+                  </div>
+
+                  {/* STATUS */}
+                  <div
+                    className={`px-6 py-3 rounded-2xl font-bold text-lg ${getStatusStyle(order.status)}`}
+                  >
+
+                    {order.status}
+
+                  </div>
 
                 </div>
 
-                <div className="bg-white text-green-700 px-5 py-2 rounded-2xl font-bold text-lg">
+                {/* TRACKING */}
+                {order.status !==
+                  "Cancelled" && (
 
-                  {order.status}
+                  <div className="px-8 py-10 border-b border-gray-200">
+
+                    <h2 className="text-3xl font-bold text-gray-900 mb-10">
+
+                      Order Tracking
+
+                    </h2>
+
+                    <div className="flex flex-wrap justify-between gap-6">
+
+                      {trackingSteps.map(
+                        (
+                          step,
+                          index
+                        ) => (
+
+                          <div
+                            key={step}
+                            className="flex flex-col items-center flex-1 min-w-[120px]"
+                          >
+
+                            {/* CIRCLE */}
+                            <div
+                              className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
+                              ${
+                                index <=
+                                currentStep
+                                  ? "bg-green-600 text-white"
+                                  : "bg-gray-200 text-gray-500"
+                              }`}
+                            >
+
+                              <FaCheckCircle />
+
+                            </div>
+
+                            {/* TEXT */}
+                            <p
+                              className={`mt-4 text-center font-bold
+                              ${
+                                index <=
+                                currentStep
+                                  ? "text-green-700"
+                                  : "text-gray-500"
+                              }`}
+                            >
+
+                              {step}
+
+                            </p>
+
+                          </div>
+
+                        )
+                      )}
+
+                    </div>
+
+                  </div>
+
+                )}
+
+                {/* PRODUCTS */}
+                <div className="p-8">
+
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8">
+
+                    Ordered Products
+
+                  </h2>
+
+                  <div className="space-y-5">
+
+                    {order.cartItems?.map(
+                      (item) => (
+
+                        <div
+                          key={item.id}
+                          className="bg-gray-50 rounded-2xl p-6 flex flex-col lg:flex-row justify-between gap-5"
+                        >
+
+                          <div>
+
+                            <h3 className="text-2xl font-bold text-gray-900">
+
+                              {item.name}
+
+                            </h3>
+
+                            <p className="text-gray-500 mt-2 text-lg">
+
+                              Quantity:
+                              {" "}
+                              {item.quantity}
+
+                            </p>
+
+                          </div>
+
+                          <div className="text-green-700 font-extrabold text-3xl">
+
+                            ₹
+                            {item.price *
+                              item.quantity}
+
+                          </div>
+
+                        </div>
+
+                      )
+                    )}
+
+                  </div>
+
+                  {/* TOTAL */}
+                  <div className="mt-10 border-t border-gray-200 pt-8 flex justify-between items-center">
+
+                    <h2 className="text-3xl font-bold text-gray-900">
+
+                      Final Total
+
+                    </h2>
+
+                    <h2 className="text-5xl font-extrabold text-green-700">
+
+                      ₹{order.finalTotal}
+
+                    </h2>
+
+                  </div>
 
                 </div>
 
               </div>
 
-              {/* PRODUCTS */}
-              <div className="p-8">
+            );
 
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">
-
-                  Ordered Products
-
-                </h2>
-
-                <div className="space-y-5">
-
-                  {order.cartItems?.map(
-                    (item) => (
-
-                      <div
-                        key={item.id}
-                        className="bg-gray-50 rounded-2xl p-6 flex justify-between items-center"
-                      >
-
-                        <div>
-
-                          <h3 className="text-2xl font-bold text-gray-900">
-
-                            {item.name}
-
-                          </h3>
-
-                          <p className="text-gray-500 mt-2 text-lg">
-
-                            Quantity:
-                            {" "}
-                            {item.quantity}
-
-                          </p>
-
-                        </div>
-
-                        <div className="text-green-700 font-extrabold text-3xl">
-
-                          ₹
-                          {item.price *
-                            item.quantity}
-
-                        </div>
-
-                      </div>
-
-                    )
-                  )}
-
-                </div>
-
-                {/* TOTAL */}
-                <div className="mt-10 border-t border-gray-200 pt-8 flex justify-between items-center">
-
-                  <h2 className="text-3xl font-bold text-gray-900">
-
-                    Final Total
-
-                  </h2>
-
-                  <h2 className="text-5xl font-extrabold text-green-700">
-
-                    ₹{order.finalTotal}
-
-                  </h2>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          ))}
+          })}
 
         </div>
 

@@ -123,6 +123,9 @@ function AdminOrders() {
       case "Processing":
         return "bg-blue-100 text-blue-700";
 
+      case "Packed":
+        return "bg-indigo-100 text-indigo-700";  
+
       case "Out for Delivery":
         return "bg-purple-100 text-purple-700";
 
@@ -184,6 +187,7 @@ function AdminOrders() {
             "All",
             "Pending",
             "Processing",
+            "Packed",
             "Out for Delivery",
             "Delivered",
             "Cancelled",
@@ -295,6 +299,12 @@ function AdminOrders() {
                   <option>
 
                     Processing
+
+                  </option>
+
+                  <option>
+
+                   Packed
 
                   </option>
 

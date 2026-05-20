@@ -36,6 +36,7 @@ function AdminProducts() {
       image: "",
       category: "",
       description: "",
+      stock: "",
 
     });
 
@@ -141,6 +142,9 @@ function AdminProducts() {
           price:
             Number(productData.price),
 
+          stock:
+            Number(productData.stock),
+
           createdAt:
             serverTimestamp(),
 
@@ -161,6 +165,7 @@ function AdminProducts() {
         image: "",
         category: "",
         description: "",
+        stock: "",
 
       });
 
@@ -235,7 +240,11 @@ function AdminProducts() {
 
       category: product.category,
 
-      description: product.description,
+      description:
+        product.description,
+
+      stock:
+        product.stock,
 
     });
 
@@ -274,6 +283,9 @@ function AdminProducts() {
           price:
             Number(productData.price),
 
+          stock:
+            Number(productData.stock),
+
         }
       );
 
@@ -292,6 +304,7 @@ function AdminProducts() {
         image: "",
         category: "",
         description: "",
+        stock: "",
 
       });
 
@@ -435,6 +448,16 @@ function AdminProducts() {
             className="border border-gray-200 rounded-2xl p-4 outline-none"
           />
 
+          <input
+            type="number"
+            name="stock"
+            placeholder="Stock Quantity"
+            value={productData.stock}
+            onChange={handleChange}
+            required
+            className="border border-gray-200 rounded-2xl p-4 outline-none"
+          />
+
           <textarea
             name="description"
             placeholder="Description"
@@ -509,7 +532,7 @@ function AdminProducts() {
 
             <div className="p-6">
 
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start gap-4">
 
                 <div>
 
@@ -527,7 +550,7 @@ function AdminProducts() {
 
                 </div>
 
-                <h3 className="text-2xl font-extrabold text-green-700">
+                <h3 className="text-2xl font-extrabold text-green-700 whitespace-nowrap">
 
                   ₹{product.price}
 
@@ -535,7 +558,42 @@ function AdminProducts() {
 
               </div>
 
-              <p className="text-gray-600 mt-4 leading-7">
+              {/* STOCK STATUS */}
+              <div className="mt-5">
+
+                {product.stock === 0 ? (
+
+                  <span className="bg-red-100 text-red-700 px-4 py-2 rounded-xl font-bold">
+
+                    Out of Stock
+
+                  </span>
+
+                ) : product.stock <= 5 ? (
+
+                  <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl font-bold">
+
+                    Low Stock:
+                    {" "}
+                    {product.stock}
+
+                  </span>
+
+                ) : (
+
+                  <span className="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold">
+
+                    In Stock:
+                    {" "}
+                    {product.stock}
+
+                  </span>
+
+                )}
+
+              </div>
+
+              <p className="text-gray-600 mt-6 leading-7">
 
                 {product.description}
 

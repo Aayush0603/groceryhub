@@ -21,6 +21,7 @@ import {
   serverTimestamp,
   doc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
@@ -228,33 +229,135 @@ function Checkout() {
 
       setLoading(true);
 
-      // SAVE ORDER
-      await addDoc(
-        collection(db, "orders"),
-        {
+// VERIFY STOCK BEFORE ORDER
+for (const item of cartItems) {
 
-          userId:
-            currentUser?.uid,
+  const productRef = doc(
+    db,
+    "products",
+    item.id
+  );
 
-          customerInfo,
+  const productSnap =
+    await getDoc(productRef);
 
-          cartItems,
+  if (!productSnap.exists()) {
 
-          subtotal: totalPrice,
+    toast.error(
+      `${item.name} not found`
+    );
 
-          deliveryCharge,
+    setLoading(false);
 
-          finalTotal,
+    return;
 
-          paymentMethod,
+  }
 
-          status: "Pending",
+  const productData =
+    productSnap.data();
 
-          createdAt:
-            serverTimestamp(),
+  // OUT OF STOCK
+  if (
+    productData.stock <= 0
+  ) {
 
-        }
+    toast.error(
+      `${item.name} is out of stock`
+    );
+
+    setLoading(false);
+
+    return;
+
+  }
+
+  // INSUFFICIENT STOCK
+  if (
+    item.quantity >
+    productData.stock
+  ) {
+
+    toast.error(
+      `Only ${productData.stock} ${item.name} left in stock`
+    );
+
+    setLoading(false);
+
+    return;
+
+  }
+
+}
+
+// SAVE ORDER
+await addDoc(
+  collection(db, "orders"),
+  {
+
+    userId:
+      currentUser?.uid,
+
+    customerInfo,
+
+    cartItems,
+
+    subtotal: totalPrice,
+
+    deliveryCharge,
+
+    finalTotal,
+
+    paymentMethod,
+
+    status: "Pending",
+
+    createdAt:
+      serverTimestamp(),
+
+  }
+);
+      // UPDATE PRODUCT STOCK
+for (const item of cartItems) {
+
+  const productRef = doc(
+    db,
+    "products",
+    item.id
+  );
+
+  // GET CURRENT PRODUCT
+  const productSnap =
+    await getDoc(productRef);
+
+  if (productSnap.exists()) {
+
+    const productData =
+      productSnap.data();
+
+    const currentStock =
+      productData.stock || 0;
+
+    // PREVENT NEGATIVE STOCK
+    const updatedStock =
+      Math.max(
+        currentStock -
+          item.quantity,
+        0
       );
+
+    // UPDATE STOCK
+    await updateDoc(
+      productRef,
+      {
+
+        stock: updatedStock,
+
+      }
+    );
+
+  }
+
+}
 
       toast.success(
         "Order Placed Successfully"
@@ -667,20 +770,24 @@ function Checkout() {
           </div>
 
           {/* BUTTON */}
-          <button
-            onClick={placeOrder}
-            disabled={loading}
-            className="w-full mt-10 bg-green-600 hover:bg-green-700 text-white py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4"
-          >
+         <button
+  onClick={placeOrder}
+  disabled={loading}
+  className={`w-full mt-10 py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4
+  ${
+    loading
+      ? "bg-gray-400 cursor-not-allowed text-white"
+      : "bg-green-600 hover:bg-green-700 text-white"
+  }`}
+>
 
-            <FaWhatsapp />
+  <FaWhatsapp />
 
-            {loading
-              ? "Placing Order..."
-              : "Place Order"}
+  {loading
+    ? "Placing Order..."
+    : "Place Order"}
 
-          </button>
-
+</button>
         </motion.div>
 
       </div>
