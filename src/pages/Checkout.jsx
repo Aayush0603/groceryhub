@@ -314,173 +314,218 @@ orderTime:
 
     };
 
-  // ONLINE PAYMENT
   const handleOnlinePayment =
-    async () => {
+  async () => {
 
-      try {
+    try {
 
-        const { data } =
-          await axios.post(
-
-            "https://groceryhub-j1uf.onrender.com/create-order",
-
-            {
-
-              amount:
-                finalTotal,
-
-            }
-          );
-
-        const options = {
-
-          key:
-            "rzp_test_SrYq472yxJQHcZ",
-
-          amount:
-            data.amount,
-
-          currency:
-            data.currency,
-
-          name:
-            "GroceryHub",
-
-          description:
-            "Order Payment",
-
-          order_id:
-            data.id,
-
-          handler:
-  async function (
-    response
-  ) {
-
-    const orderSaved =
-      await saveOrder();
-
-    if (!orderSaved) {
-
-      return;
-
-    }
-
-    // WHATSAPP MESSAGE
-    let message =
-      `🛒 *New Grocery Order* %0A%0A`;
-
-    message +=
-      `👤 Name: ${customerInfo.name}%0A`;
-
-    message +=
-      `📞 Phone: ${customerInfo.phone}%0A`;
-
-    message +=
-      `📍 Address: ${customerInfo.address}%0A`;
-
-    message +=
-      `🏙️ City: ${customerInfo.city}%0A`;
-
-    message +=
-      `📮 Pincode: ${customerInfo.pincode}%0A`;
-
-    message +=
-      `💳 Payment: Online Payment%0A`;
-
-    message +=
-      `🧾 Payment ID: ${response.razorpay_payment_id}%0A`;
-
-    if (
-      customerInfo.notes
-    ) {
-
-      message +=
-        `📝 Notes: ${customerInfo.notes}%0A`;
-
-    }
-
-    message +=
-      `%0A🛍️ *Products:* %0A`;
-
-    cartItems.forEach(
-      (item) => {
-
-        message +=
-          `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}%0A`;
-
-      }
-    );
-
-    message +=
-      `%0A💵 Subtotal: ₹${totalPrice}%0A`;
-
-    message +=
-      `🛵 Delivery Charge: ${
-        deliveryCharge === 0
-          ? "FREE"
-          : `₹${deliveryCharge}`
-      }%0A`;
-
-    message +=
-      `💰 *Final Total:* ₹${finalTotal}`;
-
-    const whatsappURL =
-      `https://wa.me/919172607711?text=${message}`;
-
-    clearCart();
-
-    setOrderSuccess(
-      true
-    );
-
-    setTimeout(() => {
-
-      window.location.href =
-        whatsappURL;
-
-    }, 1500);
-
-  },
-
-          prefill: {
-
-            name:
-              customerInfo.name,
-
-            contact:
-              customerInfo.phone,
-
-          },
-
-          theme: {
-
-            color:
-              "#16a34a",
-
-          },
-
-        };
-
-        const razorpay =
-          new window.Razorpay(
-            options
-          );
-
-        razorpay.open();
-
-      } catch (error) {
-
-        console.error(error);
-
-        toast.error(
-          "Payment Failed"
+      // LOADING TOAST
+      const loadingToast =
+        toast.loading(
+          "Opening Payment Gateway..."
         );
 
+      // CHECK RAZORPAY
+      if (
+        !window.Razorpay
+      ) {
+
+        toast.dismiss(
+          loadingToast
+        );
+
+        toast.error(
+          "Razorpay failed to load"
+        );
+
+        return;
+
       }
 
-    };
+      // CREATE ORDER
+      const { data } =
+        await axios.post(
+
+          "https://groceryhub-j1uf.onrender.com/create-order",
+
+          {
+
+            amount:
+              finalTotal,
+
+          }
+        );
+
+      // DISMISS LOADING
+      toast.dismiss(
+        loadingToast
+      );
+
+      // OPTIONS
+      const options = {
+
+        key:
+          "rzp_test_SrYq472yxJQHcZ",
+
+        amount:
+          data.amount,
+
+        currency:
+          data.currency,
+
+        name:
+          "GroceryHub",
+
+        description:
+          "Order Payment",
+
+        order_id:
+          data.id,
+
+        handler:
+          async function (
+            response
+          ) {
+
+            const orderSaved =
+              await saveOrder();
+
+            if (
+              !orderSaved
+            ) {
+
+              return;
+
+            }
+
+            // WHATSAPP MESSAGE
+            let message =
+              `🛒 *New Grocery Order* %0A%0A`;
+
+            message +=
+              `👤 Name: ${customerInfo.name}%0A`;
+
+            message +=
+              `📞 Phone: ${customerInfo.phone}%0A`;
+
+            message +=
+              `📍 Address: ${customerInfo.address}%0A`;
+
+            message +=
+              `🏙️ City: ${customerInfo.city}%0A`;
+
+            message +=
+              `📮 Pincode: ${customerInfo.pincode}%0A`;
+
+            message +=
+              `💳 Payment: Online Payment%0A`;
+
+            message +=
+              `🧾 Payment ID: ${response.razorpay_payment_id}%0A`;
+
+            if (
+              customerInfo.notes
+            ) {
+
+              message +=
+                `📝 Notes: ${customerInfo.notes}%0A`;
+
+            }
+
+            message +=
+              `%0A🛍️ *Products:* %0A`;
+
+            cartItems.forEach(
+              (item) => {
+
+                message +=
+                  `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}%0A`;
+
+              }
+            );
+
+            message +=
+              `%0A💵 Subtotal: ₹${totalPrice}%0A`;
+
+            message +=
+              `🛵 Delivery Charge: ${
+                deliveryCharge === 0
+                  ? "FREE"
+                  : `₹${deliveryCharge}`
+              }%0A`;
+
+            message +=
+              `💰 *Final Total:* ₹${finalTotal}`;
+
+            const whatsappURL =
+              `https://wa.me/919172607711?text=${message}`;
+
+            clearCart();
+
+            setOrderSuccess(
+              true
+            );
+
+            setTimeout(() => {
+
+              window.location.href =
+                whatsappURL;
+
+            }, 1200);
+
+          },
+
+        prefill: {
+
+          name:
+            customerInfo.name,
+
+          contact:
+            customerInfo.phone,
+
+        },
+
+        theme: {
+
+          color:
+            "#16a34a",
+
+        },
+
+        modal: {
+
+          ondismiss:
+            function () {
+
+              toast.error(
+                "Payment Cancelled"
+              );
+
+            },
+
+        },
+
+      };
+
+      // OPEN RAZORPAY
+      const razorpay =
+        new window.Razorpay(
+          options
+        );
+
+      razorpay.open();
+
+    } catch (error) {
+
+      console.error(error);
+
+      toast.error(
+        "Payment Failed"
+      );
+
+    }
+
+  };
 
   // PLACE ORDER
   const placeOrder =
