@@ -4,6 +4,8 @@ import {
   useState,
 } from "react";
 
+import axios from "axios";
+
 import { motion } from "framer-motion";
 
 import { Link } from "react-router-dom";
@@ -89,11 +91,11 @@ function Checkout() {
   const [loading, setLoading] =
     useState(false);
 
-  // PAYMENT
+  // PAYMENT METHOD
   const [paymentMethod, setPaymentMethod] =
     useState("Cash on Delivery");
 
-  // FORM STATE
+  // CUSTOMER INFO
   const [customerInfo, setCustomerInfo] =
     useState({
 
@@ -106,7 +108,7 @@ function Checkout() {
 
     });
 
-  // AUTO-FILL PROFILE DATA
+  // AUTO FILL PROFILE
   useEffect(() => {
 
     const fetchProfile =
@@ -165,7 +167,7 @@ function Checkout() {
 
   }, [currentUser]);
 
-  // HANDLE INPUT CHANGE
+  // HANDLE CHANGE
   const handleChange = (e) => {
 
     setCustomerInfo({
@@ -179,277 +181,412 @@ function Checkout() {
 
   };
 
-  // PLACE ORDER
-  const placeOrder = async () => {
+  // SAVE ORDER
+  const saveOrder =
+    async () => {
 
-    // EMPTY FIELD VALIDATION
-    if (
-      !customerInfo.name ||
-      !customerInfo.phone ||
-      !customerInfo.address ||
-      !customerInfo.city ||
-      !customerInfo.pincode
-    ) {
+      // SAVE ORDER
+      await addDoc(
+        collection(db, "orders"),
+        {
 
-      toast.error(
-        "Please fill all required fields"
+          userId:
+            currentUser?.uid,
+
+          customerInfo,
+
+          cartItems,
+
+          subtotal:
+            totalPrice,
+
+          deliveryCharge,
+
+          finalTotal,
+
+          paymentMethod,
+
+          status:
+            "Pending",
+
+          createdAt:
+            serverTimestamp(),
+
+        }
       );
 
-      return;
+      // UPDATE STOCK
+      for (const item of cartItems) {
 
-    }
+        const productRef =
+          doc(
+            db,
+            "products",
+            item.id
+          );
 
-    // PHONE VALIDATION
-    if (
-      customerInfo.phone.length !== 10
-    ) {
+        const productSnap =
+          await getDoc(
+            productRef
+          );
 
-      toast.error(
-        "Phone number must be 10 digits"
-      );
+        if (
+          productSnap.exists()
+        ) {
 
-      return;
+          const productData =
+            productSnap.data();
 
-    }
+          const updatedStock =
+            Math.max(
+              (
+                productData.stock ||
+                0
+              ) - item.quantity,
+              0
+            );
 
-    // PINCODE VALIDATION
-    if (
-      customerInfo.pincode.length !== 6
-    ) {
+          await updateDoc(
+            productRef,
+            {
 
-      toast.error(
-        "Pincode must be 6 digits"
-      );
+              stock:
+                updatedStock,
 
-      return;
+            }
+          );
 
-    }
-
-    try {
-
-      setLoading(true);
-
-// VERIFY STOCK BEFORE ORDER
-for (const item of cartItems) {
-
-  const productRef = doc(
-    db,
-    "products",
-    item.id
-  );
-
-  const productSnap =
-    await getDoc(productRef);
-
-  if (!productSnap.exists()) {
-
-    toast.error(
-      `${item.name} not found`
-    );
-
-    setLoading(false);
-
-    return;
-
-  }
-
-  const productData =
-    productSnap.data();
-
-  // OUT OF STOCK
-  if (
-    productData.stock <= 0
-  ) {
-
-    toast.error(
-      `${item.name} is out of stock`
-    );
-
-    setLoading(false);
-
-    return;
-
-  }
-
-  // INSUFFICIENT STOCK
-  if (
-    item.quantity >
-    productData.stock
-  ) {
-
-    toast.error(
-      `Only ${productData.stock} ${item.name} left in stock`
-    );
-
-    setLoading(false);
-
-    return;
-
-  }
-
-}
-
-// SAVE ORDER
-await addDoc(
-  collection(db, "orders"),
-  {
-
-    userId:
-      currentUser?.uid,
-
-    customerInfo,
-
-    cartItems,
-
-    subtotal: totalPrice,
-
-    deliveryCharge,
-
-    finalTotal,
-
-    paymentMethod,
-
-    status: "Pending",
-
-    createdAt:
-      serverTimestamp(),
-
-  }
-);
-      // UPDATE PRODUCT STOCK
-for (const item of cartItems) {
-
-  const productRef = doc(
-    db,
-    "products",
-    item.id
-  );
-
-  // GET CURRENT PRODUCT
-  const productSnap =
-    await getDoc(productRef);
-
-  if (productSnap.exists()) {
-
-    const productData =
-      productSnap.data();
-
-    const currentStock =
-      productData.stock || 0;
-
-    // PREVENT NEGATIVE STOCK
-    const updatedStock =
-      Math.max(
-        currentStock -
-          item.quantity,
-        0
-      );
-
-    // UPDATE STOCK
-    await updateDoc(
-      productRef,
-      {
-
-        stock: updatedStock,
+        }
 
       }
-    );
-
-  }
-
-}
 
       toast.success(
         "Order Placed Successfully"
       );
 
-      // WHATSAPP MESSAGE
-      let message =
-        `🛒 *New Grocery Order* %0A%0A`;
+    };
 
-      message +=
-        `👤 Name: ${customerInfo.name}%0A`;
+  // HANDLE ONLINE PAYMENT
+  const handleOnlinePayment =
+    async () => {
 
-      message +=
-        `📞 Phone: ${customerInfo.phone}%0A`;
+      try {
 
-      message +=
-        `📍 Address: ${customerInfo.address}%0A`;
+        const { data } =
+          await axios.post(
 
-      message +=
-        `🏙️ City: ${customerInfo.city}%0A`;
+            "http://localhost:5000/create-order",
 
-      message +=
-        `📮 Pincode: ${customerInfo.pincode}%0A`;
+            {
 
-      message +=
-        `💳 Payment: ${paymentMethod}%0A`;  
+              amount:
+                finalTotal,
 
-      if (customerInfo.notes) {
+            }
+          );
 
-        message +=
-          `📝 Notes: ${customerInfo.notes}%0A`;
+        const options = {
+
+          key:
+            "rzp_test_SrYq472yxJQHcZ",
+
+          amount:
+            data.amount,
+
+          currency:
+            data.currency,
+
+          name:
+            "GroceryHub",
+
+          description:
+            "Order Payment",
+
+          order_id:
+            data.id,
+
+          handler:
+            async function (
+              response
+            ) {
+
+              await saveOrder();
+
+              clearCart();
+
+              setOrderSuccess(
+                true
+              );
+
+              setTimeout(() => {
+
+                window.location.href =
+                  "/my-orders";
+
+              }, 2000);
+
+            },
+
+          prefill: {
+
+            name:
+              customerInfo.name,
+
+            contact:
+              customerInfo.phone,
+
+          },
+
+          theme: {
+
+            color:
+              "#16a34a",
+
+          },
+
+        };
+
+        const razorpay =
+          new window.Razorpay(
+            options
+          );
+
+        razorpay.open();
+
+      } catch (error) {
+
+        console.error(error);
+
+        toast.error(
+          "Payment Failed"
+        );
 
       }
 
-      message +=
-        `%0A🛍️ *Products:* %0A`;
+    };
 
-      cartItems?.forEach((item) => {
+  // PLACE ORDER
+  const placeOrder =
+    async () => {
 
-        message +=
-          `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}%0A`;
+      // REQUIRED FIELDS
+      if (
+        !customerInfo.name ||
+        !customerInfo.phone ||
+        !customerInfo.address ||
+        !customerInfo.city ||
+        !customerInfo.pincode
+      ) {
 
-      });
+        toast.error(
+          "Please fill all required fields"
+        );
 
-      message +=
-        `%0A💵 Subtotal: ₹${totalPrice}%0A`;
+        return;
 
-      message +=
-        `🛵 Delivery Charge: ${
-          deliveryCharge === 0
-            ? "FREE"
-            : `₹${deliveryCharge}`
-        }%0A`;
+      }
 
-      message +=
-        `💰 *Final Total:* ₹${finalTotal}`;
+      // PHONE VALIDATION
+      if (
+        customerInfo.phone.length !==
+        10
+      ) {
 
-      // YOUR WHATSAPP NUMBER
-      const phoneNumber =
-        "919172607711";
+        toast.error(
+          "Phone number must be 10 digits"
+        );
 
-      const whatsappURL =
-        `https://wa.me/${phoneNumber}?text=${message}`;
+        return;
 
-      // SHOW SUCCESS MODAL
-      setOrderSuccess(true);
+      }
 
-      // REDIRECT TO WHATSAPP
-      setTimeout(() => {
+      // PINCODE VALIDATION
+      if (
+        customerInfo.pincode.length !==
+        6
+      ) {
 
-        clearCart();
+        toast.error(
+          "Pincode must be 6 digits"
+        );
 
-        window.location.href =
-          whatsappURL;
+        return;
 
-      }, 1500);
+      }
 
-    } catch (error) {
+      try {
 
-      console.error(error);
+        setLoading(true);
 
-      toast.error(
-        "Failed to place order"
-      );
+        // VERIFY STOCK
+        for (const item of cartItems) {
 
-    } finally {
+          const productRef =
+            doc(
+              db,
+              "products",
+              item.id
+            );
 
-      setLoading(false);
+          const productSnap =
+            await getDoc(
+              productRef
+            );
 
-    }
+          if (
+            !productSnap.exists()
+          ) {
 
-  };
+            toast.error(
+              `${item.name} not found`
+            );
+
+            setLoading(false);
+
+            return;
+
+          }
+
+          const productData =
+            productSnap.data();
+
+          // OUT OF STOCK
+          if (
+            productData.stock <= 0
+          ) {
+
+            toast.error(
+              `${item.name} is out of stock`
+            );
+
+            setLoading(false);
+
+            return;
+
+          }
+
+          // LOW STOCK
+          if (
+            item.quantity >
+            productData.stock
+          ) {
+
+            toast.error(
+              `Only ${productData.stock} ${item.name} left`
+            );
+
+            setLoading(false);
+
+            return;
+
+          }
+
+        }
+
+        // CASH ON DELIVERY
+        if (
+          paymentMethod ===
+          "Cash on Delivery"
+        ) {
+
+          await saveOrder();
+
+          // WHATSAPP MESSAGE
+          let message =
+            `🛒 *New Grocery Order* %0A%0A`;
+
+          message +=
+            `👤 Name: ${customerInfo.name}%0A`;
+
+          message +=
+            `📞 Phone: ${customerInfo.phone}%0A`;
+
+          message +=
+            `📍 Address: ${customerInfo.address}%0A`;
+
+          message +=
+            `🏙️ City: ${customerInfo.city}%0A`;
+
+          message +=
+            `📮 Pincode: ${customerInfo.pincode}%0A`;
+
+          message +=
+            `💳 Payment: ${paymentMethod}%0A`;
+
+          if (
+            customerInfo.notes
+          ) {
+
+            message +=
+              `📝 Notes: ${customerInfo.notes}%0A`;
+
+          }
+
+          message +=
+            `%0A🛍️ *Products:* %0A`;
+
+          cartItems.forEach(
+            (item) => {
+
+              message +=
+                `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}%0A`;
+
+            }
+          );
+
+          message +=
+            `%0A💵 Subtotal: ₹${totalPrice}%0A`;
+
+          message +=
+            `🛵 Delivery Charge: ${
+              deliveryCharge === 0
+                ? "FREE"
+                : `₹${deliveryCharge}`
+            }%0A`;
+
+          message +=
+            `💰 *Final Total:* ₹${finalTotal}`;
+
+          const whatsappURL =
+            `https://wa.me/919172607711?text=${message}`;
+
+          clearCart();
+
+          setOrderSuccess(
+            true
+          );
+
+          setTimeout(() => {
+
+            window.location.href =
+              whatsappURL;
+
+          }, 1500);
+
+        }
+
+        // ONLINE PAYMENT
+        else {
+
+          await handleOnlinePayment();
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        toast.error(
+          "Failed to place order"
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
 
   return (
 
@@ -501,37 +638,36 @@ for (const item of cartItems) {
               className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
             />
 
-
             <input
-  type="text"
-  name="phone"
-  placeholder="Phone Number"
-  value={customerInfo.phone}
-  onChange={(e) => {
+              type="text"
+              name="phone"
+              placeholder="Phone Number"
+              value={customerInfo.phone}
+              onChange={(e) => {
 
-    // ONLY ALLOW NUMBERS
-    const value =
-      e.target.value.replace(
-        /\D/g,
-        ""
-      );
+                const value =
+                  e.target.value.replace(
+                    /\D/g,
+                    ""
+                  );
 
-    // LIMIT TO 10 DIGITS
-    if (value.length <= 10) {
+                if (
+                  value.length <= 10
+                ) {
 
-      setCustomerInfo({
+                  setCustomerInfo({
 
-        ...customerInfo,
+                    ...customerInfo,
 
-        phone: value,
+                    phone: value,
 
-      });
+                  });
 
-    }
+                }
 
-  }}
-  className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-/>
+              }}
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+            />
 
             <textarea
               name="address"
@@ -551,37 +687,37 @@ for (const item of cartItems) {
               className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
             />
 
-
             <input
-  type="text"
-  name="pincode"
-  placeholder="Pincode"
-  value={customerInfo.pincode}
-  onChange={(e) => {
+              type="text"
+              name="pincode"
+              placeholder="Pincode"
+              value={customerInfo.pincode}
+              onChange={(e) => {
 
-    // ONLY ALLOW NUMBERS
-    const value =
-      e.target.value.replace(
-        /\D/g,
-        ""
-      );
+                const value =
+                  e.target.value.replace(
+                    /\D/g,
+                    ""
+                  );
 
-    // LIMIT TO 6 DIGITS
-    if (value.length <= 6) {
+                if (
+                  value.length <= 6
+                ) {
 
-      setCustomerInfo({
+                  setCustomerInfo({
 
-        ...customerInfo,
+                    ...customerInfo,
 
-        pincode: value,
+                    pincode: value,
 
-      });
+                  });
 
-    }
+                }
 
-  }}
-  className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-/>
+              }}
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+            />
+
             <textarea
               name="notes"
               placeholder="Additional Notes (Optional)"
@@ -591,64 +727,74 @@ for (const item of cartItems) {
               className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
             />
 
-            {/* PAYMENT METHOD */}
-<div>
+            {/* PAYMENT */}
+            <div>
 
-  <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              <h2 className="text-2xl font-bold text-gray-900 mb-5">
 
-    Payment Method
+                Payment Method
 
-  </h2>
+              </h2>
 
-  <div className="space-y-4">
+              <div className="space-y-4">
 
-    {/* COD */}
-    <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-green-500 transition duration-300">
+                {/* COD */}
+                <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-green-500 transition duration-300">
 
-      <input
-        type="radio"
-        name="payment"
-        value="Cash on Delivery"
-        checked={
-          paymentMethod ===
-          "Cash on Delivery"
-        }
-        onChange={(e) =>
-          setPaymentMethod(
-            e.target.value
-          )
-        }
-      />
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="Cash on Delivery"
+                    checked={
+                      paymentMethod ===
+                      "Cash on Delivery"
+                    }
+                    onChange={(e) =>
+                      setPaymentMethod(
+                        e.target.value
+                      )
+                    }
+                  />
 
-      <span className="text-xl font-semibold text-gray-800">
+                  <span className="text-xl font-semibold text-gray-800">
 
-        Cash on Delivery
+                    Cash on Delivery
 
-      </span>
+                  </span>
 
-    </label>
+                </label>
 
-    {/* ONLINE */}
-    <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer opacity-60">
+                {/* ONLINE */}
+                <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-green-500 transition duration-300">
 
-      <input
-        type="radio"
-        disabled
-      />
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="Online Payment"
+                    checked={
+                      paymentMethod ===
+                      "Online Payment"
+                    }
+                    onChange={(e) =>
+                      setPaymentMethod(
+                        e.target.value
+                      )
+                    }
+                  />
 
-      <span className="text-xl font-semibold text-gray-800">
+                  <span className="text-xl font-semibold text-gray-800">
 
-        Online Payment
-        {" "}
-        (Coming Soon)
+                    Online Payment
+                    {" "}
+                    (Razorpay)
 
-      </span>
+                  </span>
 
-    </label>
+                </label>
 
-  </div>
+              </div>
 
-</div>
+            </div>
 
           </div>
 
@@ -770,24 +916,25 @@ for (const item of cartItems) {
           </div>
 
           {/* BUTTON */}
-         <button
-  onClick={placeOrder}
-  disabled={loading}
-  className={`w-full mt-10 py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4
-  ${
-    loading
-      ? "bg-gray-400 cursor-not-allowed text-white"
-      : "bg-green-600 hover:bg-green-700 text-white"
-  }`}
->
+          <button
+            onClick={placeOrder}
+            disabled={loading}
+            className={`w-full mt-10 py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4
+            ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed text-white"
+                : "bg-green-600 hover:bg-green-700 text-white"
+            }`}
+          >
 
-  <FaWhatsapp />
+            <FaWhatsapp />
 
-  {loading
-    ? "Placing Order..."
-    : "Place Order"}
+            {loading
+              ? "Placing Order..."
+              : "Place Order"}
 
-</button>
+          </button>
+
         </motion.div>
 
       </div>
@@ -813,7 +960,7 @@ for (const item of cartItems) {
 
             <p className="text-gray-600 text-lg">
 
-              Redirecting to WhatsApp...
+              Redirecting...
 
             </p>
 
@@ -826,6 +973,7 @@ for (const item of cartItems) {
     </section>
 
   );
+
 }
 
 export default Checkout;
