@@ -185,13 +185,23 @@ function Checkout() {
   const saveOrder =
     async () => {
 
+      if (!currentUser) {
+
+  toast.error(
+    "Please login again"
+  );
+
+  return;
+
+}
+
       // SAVE ORDER
       await addDoc(
         collection(db, "orders"),
         {
 
           userId:
-            currentUser?.uid,
+          currentUser.uid,
 
           customerInfo,
 
