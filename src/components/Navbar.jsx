@@ -1,6 +1,12 @@
-import { useContext, useState } from "react";
+import {
+  useContext,
+  useState,
+} from "react";
 
-import { Link } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import { HashLink } from "react-router-hash-link";
 
@@ -10,23 +16,26 @@ import {
   FaShoppingCart,
 } from "react-icons/fa";
 
+import toast from "react-hot-toast";
+
 import { CartContext } from "../context/CartContext";
 
 import { AuthContext } from "../context/AuthContext";
 
-import { signOut } from "firebase/auth";
-
-import { auth } from "../firebase/firebase";
-
 function Navbar() {
+
+  const navigate =
+    useNavigate();
 
   const {
     totalItems,
     setCartItems,
   } = useContext(CartContext);
 
-  const { currentUser } =
-    useContext(AuthContext);
+  const {
+    currentUser,
+    logout,
+  } = useContext(AuthContext);
 
   const [menuOpen, setMenuOpen] =
     useState(false);
@@ -39,23 +48,30 @@ function Navbar() {
   };
 
   // LOGOUT
-  const handleLogout = async () => {
+  const handleLogout = () => {
 
     try {
 
       // CLEAR CART STATE
       setCartItems([]);
 
-      // CLEAR LOCAL STORAGE
-      localStorage.removeItem(
-        "grocery-cart"
+      // LOGOUT USER
+      logout();
+
+      toast.success(
+        "Logged Out Successfully"
       );
 
-      await signOut(auth);
+      // REDIRECT
+      navigate("/login");
 
     } catch (error) {
 
       console.error(error);
+
+      toast.error(
+        "Logout Failed"
+      );
 
     }
 
@@ -152,20 +168,30 @@ function Navbar() {
 
           )}
 
-          <Link
-  to="/profile"
-  className="text-gray-700 hover:text-green-600 transition duration-300"
->
+          {/* PROFILE */}
+          {currentUser && (
 
-  Profile
+            <li>
 
-</Link>
+              <Link
+                to="/profile"
+                className="text-gray-700 hover:text-green-600 transition duration-300"
+              >
+
+                Profile
+
+              </Link>
+
+            </li>
+
+          )}
 
           {/* AUTH BUTTONS */}
           {!currentUser ? (
 
             <>
 
+              {/* LOGIN */}
               <li>
 
                 <Link
@@ -179,6 +205,7 @@ function Navbar() {
 
               </li>
 
+              {/* SIGNUP */}
               <li>
 
                 <Link
@@ -203,9 +230,9 @@ function Navbar() {
 
                 Hello,{" "}
 
-                {currentUser.email
-                  .split("@")[0]
-                }
+                {currentUser.name ||
+                  currentUser.phone ||
+                  "User"}
 
               </li>
 
@@ -213,7 +240,9 @@ function Navbar() {
               <li>
 
                 <button
-                  onClick={handleLogout}
+                  onClick={
+                    handleLogout
+                  }
                   className="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-2xl shadow-lg transition duration-300"
                 >
 
@@ -249,7 +278,9 @@ function Navbar() {
         <button
           className="md:hidden text-3xl text-gray-800"
           onClick={() =>
-            setMenuOpen(!menuOpen)
+            setMenuOpen(
+              !menuOpen
+            )
           }
         >
 
@@ -317,14 +348,20 @@ function Navbar() {
 
           )}
 
-          <Link
-  to="/profile"
-  className="text-gray-700 hover:text-green-600 transition duration-300"
->
+          {/* PROFILE */}
+          {currentUser && (
 
-  Profile
+            <Link
+              to="/profile"
+              className="block text-gray-700 hover:text-green-600 transition"
+              onClick={closeMenu}
+            >
 
-</Link>
+              Profile
+
+            </Link>
+
+          )}
 
           {/* MOBILE AUTH */}
           {!currentUser ? (
@@ -364,9 +401,9 @@ function Navbar() {
 
                 Hello,{" "}
 
-                {currentUser.email
-                  .split("@")[0]
-                }
+                {currentUser.name ||
+                  currentUser.phone ||
+                  "User"}
 
               </div>
 
@@ -410,6 +447,7 @@ function Navbar() {
     </nav>
 
   );
+
 }
 
 export default Navbar;

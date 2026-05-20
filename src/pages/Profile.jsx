@@ -26,8 +26,10 @@ import {
 function Profile() {
 
   // CURRENT USER
-  const { currentUser } =
-    useContext(AuthContext);
+  const {
+    currentUser,
+    login,
+  } = useContext(AuthContext);
 
   // LOADING
   const [loading, setLoading] =
@@ -53,13 +55,23 @@ function Profile() {
 
       pincode: "",
 
+      role: "customer",
+
     });
 
-  // FETCH USER PROFILE
+  // FETCH PROFILE
   const fetchProfile =
     async () => {
 
       try {
+
+        if (!currentUser) {
+
+          setLoading(false);
+
+          return;
+
+        }
 
         const userRef = doc(
 
@@ -74,28 +86,35 @@ function Profile() {
         const userSnap =
           await getDoc(userRef);
 
+        // USER EXISTS
         if (userSnap.exists()) {
 
-          setProfileData(
-            userSnap.data()
-          );
-
-        } else {
+          const userData =
+            userSnap.data();
 
           setProfileData({
 
-            name: "",
+            name:
+              userData.name || "",
 
             email:
-              currentUser.email,
+              userData.email || "",
 
-            phone: "",
+            phone:
+              userData.phone || "",
 
-            address: "",
+            address:
+              userData.address || "",
 
-            city: "",
+            city:
+              userData.city || "",
 
-            pincode: "",
+            pincode:
+              userData.pincode || "",
+
+            role:
+              userData.role ||
+              "customer",
 
           });
 
@@ -104,6 +123,10 @@ function Profile() {
       } catch (error) {
 
         console.error(error);
+
+        toast.error(
+          "Failed to load profile"
+        );
 
       } finally {
 
@@ -116,11 +139,7 @@ function Profile() {
   // LOAD PROFILE
   useEffect(() => {
 
-    if (currentUser) {
-
-      fetchProfile();
-
-    }
+    fetchProfile();
 
   }, [currentUser]);
 
@@ -142,10 +161,41 @@ function Profile() {
   const saveProfile =
     async () => {
 
+      // PHONE VALIDATION
+      if (
+        profileData.phone &&
+        profileData.phone.length !==
+          10
+      ) {
+
+        toast.error(
+          "Phone number must be 10 digits"
+        );
+
+        return;
+
+      }
+
+      // PINCODE VALIDATION
+      if (
+        profileData.pincode &&
+        profileData.pincode.length !==
+          6
+      ) {
+
+        toast.error(
+          "Pincode must be 6 digits"
+        );
+
+        return;
+
+      }
+
       try {
 
         setSaving(true);
 
+        // SAVE PROFILE
         await setDoc(
 
           doc(
@@ -154,12 +204,34 @@ function Profile() {
             currentUser.uid
           ),
 
-          profileData
+          {
+
+            ...profileData,
+
+            uid:
+              currentUser.uid,
+
+          },
+
+          {
+
+            merge: true,
+
+          }
 
         );
 
+        // UPDATE SESSION
+        login({
+
+          ...currentUser,
+
+          ...profileData,
+
+        });
+
         toast.success(
-          "Profile Updated"
+          "Profile Updated Successfully"
         );
 
       } catch (error) {
@@ -246,7 +318,7 @@ function Profile() {
 
             <label className="block text-lg font-bold text-gray-700 mb-3">
 
-              Email
+              Email (Optional)
 
             </label>
 
@@ -254,8 +326,9 @@ function Profile() {
               type="email"
               name="email"
               value={profileData.email}
-              disabled
-              className="w-full p-5 rounded-2xl border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed"
+              onChange={handleChange}
+              placeholder="Enter email"
+              className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
             />
 
           </div>
@@ -270,10 +343,32 @@ function Profile() {
             </label>
 
             <input
-              type="number"
+              type="text"
               name="phone"
               value={profileData.phone}
-              onChange={handleChange}
+              onChange={(e) => {
+
+                const value =
+                  e.target.value.replace(
+                    /\D/g,
+                    ""
+                  );
+
+                if (
+                  value.length <= 10
+                ) {
+
+                  setProfileData({
+
+                    ...profileData,
+
+                    phone: value,
+
+                  });
+
+                }
+
+              }}
               placeholder="Enter phone number"
               className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
             />
@@ -310,10 +405,32 @@ function Profile() {
             </label>
 
             <input
-              type="number"
+              type="text"
               name="pincode"
               value={profileData.pincode}
-              onChange={handleChange}
+              onChange={(e) => {
+
+                const value =
+                  e.target.value.replace(
+                    /\D/g,
+                    ""
+                  );
+
+                if (
+                  value.length <= 6
+                ) {
+
+                  setProfileData({
+
+                    ...profileData,
+
+                    pincode: value,
+
+                  });
+
+                }
+
+              }}
               placeholder="Enter pincode"
               className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
             />
