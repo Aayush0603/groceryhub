@@ -259,6 +259,43 @@ setOrders(sortedOrders);
 
                 </div>
 
+                {/* DATE & TIME */}
+<div className="px-8 pt-6 flex flex-wrap gap-4">
+
+  <div className="bg-green-50 px-5 py-3 rounded-2xl">
+
+    <p className="text-sm text-gray-500">
+
+      Order Date
+
+    </p>
+
+    <h3 className="font-bold text-gray-900">
+
+      {order.orderDate}
+
+    </h3>
+
+  </div>
+
+  <div className="bg-blue-50 px-5 py-3 rounded-2xl">
+
+    <p className="text-sm text-gray-500">
+
+      Order Time
+
+    </p>
+
+    <h3 className="font-bold text-gray-900">
+
+      {order.orderTime}
+
+    </h3>
+
+  </div>
+
+</div>
+
                 {/* TRACKING */}
                 {order.status !==
                   "Cancelled" && (
