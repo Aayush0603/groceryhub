@@ -88,6 +88,10 @@ function Checkout() {
   const [loading, setLoading] =
     useState(false);
 
+  // PAYMENT
+  const [paymentMethod, setPaymentMethod] =
+    useState("Cash on Delivery");
+
   // FORM STATE
   const [customerInfo, setCustomerInfo] =
     useState({
@@ -242,6 +246,8 @@ function Checkout() {
 
           finalTotal,
 
+          paymentMethod,
+
           status: "Pending",
 
           createdAt:
@@ -272,6 +278,9 @@ function Checkout() {
 
       message +=
         `📮 Pincode: ${customerInfo.pincode}%0A`;
+
+      message +=
+        `💳 Payment: ${paymentMethod}%0A`;  
 
       if (customerInfo.notes) {
 
@@ -389,14 +398,37 @@ function Checkout() {
               className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
             />
 
+
             <input
-              type="number"
-              name="phone"
-              placeholder="Phone Number"
-              value={customerInfo.phone}
-              onChange={handleChange}
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-            />
+  type="text"
+  name="phone"
+  placeholder="Phone Number"
+  value={customerInfo.phone}
+  onChange={(e) => {
+
+    // ONLY ALLOW NUMBERS
+    const value =
+      e.target.value.replace(
+        /\D/g,
+        ""
+      );
+
+    // LIMIT TO 10 DIGITS
+    if (value.length <= 10) {
+
+      setCustomerInfo({
+
+        ...customerInfo,
+
+        phone: value,
+
+      });
+
+    }
+
+  }}
+  className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+/>
 
             <textarea
               name="address"
@@ -416,15 +448,37 @@ function Checkout() {
               className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
             />
 
-            <input
-              type="number"
-              name="pincode"
-              placeholder="Pincode"
-              value={customerInfo.pincode}
-              onChange={handleChange}
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-            />
 
+            <input
+  type="text"
+  name="pincode"
+  placeholder="Pincode"
+  value={customerInfo.pincode}
+  onChange={(e) => {
+
+    // ONLY ALLOW NUMBERS
+    const value =
+      e.target.value.replace(
+        /\D/g,
+        ""
+      );
+
+    // LIMIT TO 6 DIGITS
+    if (value.length <= 6) {
+
+      setCustomerInfo({
+
+        ...customerInfo,
+
+        pincode: value,
+
+      });
+
+    }
+
+  }}
+  className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
+/>
             <textarea
               name="notes"
               placeholder="Additional Notes (Optional)"
@@ -433,6 +487,65 @@ function Checkout() {
               onChange={handleChange}
               className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
             />
+
+            {/* PAYMENT METHOD */}
+<div>
+
+  <h2 className="text-2xl font-bold text-gray-900 mb-5">
+
+    Payment Method
+
+  </h2>
+
+  <div className="space-y-4">
+
+    {/* COD */}
+    <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-green-500 transition duration-300">
+
+      <input
+        type="radio"
+        name="payment"
+        value="Cash on Delivery"
+        checked={
+          paymentMethod ===
+          "Cash on Delivery"
+        }
+        onChange={(e) =>
+          setPaymentMethod(
+            e.target.value
+          )
+        }
+      />
+
+      <span className="text-xl font-semibold text-gray-800">
+
+        Cash on Delivery
+
+      </span>
+
+    </label>
+
+    {/* ONLINE */}
+    <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer opacity-60">
+
+      <input
+        type="radio"
+        disabled
+      />
+
+      <span className="text-xl font-semibold text-gray-800">
+
+        Online Payment
+        {" "}
+        (Coming Soon)
+
+      </span>
+
+    </label>
+
+  </div>
+
+</div>
 
           </div>
 
