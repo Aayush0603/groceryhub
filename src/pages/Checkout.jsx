@@ -332,35 +332,95 @@ function Checkout() {
             data.id,
 
           handler:
-            async function (
-              response
-            ) {
+  async function (
+    response
+  ) {
 
-              const orderSaved =
-                await saveOrder();
+    const orderSaved =
+      await saveOrder();
 
-              if (
-                !orderSaved
-              ) {
+    if (!orderSaved) {
 
-                return;
+      return;
 
-              }
+    }
 
-              clearCart();
+    // WHATSAPP MESSAGE
+    let message =
+      `🛒 *New Grocery Order* %0A%0A`;
 
-              setOrderSuccess(
-                true
-              );
+    message +=
+      `👤 Name: ${customerInfo.name}%0A`;
 
-              setTimeout(() => {
+    message +=
+      `📞 Phone: ${customerInfo.phone}%0A`;
 
-                window.location.href =
-                  "/my-orders";
+    message +=
+      `📍 Address: ${customerInfo.address}%0A`;
 
-              }, 2000);
+    message +=
+      `🏙️ City: ${customerInfo.city}%0A`;
 
-            },
+    message +=
+      `📮 Pincode: ${customerInfo.pincode}%0A`;
+
+    message +=
+      `💳 Payment: Online Payment%0A`;
+
+    message +=
+      `🧾 Payment ID: ${response.razorpay_payment_id}%0A`;
+
+    if (
+      customerInfo.notes
+    ) {
+
+      message +=
+        `📝 Notes: ${customerInfo.notes}%0A`;
+
+    }
+
+    message +=
+      `%0A🛍️ *Products:* %0A`;
+
+    cartItems.forEach(
+      (item) => {
+
+        message +=
+          `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}%0A`;
+
+      }
+    );
+
+    message +=
+      `%0A💵 Subtotal: ₹${totalPrice}%0A`;
+
+    message +=
+      `🛵 Delivery Charge: ${
+        deliveryCharge === 0
+          ? "FREE"
+          : `₹${deliveryCharge}`
+      }%0A`;
+
+    message +=
+      `💰 *Final Total:* ₹${finalTotal}`;
+
+    const whatsappURL =
+      `https://wa.me/919172607711?text=${message}`;
+
+    clearCart();
+
+    setOrderSuccess(
+      true
+    );
+
+    setTimeout(() => {
+
+      window.location.href =
+        whatsappURL;
+
+    }, 1500);
+
+  },
 
           prefill: {
 
