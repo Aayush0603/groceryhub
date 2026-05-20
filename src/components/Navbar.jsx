@@ -152,6 +152,15 @@ function Navbar() {
 
           )}
 
+          <Link
+  to="/profile"
+  className="text-gray-700 hover:text-green-600 transition duration-300"
+>
+
+  Profile
+
+</Link>
+
           {/* AUTH BUTTONS */}
           {!currentUser ? (
 
@@ -307,6 +316,15 @@ function Navbar() {
             </Link>
 
           )}
+
+          <Link
+  to="/profile"
+  className="text-gray-700 hover:text-green-600 transition duration-300"
+>
+
+  Profile
+
+</Link>
 
           {/* MOBILE AUTH */}
           {!currentUser ? (

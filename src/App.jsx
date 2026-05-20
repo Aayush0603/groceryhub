@@ -56,6 +56,8 @@ import AdminCustomers from "./pages/AdminCustomers";
 
 import MyOrders from "./pages/MyOrders";
 
+import Profile from "./pages/Profile";
+
 import { CartContext } from "./context/CartContext";
 
 // CUSTOMER LAYOUT
@@ -396,6 +398,17 @@ function AppLayout() {
     <ProtectedRoute>
 
       <MyOrders />
+
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="profile"
+  element={
+    <ProtectedRoute>
+
+      <Profile />
 
     </ProtectedRoute>
   }
