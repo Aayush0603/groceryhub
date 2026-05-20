@@ -1,5 +1,6 @@
 import {
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -18,6 +19,8 @@ import {
   collection,
   addDoc,
   serverTimestamp,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
@@ -98,6 +101,65 @@ function Checkout() {
 
     });
 
+  // AUTO-FILL PROFILE DATA
+  useEffect(() => {
+
+    const fetchProfile =
+      async () => {
+
+        try {
+
+          if (!currentUser) return;
+
+          const userRef = doc(
+            db,
+            "users",
+            currentUser.uid
+          );
+
+          const userSnap =
+            await getDoc(userRef);
+
+          if (userSnap.exists()) {
+
+            const data =
+              userSnap.data();
+
+            setCustomerInfo({
+
+              name:
+                data.name || "",
+
+              phone:
+                data.phone || "",
+
+              address:
+                data.address || "",
+
+              city:
+                data.city || "",
+
+              pincode:
+                data.pincode || "",
+
+              notes: "",
+
+            });
+
+          }
+
+        } catch (error) {
+
+          console.error(error);
+
+        }
+
+      };
+
+    fetchProfile();
+
+  }, [currentUser]);
+
   // HANDLE INPUT CHANGE
   const handleChange = (e) => {
 
@@ -167,7 +229,6 @@ function Checkout() {
         collection(db, "orders"),
         {
 
-          // SAVE USER ID
           userId:
             currentUser?.uid,
 
