@@ -6,7 +6,7 @@ import {
 
 import {
   collection,
-  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
 
 import {
@@ -18,6 +18,10 @@ import { AuthContext } from "../context/AuthContext";
 import {
   FaShoppingBag,
   FaCheckCircle,
+  FaBoxOpen,
+  FaTruck,
+  FaHome,
+  FaClock,
 } from "react-icons/fa";
 
 function MyOrders() {
@@ -34,122 +38,175 @@ function MyOrders() {
   const [loading, setLoading] =
     useState(true);
 
-  // FETCH ORDERS
-  const fetchOrders = async () => {
+  // REALTIME ORDERS
+  useEffect(() => {
 
-    try {
-
-      const querySnapshot =
-        await getDocs(
-          collection(db, "orders")
-        );
-
-      const allOrders =
-        querySnapshot.docs.map(
-          (doc) => ({
-
-            id: doc.id,
-
-            ...doc.data(),
-
-          })
-        );
-
-      // FILTER USER ORDERS
-      const userOrders =
-        allOrders.filter(
-          (order) =>
-
-            order.userId ===
-            currentUser?.uid
-        );
-
-      const sortedOrders =
-  userOrders.sort(
-    (a, b) => {
-
-      const aTime =
-        a.createdAt?.seconds || 0;
-
-      const bTime =
-        b.createdAt?.seconds || 0;
-
-      return bTime - aTime;
-
-    }
-  );
-
-setOrders(sortedOrders);
-
-    } catch (error) {
-
-      console.error(error);
-
-    } finally {
+    if (!currentUser) {
 
       setLoading(false);
 
-    }
-
-  };
-
-  // LOAD ORDERS
-  useEffect(() => {
-
-    if (currentUser) {
-
-      fetchOrders();
+      return;
 
     }
+
+    // LIVE FIREBASE LISTENER
+    const unsubscribe =
+      onSnapshot(
+
+        collection(
+          db,
+          "orders"
+        ),
+
+        (snapshot) => {
+
+          try {
+
+            const allOrders =
+              snapshot.docs.map(
+                (doc) => ({
+
+                  id: doc.id,
+
+                  ...doc.data(),
+
+                })
+              );
+
+            // FILTER USER ORDERS
+            const userOrders =
+              allOrders.filter(
+                (order) =>
+
+                  order.userId ===
+                  currentUser.uid
+              );
+
+            // LATEST FIRST
+            const sortedOrders =
+              userOrders.sort(
+                (a, b) => {
+
+                  const aTime =
+                    a.createdAt
+                      ?.seconds || 0;
+
+                  const bTime =
+                    b.createdAt
+                      ?.seconds || 0;
+
+                  return (
+                    bTime - aTime
+                  );
+
+                }
+              );
+
+            setOrders(
+              sortedOrders
+            );
+
+          } catch (error) {
+
+            console.error(
+              error
+            );
+
+          } finally {
+
+            setLoading(false);
+
+          }
+
+        }
+      );
+
+    // CLEANUP
+    return () =>
+      unsubscribe();
 
   }, [currentUser]);
 
-  // ORDER TRACKING STEPS
+  // TRACKING STEPS
   const trackingSteps = [
 
-    "Pending",
+    {
+      title:
+        "Pending",
 
-    "Processing",
+      icon:
+        <FaClock />,
 
-    "Packed",
+    },
 
-    "Out for Delivery",
+    {
+      title:
+        "Processing",
 
-    "Delivered",
+      icon:
+        <FaBoxOpen />,
+
+    },
+
+    {
+      title:
+        "Packed",
+
+      icon:
+        <FaCheckCircle />,
+
+    },
+
+    {
+      title:
+        "Out for Delivery",
+
+      icon:
+        <FaTruck />,
+
+    },
+
+    {
+      title:
+        "Delivered",
+
+      icon:
+        <FaHome />,
+
+    },
 
   ];
 
   // STATUS COLORS
-  const getStatusStyle = (
-    status
-  ) => {
+  const getStatusStyle =
+    (status) => {
 
-    switch (status) {
+      switch (status) {
 
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
+        case "Pending":
+          return "bg-yellow-100 text-yellow-700";
 
-      case "Processing":
-        return "bg-blue-100 text-blue-700";
+        case "Processing":
+          return "bg-blue-100 text-blue-700";
 
-      case "Packed":
-        return "bg-indigo-100 text-indigo-700";
+        case "Packed":
+          return "bg-indigo-100 text-indigo-700";
 
-      case "Out for Delivery":
-        return "bg-purple-100 text-purple-700";
+        case "Out for Delivery":
+          return "bg-purple-100 text-purple-700";
 
-      case "Delivered":
-        return "bg-green-100 text-green-700";
+        case "Delivered":
+          return "bg-green-100 text-green-700";
 
-      case "Cancelled":
-        return "bg-red-100 text-red-700";
+        case "Cancelled":
+          return "bg-red-100 text-red-700";
 
-      default:
-        return "bg-gray-100 text-gray-700";
+        default:
+          return "bg-gray-100 text-gray-700";
 
-    }
+      }
 
-  };
+    };
 
   // LOADING
   if (loading) {
@@ -218,8 +275,11 @@ setOrders(sortedOrders);
           {orders.map((order) => {
 
             const currentStep =
-              trackingSteps.indexOf(
-                order.status
+              trackingSteps.findIndex(
+                (step) =>
+
+                  step.title ===
+                  order.status
               );
 
             return (
@@ -260,41 +320,41 @@ setOrders(sortedOrders);
                 </div>
 
                 {/* DATE & TIME */}
-<div className="px-8 pt-6 flex flex-wrap gap-4">
+                <div className="px-8 pt-6 flex flex-wrap gap-4">
 
-  <div className="bg-green-50 px-5 py-3 rounded-2xl">
+                  <div className="bg-green-50 px-5 py-3 rounded-2xl">
 
-    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500">
 
-      Order Date
+                      Order Date
 
-    </p>
+                    </p>
 
-    <h3 className="font-bold text-gray-900">
+                    <h3 className="font-bold text-gray-900">
 
-      {order.orderDate}
+                      {order.orderDate}
 
-    </h3>
+                    </h3>
 
-  </div>
+                  </div>
 
-  <div className="bg-blue-50 px-5 py-3 rounded-2xl">
+                  <div className="bg-blue-50 px-5 py-3 rounded-2xl">
 
-    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500">
 
-      Order Time
+                      Order Time
 
-    </p>
+                    </p>
 
-    <h3 className="font-bold text-gray-900">
+                    <h3 className="font-bold text-gray-900">
 
-      {order.orderTime}
+                      {order.orderTime}
 
-    </h3>
+                    </h3>
 
-  </div>
+                  </div>
 
-</div>
+                </div>
 
                 {/* TRACKING */}
                 {order.status !==
@@ -304,7 +364,7 @@ setOrders(sortedOrders);
 
                     <h2 className="text-3xl font-bold text-gray-900 mb-10">
 
-                      Order Tracking
+                      Live Order Tracking
 
                     </h2>
 
@@ -317,28 +377,30 @@ setOrders(sortedOrders);
                         ) => (
 
                           <div
-                            key={step}
+                            key={
+                              step.title
+                            }
                             className="flex flex-col items-center flex-1 min-w-[120px]"
                           >
 
-                            {/* CIRCLE */}
+                            {/* ICON */}
                             <div
-                              className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
+                              className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold transition duration-300
                               ${
                                 index <=
                                 currentStep
-                                  ? "bg-green-600 text-white"
+                                  ? "bg-green-600 text-white scale-110"
                                   : "bg-gray-200 text-gray-500"
                               }`}
                             >
 
-                              <FaCheckCircle />
+                              {step.icon}
 
                             </div>
 
                             {/* TEXT */}
                             <p
-                              className={`mt-4 text-center font-bold
+                              className={`mt-4 text-center font-bold transition duration-300
                               ${
                                 index <=
                                 currentStep
@@ -347,7 +409,9 @@ setOrders(sortedOrders);
                               }`}
                             >
 
-                              {step}
+                              {
+                                step.title
+                              }
 
                             </p>
 
