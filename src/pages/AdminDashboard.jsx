@@ -7,6 +7,7 @@ import {
   FaRupeeSign,
   FaTruck,
   FaClock,
+  FaChartLine,
 } from "react-icons/fa";
 
 import {
@@ -16,7 +17,7 @@ import {
 
 import {
   collection,
-  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
@@ -29,236 +30,365 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from "recharts";
 
 function AdminDashboard() {
 
-  // PRODUCTS COUNT
+  // STATES
   const [productCount, setProductCount] =
     useState(0);
 
-  // TOTAL ORDERS
   const [orderCount, setOrderCount] =
     useState(0);
 
-  // TOTAL REVENUE
   const [totalRevenue, setTotalRevenue] =
     useState(0);
 
-  // TOTAL CUSTOMERS
   const [customerCount, setCustomerCount] =
     useState(0);
 
-  // DELIVERED ORDERS
   const [deliveredOrders, setDeliveredOrders] =
     useState(0);
 
-  // PENDING ORDERS
   const [pendingOrders, setPendingOrders] =
     useState(0);
 
-  // CHART DATA
+  const [todayRevenue, setTodayRevenue] =
+    useState(0);
+
+  const [averageOrderValue, setAverageOrderValue] =
+    useState(0);
+
   const [chartData, setChartData] =
     useState([]);
 
-  // BEST SELLING PRODUCTS
   const [topProducts, setTopProducts] =
     useState([]);
 
-  // FETCH DASHBOARD DATA
+  const [statusData, setStatusData] =
+    useState([]);
+
+  // COLORS
+  const COLORS = [
+    "#22c55e",
+    "#facc15",
+    "#3b82f6",
+    "#8b5cf6",
+    "#ef4444",
+  ];
+
+  // FETCH REALTIME DATA
   useEffect(() => {
 
-    const fetchDashboardData =
-      async () => {
+    // PRODUCTS
+    const unsubscribeProducts =
+      onSnapshot(
 
-        try {
+        collection(
+          db,
+          "products"
+        ),
 
-          // PRODUCTS
-          const productsSnapshot =
-            await getDocs(
-              collection(db, "products")
-            );
+        (snapshot) => {
 
           setProductCount(
-            productsSnapshot.size
+            snapshot.size
           );
 
-          // ORDERS
-          const ordersSnapshot =
-            await getDocs(
-              collection(db, "orders")
-            );
+        }
+      );
 
-          const orders =
-            ordersSnapshot.docs.map(
-              (doc) => doc.data()
-            );
+    // USERS
+    const unsubscribeUsers =
+      onSnapshot(
 
-          setOrderCount(
-            orders.length
-          );
+        collection(
+          db,
+          "users"
+        ),
 
-          // CUSTOMERS
-          const customersSnapshot =
-            await getDocs(
-              collection(db, "users")
-            );
+        (snapshot) => {
 
           setCustomerCount(
-            customersSnapshot.size
+            snapshot.size
           );
 
-          // REVENUE
-          let revenue = 0;
+        }
+      );
 
-          // STATUS COUNTS
-          let delivered = 0;
+    // ORDERS
+    const unsubscribeOrders =
+      onSnapshot(
 
-          let pending = 0;
+        collection(
+          db,
+          "orders"
+        ),
 
-          // MONTHLY SALES
-          const monthlySales = {};
+        (snapshot) => {
 
-          // TOP PRODUCTS
-          const productSales = {};
+          try {
 
-          orders.forEach((order) => {
+            const orders =
+              snapshot.docs.map(
+                (doc) => doc.data()
+              );
 
-            revenue +=
-              order.finalTotal || 0;
+            setOrderCount(
+              orders.length
+            );
 
-            // ORDER STATUS
-            if (
-              order.status ===
-              "Delivered"
-            ) {
+            let revenue = 0;
 
-              delivered++;
+            let delivered = 0;
 
-            }
+            let pending = 0;
 
-            if (
-              order.status ===
-              "Pending"
-            ) {
+            let todaySales = 0;
 
-              pending++;
+            const monthlySales = {};
 
-            }
+            const productSales = {};
 
-            // MONTHLY SALES
-            if (
-              order.createdAt?.seconds
-            ) {
+            const statusCounts = {
 
-              const date =
-                new Date(
-                  order.createdAt.seconds *
-                    1000
-                );
+              Pending: 0,
 
-              const month =
-                date.toLocaleString(
-                  "default",
-                  {
-                    month: "short",
+              Processing: 0,
+
+              Packed: 0,
+
+              "Out for Delivery": 0,
+
+              Delivered: 0,
+
+              Cancelled: 0,
+
+            };
+
+            const today =
+              new Date().toLocaleDateString(
+                "en-IN"
+              );
+
+            orders.forEach(
+              (order) => {
+
+                revenue +=
+                  order.finalTotal || 0;
+
+                // TODAY REVENUE
+                if (
+                  order.orderDate ===
+                  today
+                ) {
+
+                  todaySales +=
+                    order.finalTotal || 0;
+
+                }
+
+                // STATUS COUNTS
+                if (
+                  order.status ===
+                  "Delivered"
+                ) {
+
+                  delivered++;
+
+                }
+
+                if (
+                  order.status ===
+                  "Pending"
+                ) {
+
+                  pending++;
+
+                }
+
+                // PIE CHART
+                if (
+                  statusCounts[
+                    order.status
+                  ] !== undefined
+                ) {
+
+                  statusCounts[
+                    order.status
+                  ]++;
+
+                }
+
+                // MONTHLY SALES
+                if (
+                  order.createdAt?.seconds
+                ) {
+
+                  const date =
+                    new Date(
+                      order.createdAt.seconds *
+                        1000
+                    );
+
+                  const month =
+                    date.toLocaleString(
+                      "default",
+                      {
+
+                        month: "short",
+
+                      }
+                    );
+
+                  monthlySales[
+                    month
+                  ] =
+                    (monthlySales[
+                      month
+                    ] || 0) +
+                    order.finalTotal;
+
+                }
+
+                // TOP PRODUCTS
+                order.cartItems?.forEach(
+                  (item) => {
+
+                    productSales[
+                      item.name
+                    ] =
+                      (productSales[
+                        item.name
+                      ] || 0) +
+                      item.quantity;
+
                   }
                 );
-
-              monthlySales[month] =
-                (monthlySales[
-                  month
-                ] || 0) +
-                order.finalTotal;
-
-            }
-
-            // TOP PRODUCTS
-            order.cartItems?.forEach(
-              (item) => {
-
-                productSales[
-                  item.name
-                ] =
-                  (productSales[
-                    item.name
-                  ] || 0) +
-                  item.quantity;
 
               }
             );
 
-          });
+            setTotalRevenue(
+              revenue
+            );
 
-          setTotalRevenue(revenue);
+            setDeliveredOrders(
+              delivered
+            );
 
-          setDeliveredOrders(
-            delivered
-          );
+            setPendingOrders(
+              pending
+            );
 
-          setPendingOrders(
-            pending
-          );
+            setTodayRevenue(
+              todaySales
+            );
 
-          // CHART DATA
-          const chartArray =
-            Object.keys(
-              monthlySales
-            ).map((month) => ({
+            setAverageOrderValue(
+              orders.length > 0
+                ? Math.round(
+                    revenue /
+                      orders.length
+                  )
+                : 0
+            );
 
-              month,
+            // BAR CHART
+            const chartArray =
+              Object.keys(
+                monthlySales
+              ).map((month) => ({
 
-              revenue:
-                monthlySales[
-                  month
-                ],
+                month,
 
-            }));
+                revenue:
+                  monthlySales[
+                    month
+                  ],
 
-          setChartData(chartArray);
+              }));
 
-          // TOP PRODUCTS
-          const topProductsArray =
-            Object.entries(
-              productSales
-            )
-              .map(
-                ([
-                  name,
-                  quantity,
-                ]) => ({
+            setChartData(
+              chartArray
+            );
 
-                  name,
-
-                  quantity,
-
-                })
+            // TOP PRODUCTS
+            const topProductsArray =
+              Object.entries(
+                productSales
               )
-              .sort(
-                (a, b) =>
+                .map(
+                  ([
+                    name,
+                    quantity,
+                  ]) => ({
 
-                  b.quantity -
-                  a.quantity
-              )
-              .slice(0, 5);
+                    name,
 
-          setTopProducts(
-            topProductsArray
-          );
+                    quantity,
 
-        } catch (error) {
+                  })
+                )
+                .sort(
+                  (a, b) =>
 
-          console.error(error);
+                    b.quantity -
+                    a.quantity
+                )
+                .slice(0, 5);
+
+            setTopProducts(
+              topProductsArray
+            );
+
+            // PIE DATA
+            const pieData =
+              Object.keys(
+                statusCounts
+              ).map((status) => ({
+
+                name: status,
+
+                value:
+                  statusCounts[
+                    status
+                  ],
+
+              }));
+
+            setStatusData(
+              pieData
+            );
+
+          } catch (error) {
+
+            console.error(
+              error
+            );
+
+          }
 
         }
+      );
 
-      };
+    return () => {
 
-    fetchDashboardData();
+      unsubscribeProducts();
+
+      unsubscribeUsers();
+
+      unsubscribeOrders();
+
+    };
 
   }, []);
 
-  // DASHBOARD STATS
+  // STATS
   const stats = [
 
     {
@@ -287,6 +417,20 @@ function AdminDashboard() {
       value: `₹${totalRevenue}`,
       icon: <FaRupeeSign />,
       color: "bg-orange-500",
+    },
+
+    {
+      title: "Today's Revenue",
+      value: `₹${todayRevenue}`,
+      icon: <FaChartLine />,
+      color: "bg-pink-500",
+    },
+
+    {
+      title: "Average Order",
+      value: `₹${averageOrderValue}`,
+      icon: <FaTruck />,
+      color: "bg-cyan-500",
     },
 
     {
@@ -327,7 +471,7 @@ function AdminDashboard() {
       </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
 
         {stats.map((item, index) => (
 
@@ -342,26 +486,23 @@ function AdminDashboard() {
               y: 0,
             }}
             transition={{
-              delay: index * 0.1,
+              delay: index * 0.05,
             }}
-            className="bg-white rounded-3xl shadow-xl p-8 hover:shadow-2xl transition duration-300"
+            className="bg-white rounded-3xl shadow-xl p-8"
           >
 
-            {/* ICON */}
             <div className={`w-16 h-16 rounded-2xl ${item.color} text-white flex items-center justify-center text-3xl mb-6`}>
 
               {item.icon}
 
             </div>
 
-            {/* TITLE */}
             <h2 className="text-gray-500 text-lg mb-3">
 
               {item.title}
 
             </h2>
 
-            {/* VALUE */}
             <h1 className="text-5xl font-extrabold text-gray-900">
 
               {item.value}
@@ -374,10 +515,10 @@ function AdminDashboard() {
 
       </div>
 
-      {/* CHART + TOP PRODUCTS */}
+      {/* CHARTS */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 mt-14">
 
-        {/* REVENUE CHART */}
+        {/* BAR CHART */}
         <div className="bg-white rounded-3xl shadow-xl p-8">
 
           <h2 className="text-3xl font-bold text-gray-900 mb-10">
@@ -397,13 +538,9 @@ function AdminDashboard() {
                 data={chartData}
               >
 
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                />
+                <CartesianGrid strokeDasharray="3 3" />
 
-                <XAxis
-                  dataKey="month"
-                />
+                <XAxis dataKey="month" />
 
                 <YAxis />
 
@@ -427,56 +564,111 @@ function AdminDashboard() {
 
         </div>
 
-        {/* TOP PRODUCTS */}
+        {/* PIE CHART */}
         <div className="bg-white rounded-3xl shadow-xl p-8">
 
           <h2 className="text-3xl font-bold text-gray-900 mb-10">
 
-            Best Selling Products
+            Order Status Analytics
 
           </h2>
 
-          <div className="space-y-6">
+          <div className="w-full h-[400px]">
 
-            {topProducts.map(
-              (
-                product,
-                index
-              ) => (
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+            >
 
-                <div
-                  key={index}
-                  className="flex justify-between items-center bg-gray-50 rounded-2xl p-5"
+              <PieChart>
+
+                <Pie
+                  data={statusData}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={140}
+                  label
                 >
 
-                  <div>
+                  {statusData.map(
+                    (
+                      entry,
+                      index
+                    ) => (
 
-                    <h3 className="text-xl font-bold text-gray-900">
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          COLORS[
+                            index %
+                              COLORS.length
+                          ]
+                        }
+                      />
 
-                      {product.name}
+                    )
+                  )}
 
-                    </h3>
+                </Pie>
 
-                    <p className="text-gray-500 mt-2">
+                <Tooltip />
 
-                      Total Sold
+                <Legend />
 
-                    </p>
+              </PieChart>
 
-                  </div>
+            </ResponsiveContainer>
 
-                  <div className="text-3xl font-extrabold text-green-700">
+          </div>
 
-                    {product.quantity}
+        </div>
 
-                  </div>
+      </div>
+
+      {/* TOP PRODUCTS */}
+      <div className="bg-white rounded-3xl shadow-xl p-8 mt-14">
+
+        <h2 className="text-3xl font-bold text-gray-900 mb-10">
+
+          Best Selling Products
+
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+          {topProducts.map(
+            (
+              product,
+              index
+            ) => (
+
+              <div
+                key={index}
+                className="bg-gray-50 rounded-2xl p-6"
+              >
+
+                <h3 className="text-2xl font-bold text-gray-900">
+
+                  {product.name}
+
+                </h3>
+
+                <p className="text-gray-500 mt-2">
+
+                  Total Sold
+
+                </p>
+
+                <div className="text-4xl font-extrabold text-green-700 mt-4">
+
+                  {product.quantity}
 
                 </div>
 
-              )
-            )}
+              </div>
 
-          </div>
+            )
+          )}
 
         </div>
 
