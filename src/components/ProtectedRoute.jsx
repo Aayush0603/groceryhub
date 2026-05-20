@@ -2,6 +2,7 @@ import { useContext } from "react";
 
 import {
   Navigate,
+  useLocation,
 } from "react-router-dom";
 
 import {
@@ -15,10 +16,24 @@ function ProtectedRoute({
   const { currentUser } =
     useContext(AuthContext);
 
+  const location =
+    useLocation();
+
   // NOT LOGGED IN
   if (!currentUser) {
 
-    return <Navigate to="/login" />;
+    return (
+
+      <Navigate
+        to="/login"
+        state={{
+          from:
+            location.pathname,
+        }}
+        replace
+      />
+
+    );
 
   }
 

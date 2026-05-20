@@ -1,6 +1,12 @@
-import { useState } from "react";
+import {
+  useState,
+  useContext,
+} from "react";
 
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import { motion } from "framer-motion";
 
@@ -10,40 +16,42 @@ import {
   FaEnvelope,
   FaLock,
   FaArrowLeft,
+  FaPhoneAlt,
 } from "react-icons/fa";
 
 import {
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-
-import {
-  auth,
-  db,
-} from "../firebase/firebase";
-
-import {
-  doc,
-  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
 } from "firebase/firestore";
+
+import { db } from "../firebase/firebase";
+
+import { AuthContext } from "../context/AuthContext";
 
 function Login() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
+
+  const { login } =
+    useContext(AuthContext);
 
   // FORM STATE
   const [formData, setFormData] =
     useState({
 
-      email: "",
+      loginInput: "",
       password: "",
 
     });
 
-  // LOADING STATE
+  // LOADING
   const [loading, setLoading] =
     useState(false);
 
-  // HANDLE INPUT CHANGE
+  // HANDLE CHANGE
   const handleChange = (e) => {
 
     setFormData({
@@ -64,7 +72,7 @@ function Login() {
 
     // VALIDATION
     if (
-      !formData.email ||
+      !formData.loginInput ||
       !formData.password
     ) {
 
@@ -80,57 +88,129 @@ function Login() {
 
       setLoading(true);
 
-      // LOGIN USER
-      const userCredential =
-        await signInWithEmailAndPassword(
-          auth,
-          formData.email,
-          formData.password
-        );
+      let userQuery;
 
-      const user =
-        userCredential.user;
+      // CHECK IF EMAIL
+      if (
+        formData.loginInput.includes(
+          "@"
+        )
+      ) {
 
-      // GET USER DATA
-      const userRef =
-        doc(db, "users", user.uid);
-
-      const userSnap =
-        await getDoc(userRef);
-
-      // CHECK ROLE
-      if (userSnap.exists()) {
-
-        const userData =
-          userSnap.data();
-
-        // SUCCESS TOAST
-        toast.success(
-          "Login Successful"
-        );
-
-        // ADMIN
-        if (
-          userData.role === "admin"
-        ) {
-
-          navigate("/admin");
-
-        } else {
-
-          // CUSTOMER
-          navigate("/");
-
-        }
+        userQuery =
+          query(
+            collection(
+              db,
+              "users"
+            ),
+            where(
+              "email",
+              "==",
+              formData.loginInput
+            )
+          );
 
       }
 
-    } catch (err) {
+      // MOBILE LOGIN
+      else {
 
-      console.error(err);
+        userQuery =
+          query(
+            collection(
+              db,
+              "users"
+            ),
+            where(
+              "phone",
+              "==",
+              formData.loginInput
+            )
+          );
+
+      }
+
+      // GET USER
+      const querySnapshot =
+        await getDocs(
+          userQuery
+        );
+
+      // USER NOT FOUND
+      if (
+        querySnapshot.empty
+      ) {
+
+        toast.error(
+          "User not found"
+        );
+
+        setLoading(false);
+
+        return;
+
+      }
+
+      // USER DATA
+      const userDoc =
+        querySnapshot.docs[0];
+
+      const userData =
+        {
+
+          uid:
+            userDoc.id,
+
+          ...userDoc.data(),
+
+        };
+
+      // PASSWORD CHECK
+      if (
+        userData.password !==
+        formData.password
+      ) {
+
+        toast.error(
+          "Invalid password"
+        );
+
+        setLoading(false);
+
+        return;
+
+      }
+
+      // LOGIN USER
+      login(userData);
+
+      toast.success(
+        "Login Successful"
+      );
+
+      // ADMIN
+      if (
+        userData.role ===
+        "admin"
+      ) {
+
+        navigate("/admin");
+
+      }
+
+      // CUSTOMER
+      else {
+
+        navigate("/");
+
+      }
+
+    } catch (error) {
+
+      console.error(error);
 
       toast.error(
-        "Invalid email or password"
+        "Login Failed"
       );
 
     } finally {
@@ -180,8 +260,8 @@ function Login() {
 
           <p className="text-gray-600 text-lg">
 
-            Login to continue shopping
-            with GroceryHub.
+            Login using mobile number
+            or email.
 
           </p>
 
@@ -193,26 +273,35 @@ function Login() {
           className="space-y-6"
         >
 
-          {/* EMAIL */}
+          {/* LOGIN INPUT */}
           <div>
 
             <label className="block text-gray-700 font-semibold mb-3">
 
-              Email Address
+              Mobile Number / Email
 
             </label>
 
             <div className="flex items-center border border-gray-200 rounded-2xl px-4">
 
-              <FaEnvelope className="text-green-600" />
+              {formData.loginInput.includes(
+                "@"
+              ) ? (
+
+                <FaEnvelope className="text-green-600" />
+
+              ) : (
+
+                <FaPhoneAlt className="text-green-600" />
+
+              )}
 
               <input
-                type="email"
-                name="email"
-                placeholder="Enter email address"
-                value={formData.email}
+                type="text"
+                name="loginInput"
+                placeholder="Enter mobile number or email"
+                value={formData.loginInput}
                 onChange={handleChange}
-                required
                 className="w-full p-4 outline-none rounded-2xl"
               />
 
@@ -239,7 +328,6 @@ function Login() {
                 placeholder="Enter password"
                 value={formData.password}
                 onChange={handleChange}
-                required
                 className="w-full p-4 outline-none rounded-2xl"
               />
 
@@ -256,8 +344,7 @@ function Login() {
 
             {loading
               ? "Logging In..."
-              : "Login"
-            }
+              : "Login"}
 
           </button>
 
@@ -284,6 +371,7 @@ function Login() {
     </section>
 
   );
+
 }
 
 export default Login;

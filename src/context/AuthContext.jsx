@@ -4,48 +4,89 @@ import {
   useState,
 } from "react";
 
-import {
-  onAuthStateChanged,
-} from "firebase/auth";
-
-import { auth } from "../firebase/firebase";
-
 // CREATE CONTEXT
 export const AuthContext =
   createContext();
 
 function AuthProvider({ children }) {
 
+  // CURRENT USER
   const [currentUser, setCurrentUser] =
     useState(null);
 
+  // LOADING
   const [loading, setLoading] =
     useState(true);
 
-  // CHECK USER SESSION
+  // CHECK SAVED SESSION
   useEffect(() => {
 
-    const unsubscribe =
-      onAuthStateChanged(
-        auth,
-        (user) => {
+    try {
 
-          setCurrentUser(user);
+      const savedUser =
+        localStorage.getItem(
+          "grocery-user"
+        );
 
-          setLoading(false);
+      if (savedUser) {
 
-        }
-      );
+        setCurrentUser(
+          JSON.parse(savedUser)
+        );
 
-    return unsubscribe;
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
+    } finally {
+
+      setLoading(false);
+
+    }
 
   }, []);
+
+  // LOGIN USER
+  const login = (userData) => {
+
+    setCurrentUser(userData);
+
+    localStorage.setItem(
+      "grocery-user",
+      JSON.stringify(userData)
+    );
+
+  };
+
+  // LOGOUT USER
+  const logout = () => {
+
+    setCurrentUser(null);
+
+    localStorage.removeItem(
+      "grocery-user"
+    );
+
+    // CLEAR CART ALSO
+    localStorage.removeItem(
+      "grocery-cart"
+    );
+
+  };
 
   return (
 
     <AuthContext.Provider
       value={{
+
         currentUser,
+
+        login,
+
+        logout,
+
       }}
     >
 
@@ -54,6 +95,7 @@ function AuthProvider({ children }) {
     </AuthContext.Provider>
 
   );
+
 }
 
 export default AuthProvider;

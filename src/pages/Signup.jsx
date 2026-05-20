@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 
 import { Link, useNavigate } from "react-router-dom";
 
@@ -17,20 +17,24 @@ import {
 } from "react-icons/fa";
 
 import {
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-
-import {
-  doc,
-  setDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
   serverTimestamp,
 } from "firebase/firestore";
 
-import { auth, db } from "../firebase/firebase";
+import { db } from "../firebase/firebase";
+
+import { AuthContext } from "../context/AuthContext";
 
 function Signup() {
 
   const navigate = useNavigate();
+
+  const { login } =
+    useContext(AuthContext);
 
   // FORM STATE
   const [formData, setFormData] =
@@ -44,7 +48,7 @@ function Signup() {
 
     });
 
-  // LOADING STATE
+  // LOADING
   const [loading, setLoading] =
     useState(false);
 
@@ -57,7 +61,7 @@ function Signup() {
     setShowConfirmPassword,
   ] = useState(false);
 
-  // HANDLE INPUT CHANGE
+  // HANDLE CHANGE
   const handleChange = (e) => {
 
     setFormData({
@@ -71,22 +75,21 @@ function Signup() {
 
   };
 
-  // HANDLE SIGNUP
+  // SIGNUP
   const handleSignup = async (e) => {
 
     e.preventDefault();
 
-    // EMPTY VALIDATION
+    // REQUIRED FIELDS
     if (
       !formData.name ||
       !formData.phone ||
-      !formData.email ||
       !formData.password ||
       !formData.confirmPassword
     ) {
 
       toast.error(
-        "Please fill all fields"
+        "Please fill required fields"
       );
 
       return;
@@ -119,7 +122,7 @@ function Signup() {
 
     }
 
-    // PASSWORD MATCH CHECK
+    // PASSWORD MATCH
     if (
       formData.password !==
       formData.confirmPassword
@@ -137,39 +140,127 @@ function Signup() {
 
       setLoading(true);
 
-      // CREATE USER
-      const userCredential =
-        await createUserWithEmailAndPassword(
-          auth,
-          formData.email,
-          formData.password
+      // CHECK DUPLICATE PHONE
+      const phoneQuery =
+        query(
+          collection(db, "users"),
+          where(
+            "phone",
+            "==",
+            formData.phone
+          )
         );
 
-      const user =
-        userCredential.user;
+      const phoneSnapshot =
+        await getDocs(
+          phoneQuery
+        );
 
-      // SAVE USER DATA
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
+      if (
+        !phoneSnapshot.empty
+      ) {
 
-          uid: user.uid,
+        toast.error(
+          "Phone number already registered"
+        );
 
-          name: formData.name,
+        setLoading(false);
 
-          phone: formData.phone,
+        return;
 
-          email: formData.email,
+      }
 
-          role: "customer",
+      // CHECK DUPLICATE EMAIL
+      if (formData.email) {
 
-          createdAt:
-            serverTimestamp(),
+        const emailQuery =
+          query(
+            collection(
+              db,
+              "users"
+            ),
+            where(
+              "email",
+              "==",
+              formData.email
+            )
+          );
+
+        const emailSnapshot =
+          await getDocs(
+            emailQuery
+          );
+
+        if (
+          !emailSnapshot.empty
+        ) {
+
+          toast.error(
+            "Email already registered"
+          );
+
+          setLoading(false);
+
+          return;
 
         }
-      );
 
-      // SUCCESS TOAST
+      }
+
+      // SAVE USER
+      const docRef =
+        await addDoc(
+          collection(
+            db,
+            "users"
+          ),
+          {
+
+            name:
+              formData.name,
+
+            phone:
+              formData.phone,
+
+            email:
+              formData.email ||
+              "",
+
+            password:
+              formData.password,
+
+            role:
+              "customer",
+
+            createdAt:
+              serverTimestamp(),
+
+          }
+        );
+
+      // USER DATA
+      const userData = {
+
+        uid: docRef.id,
+
+        name:
+          formData.name,
+
+        phone:
+          formData.phone,
+
+        email:
+          formData.email ||
+          "",
+
+        role:
+          "customer",
+
+      };
+
+      // LOGIN USER
+      login(userData);
+
       toast.success(
         "Account Created Successfully"
       );
@@ -177,12 +268,12 @@ function Signup() {
       // REDIRECT
       navigate("/");
 
-    } catch (err) {
+    } catch (error) {
 
-      console.error(err);
+      console.error(error);
 
       toast.error(
-        err.message
+        "Failed to create account"
       );
 
     } finally {
@@ -233,7 +324,7 @@ function Signup() {
           <p className="text-gray-600 text-lg">
 
             Join GroceryHub and
-            start ordering fresh groceries.
+            start ordering groceries.
 
           </p>
 
@@ -250,7 +341,7 @@ function Signup() {
 
             <label className="block text-gray-700 font-semibold mb-3">
 
-              Full Name
+              Full Name *
 
             </label>
 
@@ -264,7 +355,6 @@ function Signup() {
                 placeholder="Enter your name"
                 value={formData.name}
                 onChange={handleChange}
-                required
                 className="w-full p-4 outline-none rounded-2xl"
               />
 
@@ -277,7 +367,7 @@ function Signup() {
 
             <label className="block text-gray-700 font-semibold mb-3">
 
-              Phone Number
+              Mobile Number *
 
             </label>
 
@@ -288,10 +378,31 @@ function Signup() {
               <input
                 type="text"
                 name="phone"
-                placeholder="Enter phone number"
+                placeholder="Enter mobile number"
                 value={formData.phone}
-                onChange={handleChange}
-                required
+                onChange={(e) => {
+
+                  const value =
+                    e.target.value.replace(
+                      /\D/g,
+                      ""
+                    );
+
+                  if (
+                    value.length <= 10
+                  ) {
+
+                    setFormData({
+
+                      ...formData,
+
+                      phone: value,
+
+                    });
+
+                  }
+
+                }}
                 className="w-full p-4 outline-none rounded-2xl"
               />
 
@@ -305,6 +416,8 @@ function Signup() {
             <label className="block text-gray-700 font-semibold mb-3">
 
               Email Address
+              {" "}
+              (Optional)
 
             </label>
 
@@ -318,7 +431,6 @@ function Signup() {
                 placeholder="Enter email address"
                 value={formData.email}
                 onChange={handleChange}
-                required
                 className="w-full p-4 outline-none rounded-2xl"
               />
 
@@ -331,7 +443,7 @@ function Signup() {
 
             <label className="block text-gray-700 font-semibold mb-3">
 
-              Password
+              Password *
 
             </label>
 
@@ -349,7 +461,6 @@ function Signup() {
                 placeholder="Enter password"
                 value={formData.password}
                 onChange={handleChange}
-                required
                 className="w-full p-4 outline-none rounded-2xl"
               />
 
@@ -379,7 +490,7 @@ function Signup() {
 
             <label className="block text-gray-700 font-semibold mb-3">
 
-              Confirm Password
+              Confirm Password *
 
             </label>
 
@@ -397,7 +508,6 @@ function Signup() {
                 placeholder="Confirm password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                required
                 className="w-full p-4 outline-none rounded-2xl"
               />
 
@@ -431,8 +541,7 @@ function Signup() {
 
             {loading
               ? "Creating Account..."
-              : "Create Account"
-            }
+              : "Create Account"}
 
           </button>
 
@@ -459,6 +568,7 @@ function Signup() {
     </section>
 
   );
+
 }
 
 export default Signup;
