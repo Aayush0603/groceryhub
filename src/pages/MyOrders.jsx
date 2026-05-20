@@ -7,7 +7,15 @@ import {
 import {
   collection,
   onSnapshot,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
+
+import toast from "react-hot-toast";
+
+import jsPDF from "jspdf";
+
+import autoTable from "jspdf-autotable";
 
 import {
   db,
@@ -22,6 +30,7 @@ import {
   FaTruck,
   FaHome,
   FaClock,
+  FaFileInvoice,
 } from "react-icons/fa";
 
 function MyOrders() {
@@ -33,6 +42,12 @@ function MyOrders() {
   // ORDERS
   const [orders, setOrders] =
     useState([]);
+
+  // PREVIOUS ORDERS
+  const [
+    previousOrders,
+    setPreviousOrders,
+  ] = useState([]);
 
   // LOADING
   const [loading, setLoading] =
@@ -102,6 +117,37 @@ function MyOrders() {
                 }
               );
 
+            // STATUS NOTIFICATIONS
+            sortedOrders.forEach(
+              (newOrder) => {
+
+                const oldOrder =
+                  previousOrders.find(
+                    (item) =>
+
+                      item.id ===
+                      newOrder.id
+                  );
+
+                if (
+                  oldOrder &&
+                  oldOrder.status !==
+                    newOrder.status
+                ) {
+
+                  toast.success(
+                    `Your order is now ${newOrder.status}`
+                  );
+
+                }
+
+              }
+            );
+
+            setPreviousOrders(
+              sortedOrders
+            );
+
             setOrders(
               sortedOrders
             );
@@ -121,11 +167,134 @@ function MyOrders() {
         }
       );
 
-    // CLEANUP
     return () =>
       unsubscribe();
 
-  }, [currentUser]);
+  }, [
+    currentUser,
+    previousOrders,
+  ]);
+
+  // DOWNLOAD PDF INVOICE
+  const downloadInvoice =
+    (order) => {
+
+      const docPDF =
+        new jsPDF();
+
+      // TITLE
+      docPDF.setFontSize(22);
+
+      docPDF.text(
+        "GroceryHub Invoice",
+        20,
+        20
+      );
+
+      // ORDER INFO
+      docPDF.setFontSize(12);
+
+      docPDF.text(
+        `Order ID: ${order.id}`,
+        20,
+        40
+      );
+
+      docPDF.text(
+        `Date: ${order.orderDate}`,
+        20,
+        50
+      );
+
+      docPDF.text(
+        `Time: ${order.orderTime}`,
+        20,
+        60
+      );
+
+      docPDF.text(
+        `Customer: ${order.customerInfo?.name}`,
+        20,
+        70
+      );
+
+      docPDF.text(
+        `Phone: ${order.customerInfo?.phone}`,
+        20,
+        80
+      );
+
+      docPDF.text(
+        `Payment Method: ${order.paymentMethod}`,
+        20,
+        90
+      );
+
+      docPDF.text(
+        `Status: ${order.status}`,
+        20,
+        100
+      );
+
+      // PRODUCTS TABLE
+      const tableData =
+        order.cartItems.map(
+          (item) => [
+
+            item.name,
+
+            item.quantity,
+
+            `₹${item.price}`,
+
+            `₹${item.price * item.quantity}`,
+
+          ]
+        );
+
+      autoTable(
+        docPDF,
+
+        {
+
+          startY: 120,
+
+          head: [[
+
+            "Product",
+
+            "Qty",
+
+            "Price",
+
+            "Total",
+
+          ]],
+
+          body: tableData,
+
+        }
+      );
+
+      // FINAL TOTAL
+      docPDF.setFontSize(18);
+
+      docPDF.text(
+
+        `Final Total: ₹${order.finalTotal}`,
+
+        20,
+
+        docPDF.lastAutoTable.finalY + 20
+
+      );
+
+      // SAVE PDF
+      docPDF.save(
+        `invoice-${order.id}.pdf`
+      );
+
+    };
 
   // TRACKING STEPS
   const trackingSteps = [
@@ -208,6 +377,50 @@ function MyOrders() {
 
     };
 
+  // CANCEL ORDER
+  const cancelOrder =
+    async (orderId) => {
+
+      try {
+
+        await updateDoc(
+
+          doc(
+            db,
+            "orders",
+            orderId
+          ),
+
+          {
+
+            status:
+              "Cancelled",
+
+            estimatedDelivery:
+              "Cancelled",
+
+          }
+
+        );
+
+        toast.success(
+          "Order Cancelled"
+        );
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+        toast.error(
+          "Failed to cancel order"
+        );
+
+      }
+
+    };
+
   // LOADING
   if (loading) {
 
@@ -238,12 +451,6 @@ function MyOrders() {
 
           </h1>
 
-          <p className="text-gray-600 mt-4 text-lg">
-
-            Track your grocery orders live.
-
-          </p>
-
         </div>
 
         {/* EMPTY */}
@@ -258,12 +465,6 @@ function MyOrders() {
               No Orders Found
 
             </h2>
-
-            <p className="text-gray-500 mt-4 text-lg">
-
-              Place an order to see it here.
-
-            </p>
 
           </div>
 
@@ -308,7 +509,6 @@ function MyOrders() {
 
                   </div>
 
-                  {/* STATUS */}
                   <div
                     className={`px-6 py-3 rounded-2xl font-bold text-lg ${getStatusStyle(order.status)}`}
                   >
@@ -319,122 +519,88 @@ function MyOrders() {
 
                 </div>
 
-                {/* DATE & TIME */}
-                <div className="px-8 pt-6 flex flex-wrap gap-4">
+                {/* CONTENT */}
+                <div className="p-8">
 
-                  <div className="bg-green-50 px-5 py-3 rounded-2xl">
+                  {/* ETA */}
+                  <div className="bg-orange-50 px-5 py-4 rounded-2xl mb-8">
 
                     <p className="text-sm text-gray-500">
 
-                      Order Date
+                      Estimated Delivery
 
                     </p>
 
-                    <h3 className="font-bold text-gray-900">
+                    <h3 className="font-bold text-orange-700 text-2xl">
 
-                      {order.orderDate}
+                      {order.estimatedDelivery ||
+                        "45 mins"}
 
                     </h3>
 
                   </div>
 
-                  <div className="bg-blue-50 px-5 py-3 rounded-2xl">
+                  {/* TRACKING */}
+                  {order.status !==
+                    "Cancelled" && (
 
-                    <p className="text-sm text-gray-500">
+                    <div className="mb-10">
 
-                      Order Time
+                      <h2 className="text-3xl font-bold text-gray-900 mb-10">
 
-                    </p>
+                        Live Order Tracking
 
-                    <h3 className="font-bold text-gray-900">
+                      </h2>
 
-                      {order.orderTime}
+                      <div className="flex flex-wrap justify-between gap-6">
 
-                    </h3>
+                        {trackingSteps.map(
+                          (
+                            step,
+                            index
+                          ) => (
 
-                  </div>
-
-                </div>
-
-                {/* TRACKING */}
-                {order.status !==
-                  "Cancelled" && (
-
-                  <div className="px-8 py-10 border-b border-gray-200">
-
-                    <h2 className="text-3xl font-bold text-gray-900 mb-10">
-
-                      Live Order Tracking
-
-                    </h2>
-
-                    <div className="flex flex-wrap justify-between gap-6">
-
-                      {trackingSteps.map(
-                        (
-                          step,
-                          index
-                        ) => (
-
-                          <div
-                            key={
-                              step.title
-                            }
-                            className="flex flex-col items-center flex-1 min-w-[120px]"
-                          >
-
-                            {/* ICON */}
                             <div
-                              className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold transition duration-300
-                              ${
-                                index <=
-                                currentStep
-                                  ? "bg-green-600 text-white scale-110"
-                                  : "bg-gray-200 text-gray-500"
-                              }`}
+                              key={
+                                step.title
+                              }
+                              className="flex flex-col items-center flex-1 min-w-[120px]"
                             >
 
-                              {step.icon}
+                              <div
+                                className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl
+                                ${
+                                  index <=
+                                  currentStep
+                                    ? "bg-green-600 text-white"
+                                    : "bg-gray-200 text-gray-500"
+                                }`}
+                              >
+
+                                {step.icon}
+
+                              </div>
+
+                              <p className="mt-4 font-bold text-center">
+
+                                {
+                                  step.title
+                                }
+
+                              </p>
 
                             </div>
 
-                            {/* TEXT */}
-                            <p
-                              className={`mt-4 text-center font-bold transition duration-300
-                              ${
-                                index <=
-                                currentStep
-                                  ? "text-green-700"
-                                  : "text-gray-500"
-                              }`}
-                            >
+                          )
+                        )}
 
-                              {
-                                step.title
-                              }
-
-                            </p>
-
-                          </div>
-
-                        )
-                      )}
+                      </div>
 
                     </div>
 
-                  </div>
+                  )}
 
-                )}
-
-                {/* PRODUCTS */}
-                <div className="p-8">
-
-                  <h2 className="text-3xl font-bold text-gray-900 mb-8">
-
-                    Ordered Products
-
-                  </h2>
-
+                  {/* PRODUCTS */}
                   <div className="space-y-5">
 
                     {order.cartItems?.map(
@@ -442,18 +608,18 @@ function MyOrders() {
 
                         <div
                           key={item.id}
-                          className="bg-gray-50 rounded-2xl p-6 flex flex-col lg:flex-row justify-between gap-5"
+                          className="bg-gray-50 rounded-2xl p-6 flex justify-between"
                         >
 
                           <div>
 
-                            <h3 className="text-2xl font-bold text-gray-900">
+                            <h3 className="text-2xl font-bold">
 
                               {item.name}
 
                             </h3>
 
-                            <p className="text-gray-500 mt-2 text-lg">
+                            <p className="text-gray-500 mt-2">
 
                               Quantity:
                               {" "}
@@ -463,7 +629,7 @@ function MyOrders() {
 
                           </div>
 
-                          <div className="text-green-700 font-extrabold text-3xl">
+                          <div className="text-3xl font-extrabold text-green-700">
 
                             ₹
                             {item.price *
@@ -492,6 +658,49 @@ function MyOrders() {
                       ₹{order.finalTotal}
 
                     </h2>
+
+                  </div>
+
+                  {/* BUTTONS */}
+                  <div className="mt-8 flex flex-col lg:flex-row gap-5">
+
+                    {/* INVOICE */}
+                    <button
+                      onClick={() =>
+                        downloadInvoice(
+                          order
+                        )
+                      }
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl text-xl font-bold flex items-center justify-center gap-3 transition duration-300"
+                    >
+
+                      <FaFileInvoice />
+
+                      Download Invoice
+
+                    </button>
+
+                    {/* CANCEL */}
+                    {(order.status ===
+                      "Pending" ||
+
+                      order.status ===
+                        "Processing") && (
+
+                      <button
+                        onClick={() =>
+                          cancelOrder(
+                            order.id
+                          )
+                        }
+                        className="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl text-xl font-bold transition duration-300"
+                      >
+
+                        Cancel Order
+
+                      </button>
+
+                    )}
 
                   </div>
 
