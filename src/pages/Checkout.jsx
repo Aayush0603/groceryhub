@@ -219,7 +219,29 @@ function Checkout() {
               "Pending",
 
             createdAt:
-              serverTimestamp(),
+  serverTimestamp(),
+
+orderDate:
+  new Date().toLocaleDateString(
+    "en-IN",
+    {
+
+      timeZone:
+        "Asia/Kolkata",
+
+    }
+  ),
+
+orderTime:
+  new Date().toLocaleTimeString(
+    "en-IN",
+    {
+
+      timeZone:
+        "Asia/Kolkata",
+
+    }
+  ),
 
           }
         );

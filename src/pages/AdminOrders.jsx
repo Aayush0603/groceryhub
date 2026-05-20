@@ -18,6 +18,8 @@ import {
   FaPhoneAlt,
   FaMapMarkerAlt,
   FaMoneyBillWave,
+  FaCalendarAlt,
+  FaClock,
 } from "react-icons/fa";
 
 function AdminOrders() {
@@ -26,9 +28,13 @@ function AdminOrders() {
   const [orders, setOrders] =
     useState([]);
 
-  // FILTER
+  // STATUS FILTER
   const [statusFilter, setStatusFilter] =
     useState("All");
+
+  // DATE FILTER
+  const [selectedDate, setSelectedDate] =
+    useState("");
 
   // LOADING
   const [loading, setLoading] =
@@ -53,7 +59,23 @@ function AdminOrders() {
 
         }));
 
-      setOrders(fetchedOrders);
+      // LATEST ORDER FIRST
+      const sortedOrders =
+        fetchedOrders.sort(
+          (a, b) => {
+
+            const aTime =
+              a.createdAt?.seconds || 0;
+
+            const bTime =
+              b.createdAt?.seconds || 0;
+
+            return bTime - aTime;
+
+          }
+        );
+
+      setOrders(sortedOrders);
 
     } catch (error) {
 
@@ -100,15 +122,38 @@ function AdminOrders() {
 
   };
 
-  // FILTERED ORDERS
+  // FILTER ORDERS
   const filteredOrders =
-    statusFilter === "All"
-      ? orders
-      : orders.filter(
-          (order) =>
-            order.status ===
-            statusFilter
-        );
+    orders.filter((order) => {
+
+      // STATUS FILTER
+      const matchesStatus =
+        statusFilter === "All"
+          ? true
+          : order.status ===
+            statusFilter;
+
+      // DATE FILTER
+      const matchesDate =
+        selectedDate === ""
+          ? true
+          : order.orderDate ===
+            new Date(
+              selectedDate
+            ).toLocaleDateString(
+              "en-IN"
+            );
+
+      return (
+        matchesStatus &&
+        matchesDate
+      );
+
+    });
+
+  // TOTAL ORDERS TODAY
+  const totalOrders =
+    filteredOrders.length;
 
   // STATUS COLORS
   const getStatusStyle = (
@@ -124,7 +169,7 @@ function AdminOrders() {
         return "bg-blue-100 text-blue-700";
 
       case "Packed":
-        return "bg-indigo-100 text-indigo-700";  
+        return "bg-indigo-100 text-indigo-700";
 
       case "Out for Delivery":
         return "bg-purple-100 text-purple-700";
@@ -180,39 +225,99 @@ function AdminOrders() {
 
         </div>
 
-        {/* FILTER BUTTONS */}
-        <div className="flex flex-wrap gap-4">
+        {/* DATE FILTER */}
+        <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col gap-4">
 
-          {[
-            "All",
-            "Pending",
-            "Processing",
-            "Packed",
-            "Out for Delivery",
-            "Delivered",
-            "Cancelled",
-          ].map((status) => (
+          <label className="font-bold text-gray-700">
+
+            Filter By Date
+
+          </label>
+
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) =>
+              setSelectedDate(
+                e.target.value
+              )
+            }
+            className="border border-gray-300 rounded-xl px-4 py-3 outline-none"
+          />
+
+          {selectedDate && (
 
             <button
-              key={status}
               onClick={() =>
-                setStatusFilter(status)
+                setSelectedDate("")
               }
-              className={`px-5 py-3 rounded-2xl font-bold transition duration-300
-              ${
-                statusFilter === status
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-200"
-              }`}
+              className="bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl font-bold transition duration-300"
             >
 
-              {status}
+              Clear Filter
 
             </button>
 
-          ))}
+          )}
 
         </div>
+
+      </div>
+
+      {/* TOTAL ORDERS */}
+      <div className="bg-white rounded-3xl shadow-xl p-8 mb-10 flex justify-between items-center">
+
+        <div>
+
+          <h2 className="text-gray-500 text-xl">
+
+            Total Orders
+
+          </h2>
+
+          <h1 className="text-5xl font-extrabold text-gray-900 mt-3">
+
+            {totalOrders}
+
+          </h1>
+
+        </div>
+
+        <FaShoppingBag className="text-6xl text-green-600" />
+
+      </div>
+
+      {/* FILTER BUTTONS */}
+      <div className="flex flex-wrap gap-4 mb-10">
+
+        {[
+          "All",
+          "Pending",
+          "Processing",
+          "Packed",
+          "Out for Delivery",
+          "Delivered",
+          "Cancelled",
+        ].map((status) => (
+
+          <button
+            key={status}
+            onClick={() =>
+              setStatusFilter(status)
+            }
+            className={`px-5 py-3 rounded-2xl font-bold transition duration-300
+            ${
+              statusFilter === status
+                ? "bg-gray-900 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+
+            {status}
+
+          </button>
+
+        ))}
 
       </div>
 
@@ -231,7 +336,7 @@ function AdminOrders() {
 
           <p className="text-gray-500 mt-4">
 
-            No orders available for this filter.
+            No orders available.
 
           </p>
 
@@ -304,7 +409,7 @@ function AdminOrders() {
 
                   <option>
 
-                   Packed
+                    Packed
 
                   </option>
 
@@ -334,6 +439,55 @@ function AdminOrders() {
 
             {/* CONTENT */}
             <div className="p-8">
+
+              {/* DATE & TIME */}
+              <div className="flex flex-wrap gap-6 mb-8">
+
+                <div className="bg-green-50 rounded-2xl px-6 py-4 flex items-center gap-4">
+
+                  <FaCalendarAlt className="text-green-700 text-2xl" />
+
+                  <div>
+
+                    <p className="text-gray-500">
+
+                      Order Date
+
+                    </p>
+
+                    <h3 className="font-bold text-lg">
+
+                      {order.orderDate}
+
+                    </h3>
+
+                  </div>
+
+                </div>
+
+                <div className="bg-blue-50 rounded-2xl px-6 py-4 flex items-center gap-4">
+
+                  <FaClock className="text-blue-700 text-2xl" />
+
+                  <div>
+
+                    <p className="text-gray-500">
+
+                      Order Time
+
+                    </p>
+
+                    <h3 className="font-bold text-lg">
+
+                      {order.orderTime}
+
+                    </h3>
+
+                  </div>
+
+                </div>
+
+              </div>
 
               {/* CUSTOMER INFO */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
