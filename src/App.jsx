@@ -11,14 +11,13 @@ import {
 import {
   useEffect,
   useState,
+  useContext,
 } from "react";
 
 import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
-
-import { useContext } from "react";
 
 import { signOut } from "firebase/auth";
 
@@ -48,6 +47,8 @@ import Signup from "./pages/Signup";
 
 import AdminDashboard from "./pages/AdminDashboard";
 
+import AdminAnalytics from "./pages/AdminAnalytics";
+
 import AdminProducts from "./pages/AdminProducts";
 
 import AdminOrders from "./pages/AdminOrders";
@@ -57,8 +58,6 @@ import AdminCustomers from "./pages/AdminCustomers";
 import MyOrders from "./pages/MyOrders";
 
 import Profile from "./pages/Profile";
-
-import AdminAnalytics from "./pages/AdminAnalytics";
 
 import { CartContext } from "./context/CartContext";
 
@@ -84,40 +83,49 @@ function CustomerLayout() {
 // ADMIN LAYOUT
 function AdminLayout() {
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const { setCartItems } =
-  useContext(CartContext);
+  const {
+    setCartItems,
+  } = useContext(
+    CartContext
+  );
 
   // MOBILE SIDEBAR
-  const [sidebarOpen, setSidebarOpen] =
-    useState(false);
+  const [
+    sidebarOpen,
+    setSidebarOpen,
+  ] = useState(false);
 
-  const handleLogout = async () => {
+  // LOGOUT
+  const handleLogout =
+    async () => {
 
-  try {
+      try {
 
-    // CLEAR CART STATE
-    setCartItems([]);
+        // CLEAR CART
+        setCartItems([]);
 
-    // CLEAR LOCAL STORAGE
-    localStorage.removeItem(
-      "grocery-cart"
-    );
+        localStorage.removeItem(
+          "grocery-cart"
+        );
 
-    await signOut(auth);
+        await signOut(auth);
 
-    navigate("/login");
+        navigate("/login");
 
-  } catch (error) {
+      } catch (error) {
 
-    console.error(error);
+        console.error(error);
 
-  }
+      }
 
-};
+    };
+
   // ACTIVE LINK STYLE
   const activeClass =
     "bg-gray-800 text-white";
@@ -135,7 +143,9 @@ function AdminLayout() {
 
         <div
           onClick={() =>
-            setSidebarOpen(false)
+            setSidebarOpen(
+              false
+            )
           }
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
         />
@@ -147,37 +157,36 @@ function AdminLayout() {
         className={`fixed top-0 left-0 h-screen w-72 bg-gray-900 text-white p-8 flex flex-col z-50 transform transition-transform duration-300
         ${
           sidebarOpen
+
             ? "translate-x-0"
+
             : "-translate-x-full lg:translate-x-0"
         }`}
       >
 
-        {/* TOP */}
-        <div>
+        {/* LOGO */}
+        <div className="mb-12">
 
-          {/* LOGO */}
-<div className="mb-12">
+          <h1 className="text-4xl font-extrabold text-green-400 leading-tight">
 
-  <h1 className="text-4xl font-extrabold text-green-400 leading-tight">
+            GroceryHub
 
-    GroceryHub
+          </h1>
 
-  </h1>
+          <p className="text-gray-400 text-lg mt-2">
 
-  <p className="text-gray-400 text-lg mt-2">
+            Admin Panel
 
-    Admin Panel
-
-  </p>
-
-</div>
+          </p>
 
         </div>
 
         {/* CLOSE BUTTON */}
         <button
           onClick={() =>
-            setSidebarOpen(false)
+            setSidebarOpen(
+              false
+            )
           }
           className="lg:hidden absolute top-8 right-8 text-2xl"
         >
@@ -193,12 +202,17 @@ function AdminLayout() {
           <Link
             to="/admin"
             onClick={() =>
-              setSidebarOpen(false)
+              setSidebarOpen(
+                false
+              )
             }
             className={`block px-5 py-4 rounded-2xl transition duration-300 text-lg font-semibold
             ${
-              location.pathname === "/admin"
+              location.pathname ===
+              "/admin"
+
                 ? activeClass
+
                 : normalClass
             }`}
           >
@@ -207,17 +221,44 @@ function AdminLayout() {
 
           </Link>
 
+          {/* ANALYTICS */}
+          <Link
+            to="/admin/analytics"
+            onClick={() =>
+              setSidebarOpen(
+                false
+              )
+            }
+            className={`block px-5 py-4 rounded-2xl transition duration-300 text-lg font-semibold
+            ${
+              location.pathname ===
+              "/admin/analytics"
+
+                ? activeClass
+
+                : normalClass
+            }`}
+          >
+
+            📈 Analytics
+
+          </Link>
+
           {/* PRODUCTS */}
           <Link
             to="/admin/products"
             onClick={() =>
-              setSidebarOpen(false)
+              setSidebarOpen(
+                false
+              )
             }
             className={`block px-5 py-4 rounded-2xl transition duration-300 text-lg font-semibold
             ${
               location.pathname ===
               "/admin/products"
+
                 ? activeClass
+
                 : normalClass
             }`}
           >
@@ -230,13 +271,17 @@ function AdminLayout() {
           <Link
             to="/admin/orders"
             onClick={() =>
-              setSidebarOpen(false)
+              setSidebarOpen(
+                false
+              )
             }
             className={`block px-5 py-4 rounded-2xl transition duration-300 text-lg font-semibold
             ${
               location.pathname ===
               "/admin/orders"
+
                 ? activeClass
+
                 : normalClass
             }`}
           >
@@ -249,13 +294,17 @@ function AdminLayout() {
           <Link
             to="/admin/customers"
             onClick={() =>
-              setSidebarOpen(false)
+              setSidebarOpen(
+                false
+              )
             }
             className={`block px-5 py-4 rounded-2xl transition duration-300 text-lg font-semibold
             ${
               location.pathname ===
               "/admin/customers"
+
                 ? activeClass
+
                 : normalClass
             }`}
           >
@@ -270,7 +319,9 @@ function AdminLayout() {
         <div className="mt-auto">
 
           <button
-            onClick={handleLogout}
+            onClick={
+              handleLogout
+            }
             className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-bold text-lg transition duration-300"
           >
 
@@ -291,7 +342,9 @@ function AdminLayout() {
           {/* MENU BUTTON */}
           <button
             onClick={() =>
-              setSidebarOpen(true)
+              setSidebarOpen(
+                true
+              )
             }
             className="text-2xl text-gray-800"
           >
@@ -323,12 +376,16 @@ function AdminLayout() {
 // APP LAYOUT
 function AppLayout() {
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
   // AUTH PAGES
   const isAuthPage =
-    location.pathname === "/login" ||
-    location.pathname === "/signup";
+    location.pathname ===
+      "/login" ||
+
+    location.pathname ===
+      "/signup";
 
   // LOADING
   const [loading, setLoading] =
@@ -337,13 +394,15 @@ function AppLayout() {
   // LOADER
   useEffect(() => {
 
-    const timer = setTimeout(() => {
+    const timer =
+      setTimeout(() => {
 
-      setLoading(false);
+        setLoading(false);
 
-    }, 2000);
+      }, 2000);
 
-    return () => clearTimeout(timer);
+    return () =>
+      clearTimeout(timer);
 
   }, []);
 
@@ -368,7 +427,9 @@ function AppLayout() {
           path="/"
           element={
             !isAuthPage
+
               ? <CustomerLayout />
+
               : <Outlet />
           }
         >
@@ -386,35 +447,41 @@ function AppLayout() {
           <Route
             path="checkout"
             element={
+
               <ProtectedRoute>
 
                 <Checkout />
 
               </ProtectedRoute>
+
             }
           />
 
           <Route
-  path="my-orders"
-  element={
-    <ProtectedRoute>
+            path="my-orders"
+            element={
 
-      <MyOrders />
+              <ProtectedRoute>
 
-    </ProtectedRoute>
-  }
-/>
+                <MyOrders />
 
-<Route
-  path="profile"
-  element={
-    <ProtectedRoute>
+              </ProtectedRoute>
 
-      <Profile />
+            }
+          />
 
-    </ProtectedRoute>
-  }
-/>
+          <Route
+            path="profile"
+            element={
+
+              <ProtectedRoute>
+
+                <Profile />
+
+              </ProtectedRoute>
+
+            }
+          />
 
         </Route>
 
@@ -434,37 +501,54 @@ function AppLayout() {
         <Route
           path="/admin"
           element={
+
             <AdminRoute>
 
               <AdminLayout />
 
             </AdminRoute>
+
           }
         >
 
+          {/* DASHBOARD */}
           <Route
             index
-            element={<AdminDashboard />}
+            element={
+              <AdminDashboard />
+            }
           />
 
+          {/* ANALYTICS */}
           <Route
             path="analytics"
-            element={<AdminAnalytics />}
+            element={
+              <AdminAnalytics />
+            }
           />
 
+          {/* PRODUCTS */}
           <Route
             path="products"
-            element={<AdminProducts />}
+            element={
+              <AdminProducts />
+            }
           />
 
+          {/* ORDERS */}
           <Route
             path="orders"
-            element={<AdminOrders />}
+            element={
+              <AdminOrders />
+            }
           />
 
+          {/* CUSTOMERS */}
           <Route
             path="customers"
-            element={<AdminCustomers />}
+            element={
+              <AdminCustomers />
+            }
           />
 
         </Route>
