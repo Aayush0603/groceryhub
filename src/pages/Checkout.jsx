@@ -544,7 +544,7 @@ function Checkout() {
             data
           } = await axios.post(
 
-            "https://groceryhub-j1uf.onrender.com/create-order",
+            `${import.meta.env.VITE_BACKEND_URL}/create-order`,
 
             {
 
