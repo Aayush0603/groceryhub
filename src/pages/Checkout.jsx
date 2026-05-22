@@ -540,39 +540,80 @@ function Checkout() {
         // RAZORPAY
         else {
 
-          const {
-            data
-          } = await axios.post(
+          const response =
+  await axios.post(
 
-            `${import.meta.env.VITE_BACKEND_URL}/create-order`,
+    `${import.meta.env.VITE_BACKEND_URL}/create-order`,
 
-            {
+    {
 
-              amount:
-                finalTotal,
-            }
-          );
+      amount:
+        finalTotal,
+    }
+  );
 
-          const options = {
+const order =
+  response.data.order;
 
-            key:
-              import.meta.env
-                .VITE_RAZORPAY_KEY_ID,
+console.log(order);
 
-           amount:
-              data.order.amount,
+const options = {
 
-            currency:
-              data.order.currency,
+  key:
+    import.meta.env
+      .VITE_RAZORPAY_KEY_ID,
 
-            name:
-              "GroceryHub",
+  amount:
+    order.amount,
 
-            description:
-              "Order Payment",
+  currency:
+    order.currency,
 
-            order_id:
-              data.order.id,
+  name:
+    "GroceryHub",
+
+  description:
+    "Order Payment",
+
+  order_id:
+    order.id,
+
+  handler:
+    async () => {
+
+      const orderId =
+        await saveOrder();
+
+      sendWhatsAppMessage(
+        orderId
+      );
+
+      toast.success(
+        "Payment Successful"
+      );
+
+      clearCart();
+
+    },
+
+  prefill: {
+
+    name:
+      customerInfo.name,
+
+    contact:
+      customerInfo.phone,
+
+  },
+
+  theme: {
+
+    color:
+      "#16a34a",
+
+  },
+
+};
 
             handler:
               async () => {
