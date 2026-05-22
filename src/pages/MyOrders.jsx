@@ -31,6 +31,7 @@ import {
   FaHome,
   FaClock,
   FaFileInvoice,
+  FaCalendarAlt,
 } from "react-icons/fa";
 
 function MyOrders() {
@@ -521,6 +522,55 @@ function MyOrders() {
 
                 {/* CONTENT */}
                 <div className="p-8">
+
+                  {/* DATE & TIME */}
+                  <div className="bg-blue-50 rounded-2xl p-5 mb-8 flex flex-col lg:flex-row justify-between gap-5">
+
+                    <div className="flex items-center gap-3">
+
+                      <FaCalendarAlt className="text-blue-600 text-2xl" />
+
+                      <div>
+
+                        <p className="text-gray-500 text-sm">
+
+                          Order Date
+
+                        </p>
+
+                        <h3 className="font-bold text-xl text-blue-700">
+
+                          {order.orderDate || "N/A"}
+
+                        </h3>
+
+                      </div>
+
+                    </div>
+
+                    <div className="flex items-center gap-3">
+
+                      <FaClock className="text-green-600 text-2xl" />
+
+                      <div>
+
+                        <p className="text-gray-500 text-sm">
+
+                          Order Time
+
+                        </p>
+
+                        <h3 className="font-bold text-xl text-green-700">
+
+                          {order.orderTime || "N/A"}
+
+                        </h3>
+
+                      </div>
+
+                    </div>
+
+                  </div>
 
                   {/* ETA */}
                   <div className="bg-orange-50 px-5 py-4 rounded-2xl mb-8">

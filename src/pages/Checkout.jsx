@@ -4,6 +4,8 @@ import {
   useState,
 } from "react";
 
+import axios from "axios";
+
 import { motion } from "framer-motion";
 
 import { Link } from "react-router-dom";
@@ -96,6 +98,9 @@ function Checkout() {
 
   const [customerLocation, setCustomerLocation] =
     useState(null);
+
+  const [paymentMethod, setPaymentMethod] =
+    useState("Cash on Delivery");
 
   const [customerInfo, setCustomerInfo] =
     useState({
@@ -359,6 +364,120 @@ function Checkout() {
 
   }, [currentUser]);
 
+  // SAVE ORDER
+  const saveOrder =
+    async () => {
+
+      const orderRef =
+        await addDoc(
+          collection(
+            db,
+            "orders"
+          ),
+          {
+
+            userId:
+              currentUser.uid,
+
+            customerInfo,
+
+            customerLocation,
+
+            cartItems,
+
+            subtotal:
+              totalPrice,
+
+            deliveryCharge,
+
+            finalTotal,
+
+            distance,
+
+            paymentMethod,
+
+            status:
+              "Pending",
+
+            createdAt:
+              serverTimestamp(),
+
+            orderDate:
+              new Date().toLocaleDateString(
+                "en-IN",
+                {
+
+                  timeZone:
+                    "Asia/Kolkata",
+
+                }
+              ),
+
+            orderTime:
+              new Date().toLocaleTimeString(
+                "en-IN",
+                {
+
+                  timeZone:
+                    "Asia/Kolkata",
+
+                }
+              ),
+
+          }
+        );
+
+      return orderRef.id;
+
+    };
+
+  // WHATSAPP MESSAGE
+  const sendWhatsAppMessage =
+    (
+      orderId
+    ) => {
+
+      const products =
+        cartItems
+          .map(
+            (
+              item
+            ) =>
+
+              `${item.name} x ${item.quantity}`
+          )
+          .join("%0A");
+
+      const message =
+        `🛒 *New Grocery Order* %0A%0A` +
+
+        `📦 Order ID: ${orderId}%0A%0A` +
+
+        `👤 Name: ${customerInfo.name}%0A` +
+
+        `📱 Phone: ${customerInfo.phone}%0A` +
+
+        `📍 Address: ${customerInfo.address}%0A` +
+
+        `🏙️ City: ${customerInfo.city}%0A` +
+
+        `📮 Pincode: ${customerInfo.pincode}%0A%0A` +
+
+        `🛍️ Products:%0A${products}%0A%0A` +
+
+        `🚚 Delivery Charge: ₹${deliveryCharge}%0A` +
+
+        `💰 Total: ₹${finalTotal}`;
+
+      window.open(
+
+        `https://wa.me/91YOURNUMBER?text=${message}`,
+
+        "_blank"
+      );
+
+    };
+
   // PLACE ORDER
   const placeOrder =
     async () => {
@@ -397,68 +516,109 @@ function Checkout() {
 
         setLoading(true);
 
-        // SAVE ORDER
-        await addDoc(
-          collection(
-            db,
-            "orders"
-          ),
-          {
+        // COD
+        if (
+          paymentMethod ===
+          "Cash on Delivery"
+        ) {
 
-            userId:
-              currentUser.uid,
+          const orderId =
+            await saveOrder();
 
-            customerInfo,
+          sendWhatsAppMessage(
+            orderId
+          );
 
-            customerLocation,
+          toast.success(
+            "Order placed successfully"
+          );
 
-            cartItems,
+          clearCart();
 
-            subtotal:
-              totalPrice,
+        }
 
-            deliveryCharge,
+        // RAZORPAY
+        else {
 
-            finalTotal,
+          const {
+            data
+          } = await axios.post(
 
-            distance,
+            "http://localhost:5000/create-order",
 
-            status:
-              "Pending",
+            {
 
-            createdAt:
-              serverTimestamp(),
+              amount:
+                finalTotal,
+            }
+          );
 
-            orderDate:
-              new Date().toLocaleDateString(
-                "en-IN",
-                {
+          const options = {
 
-                  timeZone:
-                    "Asia/Kolkata",
+            key:
+              import.meta.env
+                .VITE_RAZORPAY_KEY_ID,
 
-                }
-              ),
+            amount:
+              data.amount,
 
-            orderTime:
-              new Date().toLocaleTimeString(
-                "en-IN",
-                {
+            currency:
+              data.currency,
 
-                  timeZone:
-                    "Asia/Kolkata",
+            name:
+              "GroceryHub",
 
-                }
-              ),
+            description:
+              "Order Payment",
 
-          }
-        );
+            order_id:
+              data.id,
 
-        toast.success(
-          "Order placed successfully"
-        );
+            handler:
+              async () => {
 
-        clearCart();
+                const orderId =
+                  await saveOrder();
+
+                sendWhatsAppMessage(
+                  orderId
+                );
+
+                toast.success(
+                  "Payment Successful"
+                );
+
+                clearCart();
+
+              },
+
+            prefill: {
+
+              name:
+                customerInfo.name,
+
+              contact:
+                customerInfo.phone,
+
+            },
+
+            theme: {
+
+              color:
+                "#16a34a",
+
+            },
+
+          };
+
+          const razorpay =
+            new window.Razorpay(
+              options
+            );
+
+          razorpay.open();
+
+        }
 
       } catch (error) {
 
@@ -659,6 +819,63 @@ function Checkout() {
 
           </div>
 
+          {/* PAYMENT */}
+          <div className="mb-10">
+
+            <h3 className="text-2xl font-bold text-gray-900 mb-5">
+
+              Payment Method
+
+            </h3>
+
+            <div className="space-y-4">
+
+              <button
+                onClick={() =>
+                  setPaymentMethod(
+                    "Cash on Delivery"
+                  )
+                }
+                className={`w-full p-5 rounded-2xl border-2 font-bold transition duration-300
+                ${
+                  paymentMethod ===
+                  "Cash on Delivery"
+
+                    ? "border-green-600 bg-green-50 text-green-700"
+
+                    : "border-gray-200"
+                }`}
+              >
+
+                Cash On Delivery
+
+              </button>
+
+              <button
+                onClick={() =>
+                  setPaymentMethod(
+                    "Online Payment"
+                  )
+                }
+                className={`w-full p-5 rounded-2xl border-2 font-bold transition duration-300
+                ${
+                  paymentMethod ===
+                  "Online Payment"
+
+                    ? "border-green-600 bg-green-50 text-green-700"
+
+                    : "border-gray-200"
+                }`}
+              >
+
+                Online Payment
+
+              </button>
+
+            </div>
+
+          </div>
+
           {/* TOTALS */}
           <div className="space-y-5">
 
@@ -733,7 +950,12 @@ function Checkout() {
             <FaWhatsapp />
 
             {loading
-              ? "Placing Order..."
+              ? "Processing..."
+              : paymentMethod ===
+                "Online Payment"
+
+              ? "Pay Now"
+
               : "Place Order"}
 
           </button>

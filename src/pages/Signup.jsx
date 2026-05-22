@@ -47,6 +47,10 @@ function Signup() {
       password: "",
       confirmPassword: "",
 
+      address: "",
+      city: "",
+      pincode: "",
+
     });
 
   // LOCATION
@@ -128,7 +132,7 @@ function Signup() {
       () => {
 
         toast.error(
-          "Location permission required for delivery"
+          "Location access denied"
         );
 
         setLocationLoading(false);
@@ -148,22 +152,14 @@ function Signup() {
       !formData.name ||
       !formData.phone ||
       !formData.password ||
-      !formData.confirmPassword
+      !formData.confirmPassword ||
+      !formData.address ||
+      !formData.city ||
+      !formData.pincode
     ) {
 
       toast.error(
-        "Please fill required fields"
-      );
-
-      return;
-
-    }
-
-    // LOCATION REQUIRED
-    if (!location) {
-
-      toast.error(
-        "Please allow location access"
+        "Please fill all required fields"
       );
 
       return;
@@ -303,19 +299,21 @@ function Signup() {
             password:
               formData.password,
 
+            address:
+              formData.address,
+
+            city:
+              formData.city,
+
+            pincode:
+              formData.pincode,
+
             role:
               "customer",
 
-            // SAVE LOCATION
-            location: {
-
-              lat:
-                location.lat,
-
-              lng:
-                location.lng,
-
-            },
+            // OPTIONAL GPS LOCATION
+            location:
+              location || null,
 
             createdAt:
               serverTimestamp(),
@@ -521,12 +519,71 @@ function Signup() {
 
           </div>
 
-          {/* LOCATION */}
+          {/* ADDRESS */}
           <div>
 
             <label className="block text-gray-700 font-semibold mb-3">
 
-              Delivery Location *
+              Address *
+
+            </label>
+
+            <textarea
+              name="address"
+              placeholder="Enter delivery address"
+              value={formData.address}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none h-32"
+            />
+
+          </div>
+
+          {/* CITY */}
+          <div>
+
+            <label className="block text-gray-700 font-semibold mb-3">
+
+              City *
+
+            </label>
+
+            <input
+              type="text"
+              name="city"
+              placeholder="Enter city"
+              value={formData.city}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+            />
+
+          </div>
+
+          {/* PINCODE */}
+          <div>
+
+            <label className="block text-gray-700 font-semibold mb-3">
+
+              Pincode *
+
+            </label>
+
+            <input
+              type="text"
+              name="pincode"
+              placeholder="Enter pincode"
+              value={formData.pincode}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+            />
+
+          </div>
+
+          {/* OPTIONAL LOCATION */}
+          <div>
+
+            <label className="block text-gray-700 font-semibold mb-3">
+
+              Detect Current Location (Optional)
 
             </label>
 
@@ -554,7 +611,7 @@ function Signup() {
 
                 ? "Location Detected"
 
-                : "Allow Location Access"}
+                : "Use Current Location"}
 
             </button>
 
