@@ -9,6 +9,7 @@ import {
   FaBoxOpen,
   FaShoppingCart,
   FaUsers,
+  FaChartLine,
 } from "react-icons/fa";
 
 function AdminLayout() {
@@ -55,8 +56,11 @@ function AdminLayout() {
             to="/admin"
             className={`flex items-center gap-4 px-5 py-4 rounded-2xl transition duration-300 font-semibold
             ${
-              location.pathname === "/admin"
+              location.pathname ===
+              "/admin"
+
                 ? activeClass
+
                 : normalClass
             }`}
           >
@@ -67,6 +71,26 @@ function AdminLayout() {
 
           </Link>
 
+          {/* ANALYTICS */}
+          <Link
+            to="/admin/analytics"
+            className={`flex items-center gap-4 px-5 py-4 rounded-2xl transition duration-300 font-semibold
+            ${
+              location.pathname ===
+              "/admin/analytics"
+
+                ? activeClass
+
+                : normalClass
+            }`}
+          >
+
+            <FaChartLine className="text-xl" />
+
+            Analytics
+
+          </Link>
+
           {/* PRODUCTS */}
           <Link
             to="/admin/products"
@@ -74,7 +98,9 @@ function AdminLayout() {
             ${
               location.pathname ===
               "/admin/products"
+
                 ? activeClass
+
                 : normalClass
             }`}
           >
@@ -92,7 +118,9 @@ function AdminLayout() {
             ${
               location.pathname ===
               "/admin/orders"
+
                 ? activeClass
+
                 : normalClass
             }`}
           >
@@ -110,7 +138,9 @@ function AdminLayout() {
             ${
               location.pathname ===
               "/admin/customers"
+
                 ? activeClass
+
                 : normalClass
             }`}
           >
@@ -137,8 +167,8 @@ function AdminLayout() {
             <p className="text-gray-400 mt-2 text-sm leading-6">
 
               Manage products, orders,
-              customers, and analytics
-              professionally.
+              customers, analytics, and
+              business growth professionally.
 
             </p>
 
@@ -158,6 +188,7 @@ function AdminLayout() {
     </div>
 
   );
+
 }
 
 export default AdminLayout;

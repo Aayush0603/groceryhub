@@ -58,6 +58,8 @@ import MyOrders from "./pages/MyOrders";
 
 import Profile from "./pages/Profile";
 
+import AdminAnalytics from "./pages/AdminAnalytics";
+
 import { CartContext } from "./context/CartContext";
 
 // CUSTOMER LAYOUT
@@ -443,6 +445,11 @@ function AppLayout() {
           <Route
             index
             element={<AdminDashboard />}
+          />
+
+          <Route
+            path="analytics"
+            element={<AdminAnalytics />}
           />
 
           <Route
