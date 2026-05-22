@@ -14,7 +14,6 @@ import {
   FaEye,
   FaEyeSlash,
   FaArrowLeft,
-  FaMapMarkerAlt,
 } from "react-icons/fa";
 
 import {
@@ -42,30 +41,20 @@ function Signup() {
     useState({
 
       name: "",
+
       phone: "",
+
       email: "",
+
       password: "",
+
       confirmPassword: "",
 
-      address: "",
-      city: "",
-      pincode: "",
-
     });
-
-  // LOCATION
-  const [location, setLocation] =
-    useState(null);
 
   // LOADING
   const [loading, setLoading] =
     useState(false);
-
-  // LOCATION LOADING
-  const [
-    locationLoading,
-    setLocationLoading,
-  ] = useState(false);
 
   // PASSWORD VISIBILITY
   const [showPassword, setShowPassword] =
@@ -90,58 +79,6 @@ function Signup() {
 
   };
 
-  // GET LOCATION
-  const getLocation = () => {
-
-    if (
-      !navigator.geolocation
-    ) {
-
-      toast.error(
-        "Geolocation not supported"
-      );
-
-      return;
-
-    }
-
-    setLocationLoading(true);
-
-    navigator.geolocation.getCurrentPosition(
-
-      (position) => {
-
-        setLocation({
-
-          lat:
-            position.coords.latitude,
-
-          lng:
-            position.coords.longitude,
-
-        });
-
-        toast.success(
-          "Location detected successfully"
-        );
-
-        setLocationLoading(false);
-
-      },
-
-      () => {
-
-        toast.error(
-          "Location access denied"
-        );
-
-        setLocationLoading(false);
-
-      }
-    );
-
-  };
-
   // SIGNUP
   const handleSignup = async (e) => {
 
@@ -152,10 +89,7 @@ function Signup() {
       !formData.name ||
       !formData.phone ||
       !formData.password ||
-      !formData.confirmPassword ||
-      !formData.address ||
-      !formData.city ||
-      !formData.pincode
+      !formData.confirmPassword
     ) {
 
       toast.error(
@@ -299,21 +233,11 @@ function Signup() {
             password:
               formData.password,
 
-            address:
-              formData.address,
-
-            city:
-              formData.city,
-
-            pincode:
-              formData.pincode,
-
             role:
               "customer",
 
-            // OPTIONAL GPS LOCATION
-            location:
-              location || null,
+            // EMPTY ADDRESSES
+            savedAddresses: [],
 
             createdAt:
               serverTimestamp(),
@@ -516,104 +440,6 @@ function Signup() {
               />
 
             </div>
-
-          </div>
-
-          {/* ADDRESS */}
-          <div>
-
-            <label className="block text-gray-700 font-semibold mb-3">
-
-              Address *
-
-            </label>
-
-            <textarea
-              name="address"
-              placeholder="Enter delivery address"
-              value={formData.address}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-2xl p-5 outline-none h-32"
-            />
-
-          </div>
-
-          {/* CITY */}
-          <div>
-
-            <label className="block text-gray-700 font-semibold mb-3">
-
-              City *
-
-            </label>
-
-            <input
-              type="text"
-              name="city"
-              placeholder="Enter city"
-              value={formData.city}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
-            />
-
-          </div>
-
-          {/* PINCODE */}
-          <div>
-
-            <label className="block text-gray-700 font-semibold mb-3">
-
-              Pincode *
-
-            </label>
-
-            <input
-              type="text"
-              name="pincode"
-              placeholder="Enter pincode"
-              value={formData.pincode}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
-            />
-
-          </div>
-
-          {/* OPTIONAL LOCATION */}
-          <div>
-
-            <label className="block text-gray-700 font-semibold mb-3">
-
-              Detect Current Location (Optional)
-
-            </label>
-
-            <button
-              type="button"
-              onClick={getLocation}
-              disabled={locationLoading}
-              className={`w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-lg transition duration-300
-              ${
-                location
-
-                  ? "bg-green-100 text-green-700"
-
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-              }`}
-            >
-
-              <FaMapMarkerAlt />
-
-              {locationLoading
-
-                ? "Detecting Location..."
-
-                : location
-
-                ? "Location Detected"
-
-                : "Use Current Location"}
-
-            </button>
 
           </div>
 

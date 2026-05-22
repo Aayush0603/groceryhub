@@ -579,15 +579,7 @@ function App() {
               .VITE_BACKEND_URL
           );
 
-          console.log(
-            "Backend Awake"
-          );
-
         } catch (error) {
-
-          console.log(
-            "Backend Wake Failed"
-          );
 
         }
 
