@@ -14,6 +14,7 @@ import {
   FaEye,
   FaEyeSlash,
   FaArrowLeft,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 
 import {
@@ -48,9 +49,19 @@ function Signup() {
 
     });
 
+  // LOCATION
+  const [location, setLocation] =
+    useState(null);
+
   // LOADING
   const [loading, setLoading] =
     useState(false);
+
+  // LOCATION LOADING
+  const [
+    locationLoading,
+    setLocationLoading,
+  ] = useState(false);
 
   // PASSWORD VISIBILITY
   const [showPassword, setShowPassword] =
@@ -75,6 +86,58 @@ function Signup() {
 
   };
 
+  // GET LOCATION
+  const getLocation = () => {
+
+    if (
+      !navigator.geolocation
+    ) {
+
+      toast.error(
+        "Geolocation not supported"
+      );
+
+      return;
+
+    }
+
+    setLocationLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+
+      (position) => {
+
+        setLocation({
+
+          lat:
+            position.coords.latitude,
+
+          lng:
+            position.coords.longitude,
+
+        });
+
+        toast.success(
+          "Location detected successfully"
+        );
+
+        setLocationLoading(false);
+
+      },
+
+      () => {
+
+        toast.error(
+          "Location permission required for delivery"
+        );
+
+        setLocationLoading(false);
+
+      }
+    );
+
+  };
+
   // SIGNUP
   const handleSignup = async (e) => {
 
@@ -90,6 +153,17 @@ function Signup() {
 
       toast.error(
         "Please fill required fields"
+      );
+
+      return;
+
+    }
+
+    // LOCATION REQUIRED
+    if (!location) {
+
+      toast.error(
+        "Please allow location access"
       );
 
       return;
@@ -231,6 +305,17 @@ function Signup() {
 
             role:
               "customer",
+
+            // SAVE LOCATION
+            location: {
+
+              lat:
+                location.lat,
+
+              lng:
+                location.lng,
+
+            },
 
             createdAt:
               serverTimestamp(),
@@ -415,9 +500,7 @@ function Signup() {
 
             <label className="block text-gray-700 font-semibold mb-3">
 
-              Email Address
-              {" "}
-              (Optional)
+              Email Address (Optional)
 
             </label>
 
@@ -435,6 +518,45 @@ function Signup() {
               />
 
             </div>
+
+          </div>
+
+          {/* LOCATION */}
+          <div>
+
+            <label className="block text-gray-700 font-semibold mb-3">
+
+              Delivery Location *
+
+            </label>
+
+            <button
+              type="button"
+              onClick={getLocation}
+              disabled={locationLoading}
+              className={`w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-lg transition duration-300
+              ${
+                location
+
+                  ? "bg-green-100 text-green-700"
+
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              }`}
+            >
+
+              <FaMapMarkerAlt />
+
+              {locationLoading
+
+                ? "Detecting Location..."
+
+                : location
+
+                ? "Location Detected"
+
+                : "Allow Location Access"}
+
+            </button>
 
           </div>
 

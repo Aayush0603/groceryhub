@@ -4,8 +4,6 @@ import {
   useState,
 } from "react";
 
-import axios from "axios";
-
 import { motion } from "framer-motion";
 
 import { Link } from "react-router-dom";
@@ -24,7 +22,6 @@ import {
   serverTimestamp,
   doc,
   getDoc,
-  updateDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
@@ -75,59 +72,6 @@ function Checkout() {
 
   }
 
-  // DELIVERY
-  // DELIVERY CHARGE
-let deliveryCharge = 0;
-
-// DELIVERY PRICING
-if (distance) {
-
-  const numericDistance =
-    Number(distance);
-
-  // 0–5 KM
-  if (
-    numericDistance <= 5
-  ) {
-
-    deliveryCharge =
-      totalPrice >= 500
-        ? 0
-        : 20;
-
-  }
-
-  // 5–10 KM
-  else if (
-    numericDistance <= 10
-  ) {
-
-    deliveryCharge = 40;
-
-  }
-
-  // 10–15 KM
-  else if (
-    numericDistance <= 15
-  ) {
-
-    deliveryCharge = 60;
-
-  }
-
-  // ABOVE 15 KM
-  else {
-
-    deliveryCharge = 0;
-
-  }
-
-}
-
-  // FINAL TOTAL
-  const finalTotal =
-    totalPrice + deliveryCharge;
-
   // SHOP LOCATION
   const shopLocation = {
 
@@ -137,26 +81,20 @@ if (distance) {
 
   };
 
-  // DELIVERY RADIUS (KM)
+  // DELIVERY RADIUS
   const deliveryRadius = 15;
 
   // STATES
-  const [orderSuccess, setOrderSuccess] =
-    useState(false);
-
   const [loading, setLoading] =
     useState(false);
 
-  const [paymentMethod, setPaymentMethod] =
-    useState("Cash on Delivery");
-
-  const [customerLocation, setCustomerLocation] =
+  const [distance, setDistance] =
     useState(null);
 
   const [deliveryAvailable, setDeliveryAvailable] =
     useState(true);
 
-  const [distance, setDistance] =
+  const [customerLocation, setCustomerLocation] =
     useState(null);
 
   const [customerInfo, setCustomerInfo] =
@@ -170,6 +108,64 @@ if (distance) {
       notes: "",
 
     });
+
+  // DELIVERY CHARGE
+  let deliveryCharge = 0;
+
+  if (distance) {
+
+    const numericDistance =
+      Number(distance);
+
+    // 0–5 KM
+    if (
+      numericDistance <= 5
+    ) {
+
+      deliveryCharge =
+        totalPrice >= 500
+          ? 0
+          : 20;
+
+    }
+
+    // 5–10 KM
+    else if (
+      numericDistance <= 10
+    ) {
+
+      deliveryCharge = 40;
+
+    }
+
+    // 10–15 KM
+    else if (
+      numericDistance <= 15
+    ) {
+
+      deliveryCharge = 60;
+
+    }
+
+  }
+
+  // FINAL TOTAL
+  const finalTotal =
+    totalPrice + deliveryCharge;
+
+  // HANDLE CHANGE
+  const handleChange = (e) => {
+
+    setCustomerInfo({
+
+      ...customerInfo,
+
+      [e.target.name]:
+        e.target.value,
+
+    });
+
+  };
 
   // CALCULATE DISTANCE
   const calculateDistance =
@@ -225,99 +221,68 @@ if (distance) {
 
     };
 
-  // GET CUSTOMER LOCATION
-  const getCustomerLocation =
-    () => {
+  // CHECK SAVED LOCATION
+  const checkSavedLocation =
+    (
+      userLocation
+    ) => {
 
-      if (
-        !navigator.geolocation
-      ) {
+      if (!userLocation)
+        return;
 
-        toast.error(
-          "Geolocation not supported"
+      setCustomerLocation({
+
+        lat:
+          userLocation.lat,
+
+        lng:
+          userLocation.lng,
+
+      });
+
+      const calculatedDistance =
+        calculateDistance(
+
+          shopLocation.lat,
+
+          shopLocation.lng,
+
+          userLocation.lat,
+
+          userLocation.lng
         );
 
-        return;
+      setDistance(
+        calculatedDistance.toFixed(
+          2
+        )
+      );
+
+      // DELIVERY CHECK
+      if (
+        calculatedDistance >
+        deliveryRadius
+      ) {
+
+        setDeliveryAvailable(
+          false
+        );
+
+        toast.error(
+          `Delivery unavailable beyond ${deliveryRadius} KM`
+        );
+
+      } else {
+
+        setDeliveryAvailable(
+          true
+        );
 
       }
 
-      navigator.geolocation.getCurrentPosition(
-
-        (position) => {
-
-          const userLat =
-            position.coords.latitude;
-
-          const userLng =
-            position.coords.longitude;
-
-          setCustomerLocation({
-
-            lat: userLat,
-
-            lng: userLng,
-
-          });
-
-          // DISTANCE
-          const calculatedDistance =
-            calculateDistance(
-
-              shopLocation.lat,
-
-              shopLocation.lng,
-
-              userLat,
-
-              userLng
-            );
-
-          setDistance(
-            calculatedDistance.toFixed(
-              2
-            )
-          );
-
-          // CHECK DELIVERY
-          if (
-            calculatedDistance >
-            deliveryRadius
-          ) {
-
-            setDeliveryAvailable(
-              false
-            );
-
-            toast.error(
-              `Delivery unavailable beyond ${deliveryRadius} KM`
-            );
-
-          } else {
-
-            setDeliveryAvailable(
-              true
-            );
-
-            toast.success(
-              "Delivery available in your area"
-            );
-
-          }
-
-        },
-
-        () => {
-
-          toast.error(
-            "Location access denied"
-          );
-
-        }
-      );
-
     };
 
-  // AUTO FILL PROFILE
+  // FETCH PROFILE + LOCATION
   useEffect(() => {
 
     const fetchProfile =
@@ -325,22 +290,29 @@ if (distance) {
 
         try {
 
-          if (!currentUser) return;
+          if (!currentUser)
+            return;
 
-          const userRef = doc(
-            db,
-            "users",
-            currentUser.uid
-          );
+          const userRef =
+            doc(
+              db,
+              "users",
+              currentUser.uid
+            );
 
           const userSnap =
-            await getDoc(userRef);
+            await getDoc(
+              userRef
+            );
 
-          if (userSnap.exists()) {
+          if (
+            userSnap.exists()
+          ) {
 
             const data =
               userSnap.data();
 
+            // AUTO FILL DETAILS
             setCustomerInfo({
 
               name:
@@ -362,6 +334,17 @@ if (distance) {
 
             });
 
+            // AUTO CHECK SAVED LOCATION
+            if (
+              data.location
+            ) {
+
+              checkSavedLocation(
+                data.location
+              );
+
+            }
+
           }
 
         } catch (error) {
@@ -375,159 +358,6 @@ if (distance) {
     fetchProfile();
 
   }, [currentUser]);
-
-  // GET LOCATION
-  useEffect(() => {
-
-    getCustomerLocation();
-
-  }, []);
-
-  // HANDLE CHANGE
-  const handleChange = (e) => {
-
-    setCustomerInfo({
-
-      ...customerInfo,
-
-      [e.target.name]:
-        e.target.value,
-
-    });
-
-  };
-
-  // SAVE ORDER
-  const saveOrder =
-    async () => {
-
-      try {
-
-        if (!currentUser) {
-
-          toast.error(
-            "Please login again"
-          );
-
-          return false;
-
-        }
-
-        await addDoc(
-          collection(db, "orders"),
-          {
-
-            userId:
-              currentUser.uid,
-
-            customerInfo,
-
-            cartItems,
-
-            subtotal:
-              totalPrice,
-
-            deliveryCharge,
-
-            finalTotal,
-
-            paymentMethod,
-
-            status:
-              "Pending",
-
-            createdAt:
-              serverTimestamp(),
-
-            orderDate:
-              new Date().toLocaleDateString(
-                "en-IN",
-                {
-
-                  timeZone:
-                    "Asia/Kolkata",
-
-                }
-              ),
-
-            orderTime:
-              new Date().toLocaleTimeString(
-                "en-IN",
-                {
-
-                  timeZone:
-                    "Asia/Kolkata",
-
-                }
-              ),
-
-          }
-        );
-
-        // UPDATE STOCK
-        for (const item of cartItems) {
-
-          const productRef =
-            doc(
-              db,
-              "products",
-              item.id
-            );
-
-          const productSnap =
-            await getDoc(
-              productRef
-            );
-
-          if (
-            productSnap.exists()
-          ) {
-
-            const productData =
-              productSnap.data();
-
-            const updatedStock =
-              Math.max(
-                (
-                  productData.stock ||
-                  0
-                ) - item.quantity,
-                0
-              );
-
-            await updateDoc(
-              productRef,
-              {
-
-                stock:
-                  updatedStock,
-
-              }
-            );
-
-          }
-
-        }
-
-        toast.success(
-          "Order Placed Successfully"
-        );
-
-        return true;
-
-      } catch (error) {
-
-        console.error(error);
-
-        toast.error(
-          "Failed to save order"
-        );
-
-        return false;
-
-      }
-
-    };
 
   // PLACE ORDER
   const placeOrder =
@@ -563,9 +393,86 @@ if (distance) {
 
       }
 
-      toast.success(
-        "Delivery area verified"
-      );
+      try {
+
+        setLoading(true);
+
+        // SAVE ORDER
+        await addDoc(
+          collection(
+            db,
+            "orders"
+          ),
+          {
+
+            userId:
+              currentUser.uid,
+
+            customerInfo,
+
+            customerLocation,
+
+            cartItems,
+
+            subtotal:
+              totalPrice,
+
+            deliveryCharge,
+
+            finalTotal,
+
+            distance,
+
+            status:
+              "Pending",
+
+            createdAt:
+              serverTimestamp(),
+
+            orderDate:
+              new Date().toLocaleDateString(
+                "en-IN",
+                {
+
+                  timeZone:
+                    "Asia/Kolkata",
+
+                }
+              ),
+
+            orderTime:
+              new Date().toLocaleTimeString(
+                "en-IN",
+                {
+
+                  timeZone:
+                    "Asia/Kolkata",
+
+                }
+              ),
+
+          }
+        );
+
+        toast.success(
+          "Order placed successfully"
+        );
+
+        clearCart();
+
+      } catch (error) {
+
+        console.error(error);
+
+        toast.error(
+          "Failed to place order"
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
 
     };
 
@@ -607,8 +514,57 @@ if (distance) {
 
           </div>
 
+          {/* CUSTOMER INFO */}
+          <div className="space-y-6">
+
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={customerInfo.name}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+            />
+
+            <input
+              type="text"
+              name="phone"
+              placeholder="Mobile Number"
+              value={customerInfo.phone}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+            />
+
+            <textarea
+              name="address"
+              placeholder="Delivery Address"
+              value={customerInfo.address}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none h-32"
+            />
+
+            <input
+              type="text"
+              name="city"
+              placeholder="City"
+              value={customerInfo.city}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+            />
+
+            <input
+              type="text"
+              name="pincode"
+              placeholder="Pincode"
+              value={customerInfo.pincode}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+            />
+
+          </div>
+
           {/* DELIVERY STATUS */}
-          <div className="mb-8">
+          <div className="mt-8">
 
             {distance && (
 
@@ -658,6 +614,105 @@ if (distance) {
 
           </h2>
 
+          {/* ITEMS */}
+          <div className="space-y-5 mb-10">
+
+            {cartItems.map(
+              (
+                item,
+                index
+              ) => (
+
+                <div
+                  key={index}
+                  className="flex justify-between items-center"
+                >
+
+                  <div>
+
+                    <h3 className="font-bold text-lg">
+
+                      {item.name}
+
+                    </h3>
+
+                    <p className="text-gray-500">
+
+                      Qty: {item.quantity}
+
+                    </p>
+
+                  </div>
+
+                  <h3 className="font-bold text-lg">
+
+                    ₹
+                    {item.price *
+                      item.quantity}
+
+                  </h3>
+
+                </div>
+
+              )
+            )}
+
+          </div>
+
+          {/* TOTALS */}
+          <div className="space-y-5">
+
+            <div className="flex justify-between text-xl">
+
+              <span>
+
+                Subtotal
+
+              </span>
+
+              <span>
+
+                ₹{totalPrice}
+
+              </span>
+
+            </div>
+
+            <div className="flex justify-between text-xl">
+
+              <span>
+
+                Delivery Charge
+
+              </span>
+
+              <span>
+
+                ₹{deliveryCharge}
+
+              </span>
+
+            </div>
+
+            <div className="border-t border-gray-200 pt-5 flex justify-between items-center">
+
+              <h1 className="text-3xl font-extrabold text-gray-900">
+
+                Total
+
+              </h1>
+
+              <h1 className="text-4xl font-extrabold text-green-700">
+
+                ₹{finalTotal}
+
+              </h1>
+
+            </div>
+
+          </div>
+
+          {/* BUTTON */}
           <button
             onClick={placeOrder}
             disabled={
@@ -686,37 +741,6 @@ if (distance) {
         </motion.div>
 
       </div>
-
-      {/* SUCCESS MODAL */}
-      {orderSuccess && (
-
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
-
-          <div className="bg-white rounded-3xl p-10 text-center max-w-lg w-full">
-
-            <div className="w-24 h-24 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-5xl mx-auto mb-8">
-
-              ✓
-
-            </div>
-
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-5">
-
-              Order Placed Successfully
-
-            </h1>
-
-            <p className="text-gray-600 text-lg">
-
-              Redirecting...
-
-            </p>
-
-          </div>
-
-        </div>
-
-      )}
 
     </section>
 
