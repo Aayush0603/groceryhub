@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import {
   FaWhatsapp,
   FaArrowLeft,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 
 import {
@@ -75,12 +76,69 @@ function Checkout() {
   }
 
   // DELIVERY
-  const deliveryCharge =
-    totalPrice >= 500 ? 0 : 40;
+  // DELIVERY CHARGE
+let deliveryCharge = 0;
+
+// DELIVERY PRICING
+if (distance) {
+
+  const numericDistance =
+    Number(distance);
+
+  // 0–5 KM
+  if (
+    numericDistance <= 5
+  ) {
+
+    deliveryCharge =
+      totalPrice >= 500
+        ? 0
+        : 20;
+
+  }
+
+  // 5–10 KM
+  else if (
+    numericDistance <= 10
+  ) {
+
+    deliveryCharge = 40;
+
+  }
+
+  // 10–15 KM
+  else if (
+    numericDistance <= 15
+  ) {
+
+    deliveryCharge = 60;
+
+  }
+
+  // ABOVE 15 KM
+  else {
+
+    deliveryCharge = 0;
+
+  }
+
+}
 
   // FINAL TOTAL
   const finalTotal =
     totalPrice + deliveryCharge;
+
+  // SHOP LOCATION
+  const shopLocation = {
+
+    lat: 18.235630628281882,
+
+    lng: 75.69683612021862,
+
+  };
+
+  // DELIVERY RADIUS (KM)
+  const deliveryRadius = 15;
 
   // STATES
   const [orderSuccess, setOrderSuccess] =
@@ -91,6 +149,15 @@ function Checkout() {
 
   const [paymentMethod, setPaymentMethod] =
     useState("Cash on Delivery");
+
+  const [customerLocation, setCustomerLocation] =
+    useState(null);
+
+  const [deliveryAvailable, setDeliveryAvailable] =
+    useState(true);
+
+  const [distance, setDistance] =
+    useState(null);
 
   const [customerInfo, setCustomerInfo] =
     useState({
@@ -103,6 +170,152 @@ function Checkout() {
       notes: "",
 
     });
+
+  // CALCULATE DISTANCE
+  const calculateDistance =
+    (
+      lat1,
+      lon1,
+      lat2,
+      lon2
+    ) => {
+
+      const toRad =
+        (value) =>
+          (value * Math.PI) / 180;
+
+      const R = 6371;
+
+      const dLat =
+        toRad(lat2 - lat1);
+
+      const dLon =
+        toRad(lon2 - lon1);
+
+      const a =
+        Math.sin(
+          dLat / 2
+        ) *
+          Math.sin(
+            dLat / 2
+          ) +
+
+        Math.cos(
+          toRad(lat1)
+        ) *
+          Math.cos(
+            toRad(lat2)
+          ) *
+
+        Math.sin(
+          dLon / 2
+        ) *
+          Math.sin(
+            dLon / 2
+          );
+
+      const c =
+        2 *
+        Math.atan2(
+          Math.sqrt(a),
+          Math.sqrt(1 - a)
+        );
+
+      return R * c;
+
+    };
+
+  // GET CUSTOMER LOCATION
+  const getCustomerLocation =
+    () => {
+
+      if (
+        !navigator.geolocation
+      ) {
+
+        toast.error(
+          "Geolocation not supported"
+        );
+
+        return;
+
+      }
+
+      navigator.geolocation.getCurrentPosition(
+
+        (position) => {
+
+          const userLat =
+            position.coords.latitude;
+
+          const userLng =
+            position.coords.longitude;
+
+          setCustomerLocation({
+
+            lat: userLat,
+
+            lng: userLng,
+
+          });
+
+          // DISTANCE
+          const calculatedDistance =
+            calculateDistance(
+
+              shopLocation.lat,
+
+              shopLocation.lng,
+
+              userLat,
+
+              userLng
+            );
+
+          setDistance(
+            calculatedDistance.toFixed(
+              2
+            )
+          );
+
+          // CHECK DELIVERY
+          if (
+            calculatedDistance >
+            deliveryRadius
+          ) {
+
+            setDeliveryAvailable(
+              false
+            );
+
+            toast.error(
+              `Delivery unavailable beyond ${deliveryRadius} KM`
+            );
+
+          } else {
+
+            setDeliveryAvailable(
+              true
+            );
+
+            toast.success(
+              "Delivery available in your area"
+            );
+
+          }
+
+        },
+
+        () => {
+
+          toast.error(
+            "Location access denied"
+          );
+
+        }
+      );
+
+    };
 
   // AUTO FILL PROFILE
   useEffect(() => {
@@ -163,6 +376,13 @@ function Checkout() {
 
   }, [currentUser]);
 
+  // GET LOCATION
+  useEffect(() => {
+
+    getCustomerLocation();
+
+  }, []);
+
   // HANDLE CHANGE
   const handleChange = (e) => {
 
@@ -183,7 +403,6 @@ function Checkout() {
 
       try {
 
-        // USER CHECK
         if (!currentUser) {
 
           toast.error(
@@ -194,7 +413,6 @@ function Checkout() {
 
         }
 
-        // SAVE ORDER
         await addDoc(
           collection(db, "orders"),
           {
@@ -219,29 +437,29 @@ function Checkout() {
               "Pending",
 
             createdAt:
-  serverTimestamp(),
+              serverTimestamp(),
 
-orderDate:
-  new Date().toLocaleDateString(
-    "en-IN",
-    {
+            orderDate:
+              new Date().toLocaleDateString(
+                "en-IN",
+                {
 
-      timeZone:
-        "Asia/Kolkata",
+                  timeZone:
+                    "Asia/Kolkata",
 
-    }
-  ),
+                }
+              ),
 
-orderTime:
-  new Date().toLocaleTimeString(
-    "en-IN",
-    {
+            orderTime:
+              new Date().toLocaleTimeString(
+                "en-IN",
+                {
 
-      timeZone:
-        "Asia/Kolkata",
+                  timeZone:
+                    "Asia/Kolkata",
 
-    }
-  ),
+                }
+              ),
 
           }
         );
@@ -299,10 +517,7 @@ orderTime:
 
       } catch (error) {
 
-        console.error(
-          "SAVE ORDER ERROR:",
-          error
-        );
+        console.error(error);
 
         toast.error(
           "Failed to save order"
@@ -314,222 +529,22 @@ orderTime:
 
     };
 
-  const handleOnlinePayment =
-  async () => {
+  // PLACE ORDER
+  const placeOrder =
+    async () => {
 
-    try {
-
-      // LOADING TOAST
-      const loadingToast =
-        toast.loading(
-          "Opening Payment Gateway..."
-        );
-
-      // CHECK RAZORPAY
+      // DELIVERY CHECK
       if (
-        !window.Razorpay
+        !deliveryAvailable
       ) {
 
-        toast.dismiss(
-          loadingToast
-        );
-
         toast.error(
-          "Razorpay failed to load"
+          "Delivery unavailable in your area"
         );
 
         return;
 
       }
-
-      // CREATE ORDER
-      const { data } =
-        await axios.post(
-
-          "https://groceryhub-j1uf.onrender.com/create-order",
-
-          {
-
-            amount:
-              finalTotal,
-
-          }
-        );
-
-      // DISMISS LOADING
-      toast.dismiss(
-        loadingToast
-      );
-
-      // OPTIONS
-      const options = {
-
-        key:
-          "rzp_test_SrYq472yxJQHcZ",
-
-        amount:
-          data.amount,
-
-        currency:
-          data.currency,
-
-        name:
-          "GroceryHub",
-
-        description:
-          "Order Payment",
-
-        order_id:
-          data.id,
-
-        handler:
-          async function (
-            response
-          ) {
-
-            const orderSaved =
-              await saveOrder();
-
-            if (
-              !orderSaved
-            ) {
-
-              return;
-
-            }
-
-            // WHATSAPP MESSAGE
-            let message =
-              `🛒 *New Grocery Order* %0A%0A`;
-
-            message +=
-              `👤 Name: ${customerInfo.name}%0A`;
-
-            message +=
-              `📞 Phone: ${customerInfo.phone}%0A`;
-
-            message +=
-              `📍 Address: ${customerInfo.address}%0A`;
-
-            message +=
-              `🏙️ City: ${customerInfo.city}%0A`;
-
-            message +=
-              `📮 Pincode: ${customerInfo.pincode}%0A`;
-
-            message +=
-              `💳 Payment: Online Payment%0A`;
-
-            message +=
-              `🧾 Payment ID: ${response.razorpay_payment_id}%0A`;
-
-            if (
-              customerInfo.notes
-            ) {
-
-              message +=
-                `📝 Notes: ${customerInfo.notes}%0A`;
-
-            }
-
-            message +=
-              `%0A🛍️ *Products:* %0A`;
-
-            cartItems.forEach(
-              (item) => {
-
-                message +=
-                  `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}%0A`;
-
-              }
-            );
-
-            message +=
-              `%0A💵 Subtotal: ₹${totalPrice}%0A`;
-
-            message +=
-              `🛵 Delivery Charge: ${
-                deliveryCharge === 0
-                  ? "FREE"
-                  : `₹${deliveryCharge}`
-              }%0A`;
-
-            message +=
-              `💰 *Final Total:* ₹${finalTotal}`;
-
-            const whatsappURL =
-              `https://wa.me/919172607711?text=${message}`;
-
-            clearCart();
-
-            setOrderSuccess(
-              true
-            );
-
-            setTimeout(() => {
-
-              window.location.href =
-                whatsappURL;
-
-            }, 1200);
-
-          },
-
-        prefill: {
-
-          name:
-            customerInfo.name,
-
-          contact:
-            customerInfo.phone,
-
-        },
-
-        theme: {
-
-          color:
-            "#16a34a",
-
-        },
-
-        modal: {
-
-          ondismiss:
-            function () {
-
-              toast.error(
-                "Payment Cancelled"
-              );
-
-            },
-
-        },
-
-      };
-
-      // OPEN RAZORPAY
-      const razorpay =
-        new window.Razorpay(
-          options
-        );
-
-      razorpay.open();
-
-    } catch (error) {
-
-      console.error(error);
-
-      toast.error(
-        "Payment Failed"
-      );
-
-    }
-
-  };
-
-  // PLACE ORDER
-  const placeOrder =
-    async () => {
 
       // VALIDATION
       if (
@@ -548,208 +563,9 @@ orderTime:
 
       }
 
-      if (
-        customerInfo.phone.length !==
-        10
-      ) {
-
-        toast.error(
-          "Phone number must be 10 digits"
-        );
-
-        return;
-
-      }
-
-      if (
-        customerInfo.pincode.length !==
-        6
-      ) {
-
-        toast.error(
-          "Pincode must be 6 digits"
-        );
-
-        return;
-
-      }
-
-      try {
-
-        setLoading(true);
-
-        // VERIFY STOCK
-        for (const item of cartItems) {
-
-          const productRef =
-            doc(
-              db,
-              "products",
-              item.id
-            );
-
-          const productSnap =
-            await getDoc(
-              productRef
-            );
-
-          if (
-            !productSnap.exists()
-          ) {
-
-            toast.error(
-              `${item.name} not found`
-            );
-
-            setLoading(false);
-
-            return;
-
-          }
-
-          const productData =
-            productSnap.data();
-
-          if (
-            productData.stock <= 0
-          ) {
-
-            toast.error(
-              `${item.name} is out of stock`
-            );
-
-            setLoading(false);
-
-            return;
-
-          }
-
-          if (
-            item.quantity >
-            productData.stock
-          ) {
-
-            toast.error(
-              `Only ${productData.stock} ${item.name} left`
-            );
-
-            setLoading(false);
-
-            return;
-
-          }
-
-        }
-
-        // CASH ON DELIVERY
-        if (
-          paymentMethod ===
-          "Cash on Delivery"
-        ) {
-
-          const orderSaved =
-            await saveOrder();
-
-          if (!orderSaved) {
-
-            return;
-
-          }
-
-          // WHATSAPP MESSAGE
-          let message =
-            `🛒 *New Grocery Order* %0A%0A`;
-
-          message +=
-            `👤 Name: ${customerInfo.name}%0A`;
-
-          message +=
-            `📞 Phone: ${customerInfo.phone}%0A`;
-
-          message +=
-            `📍 Address: ${customerInfo.address}%0A`;
-
-          message +=
-            `🏙️ City: ${customerInfo.city}%0A`;
-
-          message +=
-            `📮 Pincode: ${customerInfo.pincode}%0A`;
-
-          message +=
-            `💳 Payment: ${paymentMethod}%0A`;
-
-          if (
-            customerInfo.notes
-          ) {
-
-            message +=
-              `📝 Notes: ${customerInfo.notes}%0A`;
-
-          }
-
-          message +=
-            `%0A🛍️ *Products:* %0A`;
-
-          cartItems.forEach(
-            (item) => {
-
-              message +=
-                `• ${item.name} x${item.quantity} - ₹${item.price * item.quantity}%0A`;
-
-            }
-          );
-
-          message +=
-            `%0A💵 Subtotal: ₹${totalPrice}%0A`;
-
-          message +=
-            `🛵 Delivery Charge: ${
-              deliveryCharge === 0
-                ? "FREE"
-                : `₹${deliveryCharge}`
-            }%0A`;
-
-          message +=
-            `💰 *Final Total:* ₹${finalTotal}`;
-
-          const whatsappURL =
-            `https://wa.me/919172607711?text=${message}`;
-
-          clearCart();
-
-          setOrderSuccess(
-            true
-          );
-
-          setTimeout(() => {
-
-            window.location.href =
-              whatsappURL;
-
-          }, 1500);
-
-        }
-
-        // ONLINE PAYMENT
-        else {
-
-          await handleOnlinePayment();
-
-        }
-
-      } catch (error) {
-
-        console.error(error);
-
-        toast.error(
-          "Failed to place order"
-        );
-
-      } finally {
-
-        setLoading(false);
-
-      }
+      toast.success(
+        "Delivery area verified"
+      );
 
     };
 
@@ -791,171 +607,33 @@ orderTime:
 
           </div>
 
-          {/* FORM */}
-          <div className="space-y-6">
+          {/* DELIVERY STATUS */}
+          <div className="mb-8">
 
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={customerInfo.name}
-              onChange={handleChange}
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-            />
+            {distance && (
 
-            <input
-              type="text"
-              name="phone"
-              placeholder="Phone Number"
-              value={customerInfo.phone}
-              onChange={(e) => {
+              <div
+                className={`rounded-2xl p-5 text-lg font-bold flex items-center gap-3
+                ${
+                  deliveryAvailable
 
-                const value =
-                  e.target.value.replace(
-                    /\D/g,
-                    ""
-                  );
+                    ? "bg-green-100 text-green-700"
 
-                if (
-                  value.length <= 10
-                ) {
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
 
-                  setCustomerInfo({
+                <FaMapMarkerAlt />
 
-                    ...customerInfo,
+                {deliveryAvailable
 
-                    phone: value,
+                  ? `Delivery Available • ${distance} KM away`
 
-                  });
-
-                }
-
-              }}
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-            />
-
-            <textarea
-              name="address"
-              placeholder="Full Address"
-              rows="4"
-              value={customerInfo.address}
-              onChange={handleChange}
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-            />
-
-            <input
-              type="text"
-              name="city"
-              placeholder="City"
-              value={customerInfo.city}
-              onChange={handleChange}
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-            />
-
-            <input
-              type="text"
-              name="pincode"
-              placeholder="Pincode"
-              value={customerInfo.pincode}
-              onChange={(e) => {
-
-                const value =
-                  e.target.value.replace(
-                    /\D/g,
-                    ""
-                  );
-
-                if (
-                  value.length <= 6
-                ) {
-
-                  setCustomerInfo({
-
-                    ...customerInfo,
-
-                    pincode: value,
-
-                  });
-
-                }
-
-              }}
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-            />
-
-            <textarea
-              name="notes"
-              placeholder="Additional Notes (Optional)"
-              rows="3"
-              value={customerInfo.notes}
-              onChange={handleChange}
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none"
-            />
-
-            {/* PAYMENT */}
-            <div>
-
-              <h2 className="text-2xl font-bold text-gray-900 mb-5">
-
-                Payment Method
-
-              </h2>
-
-              <div className="space-y-4">
-
-                <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-green-500 transition duration-300">
-
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="Cash on Delivery"
-                    checked={
-                      paymentMethod ===
-                      "Cash on Delivery"
-                    }
-                    onChange={(e) =>
-                      setPaymentMethod(
-                        e.target.value
-                      )
-                    }
-                  />
-
-                  <span className="text-xl font-semibold text-gray-800">
-
-                    Cash on Delivery
-
-                  </span>
-
-                </label>
-
-                <label className="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-green-500 transition duration-300">
-
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="Online Payment"
-                    checked={
-                      paymentMethod ===
-                      "Online Payment"
-                    }
-                    onChange={(e) =>
-                      setPaymentMethod(
-                        e.target.value
-                      )
-                    }
-                  />
-
-                  <span className="text-xl font-semibold text-gray-800">
-
-                    Online Payment (Razorpay)
-
-                  </span>
-
-                </label>
+                  : `Delivery unavailable • ${distance} KM away`}
 
               </div>
 
-            </div>
+            )}
 
           </div>
 
@@ -980,110 +658,19 @@ orderTime:
 
           </h2>
 
-          <div className="space-y-6">
-
-            {cartItems?.map((item) => (
-
-              <div
-                key={item.id}
-                className="flex justify-between items-center border-b border-gray-100 pb-5"
-              >
-
-                <div>
-
-                  <h3 className="text-xl font-bold text-gray-900">
-
-                    {item.name}
-
-                  </h3>
-
-                  <p className="text-gray-500 mt-1">
-
-                    Qty:
-                    {" "}
-                    {item.quantity}
-
-                  </p>
-
-                </div>
-
-                <h2 className="text-2xl font-extrabold text-green-700">
-
-                  ₹
-                  {item.price *
-                    item.quantity}
-
-                </h2>
-
-              </div>
-
-            ))}
-
-          </div>
-
-          {/* TOTALS */}
-          <div className="mt-10 space-y-5">
-
-            <div className="flex justify-between text-xl">
-
-              <span>
-
-                Subtotal
-
-              </span>
-
-              <span>
-
-                ₹{totalPrice}
-
-              </span>
-
-            </div>
-
-            <div className="flex justify-between text-xl">
-
-              <span>
-
-                Delivery
-
-              </span>
-
-              <span>
-
-                {deliveryCharge === 0
-                  ? "FREE"
-                  : `₹${deliveryCharge}`}
-
-              </span>
-
-            </div>
-
-            <div className="border-t border-gray-200 pt-5 flex justify-between items-center">
-
-              <h1 className="text-3xl font-extrabold text-gray-900">
-
-                Total
-
-              </h1>
-
-              <h1 className="text-4xl font-extrabold text-green-700">
-
-                ₹{finalTotal}
-
-              </h1>
-
-            </div>
-
-          </div>
-
-          {/* BUTTON */}
           <button
             onClick={placeOrder}
-            disabled={loading}
+            disabled={
+              loading ||
+              !deliveryAvailable
+            }
             className={`w-full mt-10 py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4
             ${
-              loading
+              loading ||
+              !deliveryAvailable
+
                 ? "bg-gray-400 cursor-not-allowed text-white"
+
                 : "bg-green-600 hover:bg-green-700 text-white"
             }`}
           >
