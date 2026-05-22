@@ -122,7 +122,6 @@ function Checkout() {
     const numericDistance =
       Number(distance);
 
-    // 0–5 KM
     if (
       numericDistance <= 5
     ) {
@@ -134,7 +133,6 @@ function Checkout() {
 
     }
 
-    // 5–10 KM
     else if (
       numericDistance <= 10
     ) {
@@ -143,7 +141,6 @@ function Checkout() {
 
     }
 
-    // 10–15 KM
     else if (
       numericDistance <= 15
     ) {
@@ -263,7 +260,6 @@ function Checkout() {
         )
       );
 
-      // DELIVERY CHECK
       if (
         calculatedDistance >
         deliveryRadius
@@ -287,7 +283,7 @@ function Checkout() {
 
     };
 
-  // FETCH PROFILE + LOCATION
+  // FETCH PROFILE
   useEffect(() => {
 
     const fetchProfile =
@@ -317,7 +313,6 @@ function Checkout() {
             const data =
               userSnap.data();
 
-            // AUTO FILL DETAILS
             setCustomerInfo({
 
               name:
@@ -339,7 +334,6 @@ function Checkout() {
 
             });
 
-            // AUTO CHECK SAVED LOCATION
             if (
               data.location
             ) {
@@ -431,7 +425,7 @@ function Checkout() {
 
     };
 
-  // WHATSAPP MESSAGE
+  // WHATSAPP
   const sendWhatsAppMessage =
     (
       orderId
@@ -482,7 +476,6 @@ function Checkout() {
   const placeOrder =
     async () => {
 
-      // DELIVERY CHECK
       if (
         !deliveryAvailable
       ) {
@@ -495,7 +488,6 @@ function Checkout() {
 
       }
 
-      // VALIDATION
       if (
         !customerInfo.name ||
         !customerInfo.phone ||
@@ -537,83 +529,45 @@ function Checkout() {
 
         }
 
-        // RAZORPAY
+        // ONLINE PAYMENT
         else {
 
           const response =
-  await axios.post(
+            await axios.post(
 
-    `${import.meta.env.VITE_BACKEND_URL}/create-order`,
+              `${import.meta.env.VITE_BACKEND_URL}/create-order`,
 
-    {
+              {
 
-      amount:
-        finalTotal,
-    }
-  );
+                amount:
+                  finalTotal,
 
-const order =
-  response.data.order;
+              }
+            );
 
-console.log(order);
+          const order =
+            response.data.order;
 
-const options = {
+          const options = {
 
-  key:
-    import.meta.env
-      .VITE_RAZORPAY_KEY_ID,
+            key:
+              import.meta.env
+                .VITE_RAZORPAY_KEY_ID,
 
-  amount:
-    order.amount,
+            amount:
+              order.amount,
 
-  currency:
-    order.currency,
+            currency:
+              order.currency,
 
-  name:
-    "GroceryHub",
+            name:
+              "GroceryHub",
 
-  description:
-    "Order Payment",
+            description:
+              "Order Payment",
 
-  order_id:
-    order.id,
-
-  handler:
-    async () => {
-
-      const orderId =
-        await saveOrder();
-
-      sendWhatsAppMessage(
-        orderId
-      );
-
-      toast.success(
-        "Payment Successful"
-      );
-
-      clearCart();
-
-    },
-
-  prefill: {
-
-    name:
-      customerInfo.name,
-
-    contact:
-      customerInfo.phone,
-
-  },
-
-  theme: {
-
-    color:
-      "#16a34a",
-
-  },
-
-};
+            order_id:
+              order.id,
 
             handler:
               async () => {
