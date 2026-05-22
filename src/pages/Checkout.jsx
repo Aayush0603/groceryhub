@@ -463,12 +463,8 @@ function Checkout() {
 
         `💰 Total: ₹${finalTotal}`;
 
-      window.open(
-
-        `https://wa.me/91YOURNUMBER?text=${message}`,
-
-        "_blank"
-      );
+     window.location.href =
+  `https://wa.me/919172607711?text=${message}`;
 
     };
 

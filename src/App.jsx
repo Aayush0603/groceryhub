@@ -14,6 +14,8 @@ import {
   useContext,
 } from "react";
 
+import axios from "axios";
+
 import {
   FaBars,
   FaTimes,
@@ -563,6 +565,37 @@ function AppLayout() {
 
 // MAIN APP
 function App() {
+
+  // WAKE UP RENDER BACKEND
+  useEffect(() => {
+
+    const wakeBackend =
+      async () => {
+
+        try {
+
+          await axios.get(
+            import.meta.env
+              .VITE_BACKEND_URL
+          );
+
+          console.log(
+            "Backend Awake"
+          );
+
+        } catch (error) {
+
+          console.log(
+            "Backend Wake Failed"
+          );
+
+        }
+
+      };
+
+    wakeBackend();
+
+  }, []);
 
   return (
 
