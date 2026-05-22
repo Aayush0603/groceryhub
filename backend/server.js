@@ -6,13 +6,54 @@ const dotenv = require("dotenv");
 
 const Razorpay = require("razorpay");
 
+// LOAD ENV
 dotenv.config();
 
+// APP
 const app = express();
 
-app.use(cors());
+// CORS
+app.use(
+  cors({
 
+    origin: "*",
+
+    methods: [
+      "GET",
+      "POST",
+    ],
+
+  })
+);
+
+// JSON
 app.use(express.json());
+
+// TEST ROUTE
+app.get("/", (req, res) => {
+
+  res.status(200).json({
+
+    success: true,
+
+    message:
+      "Backend Working Successfully",
+
+  });
+
+});
+
+// CHECK ENV VARIABLES
+if (
+  !process.env.RAZORPAY_KEY_ID ||
+  !process.env.RAZORPAY_KEY_SECRET
+) {
+
+  console.log(
+    "Razorpay keys missing in .env"
+  );
+
+}
 
 // RAZORPAY INSTANCE
 const razorpay = new Razorpay({
@@ -28,16 +69,35 @@ const razorpay = new Razorpay({
 // CREATE ORDER API
 app.post(
   "/create-order",
+
   async (req, res) => {
 
     try {
 
-      const { amount } = req.body;
+      const { amount } =
+        req.body;
 
+      // VALIDATION
+      if (!amount) {
+
+        return res
+          .status(400)
+          .json({
+
+            success: false,
+
+            error:
+              "Amount is required",
+
+          });
+
+      }
+
+      // CREATE ORDER
       const options = {
 
         amount:
-          amount * 100,
+          Number(amount) * 100,
 
         currency: "INR",
 
@@ -51,13 +111,25 @@ app.post(
           options
         );
 
-      res.status(200).json(order);
+      // RESPONSE
+      res.status(200).json({
+
+        success: true,
+
+        order,
+
+      });
 
     } catch (error) {
 
-      console.log(error);
+      console.log(
+        "Razorpay Error:",
+        error
+      );
 
       res.status(500).json({
+
+        success: false,
 
         error:
           "Failed to create Razorpay order",
@@ -69,10 +141,11 @@ app.post(
   }
 );
 
-// SERVER
+// PORT
 const PORT =
   process.env.PORT || 5000;
 
+// START SERVER
 app.listen(PORT, () => {
 
   console.log(
@@ -80,3 +153,6 @@ app.listen(PORT, () => {
   );
 
 });
+
+// EXPORT APP
+module.exports = app;

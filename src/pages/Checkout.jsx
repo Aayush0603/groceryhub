@@ -559,11 +559,11 @@ function Checkout() {
               import.meta.env
                 .VITE_RAZORPAY_KEY_ID,
 
-            amount:
-              data.amount,
+           amount:
+              data.order.amount,
 
             currency:
-              data.currency,
+              data.order.currency,
 
             name:
               "GroceryHub",
@@ -572,7 +572,7 @@ function Checkout() {
               "Order Payment",
 
             order_id:
-              data.id,
+              data.order.id,
 
             handler:
               async () => {
