@@ -296,52 +296,110 @@ function Checkout() {
   // USE CURRENT LOCATION
   const detectLocation = () => {
 
-    if (
-      !navigator.geolocation
-    ) {
+  if (
+    !navigator.geolocation
+  ) {
 
-      toast.error(
-        "Geolocation not supported"
-      );
+    toast.error(
+      "Geolocation not supported"
+    );
 
-      return;
+    return;
 
-    }
+  }
 
-    navigator.geolocation.getCurrentPosition(
+  navigator.geolocation.getCurrentPosition(
 
-      (position) => {
+    async (position) => {
 
+      try {
+
+        const lat =
+          position.coords.latitude;
+
+        const lng =
+          position.coords.longitude;
+
+        // SAVE LOCATION
         const location = {
 
-          lat:
-            position.coords.latitude,
+          lat,
 
-          lng:
-            position.coords.longitude,
+          lng,
 
         };
 
+        setCustomerLocation(
+          location
+        );
+
+        // CHECK DISTANCE
         checkSavedLocation(
           location
         );
 
-        toast.success(
-          "Location detected"
+        // REVERSE GEOCODING
+        const response =
+          await axios.get(
+
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+          );
+
+        const data =
+          response.data;
+
+        // AUTO FILL ADDRESS
+        setCustomerInfo(
+          (prev) => ({
+
+            ...prev,
+
+            address:
+              data.display_name ||
+              "",
+
+            city:
+              data.address?.city ||
+
+              data.address?.town ||
+
+              data.address?.village ||
+
+              "",
+
+            pincode:
+              data.address?.postcode ||
+              "",
+
+          })
         );
 
-      },
+        toast.success(
+          "Location detected successfully"
+        );
 
-      () => {
+      } catch (error) {
+
+        console.error(error);
 
         toast.error(
-          "Location access denied"
+          "Failed to fetch address"
         );
 
       }
-    );
 
-  };
+    },
+
+    () => {
+
+      toast.error(
+        "Location access denied"
+      );
+
+    }
+  );
+
+};
 
   // FETCH USER DATA
   useEffect(() => {
