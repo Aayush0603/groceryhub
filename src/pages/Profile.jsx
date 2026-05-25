@@ -1003,16 +1003,39 @@ const [addressData, setAddressData] =
               );
 
               setSavedAddresses(
-                updatedAddresses
-              );
+  updatedAddresses
+);
 
-              setShowAddressModal(
-                false
-              );
+setShowAddressModal(
+  false
+);
 
-              toast.success(
-                "Address updated successfully"
-              );
+// RESET EDIT STATE
+setEditingIndex(
+  null
+);
+
+// RESET FORM
+setAddressData({
+
+  address: "",
+
+  city: "",
+
+  pincode: "",
+
+  landmark: "",
+
+});
+
+// RESET TYPE
+setAddressType(
+  "Home"
+);
+
+toast.success(
+  "Address updated successfully"
+);
 
             } catch (error) {
 
