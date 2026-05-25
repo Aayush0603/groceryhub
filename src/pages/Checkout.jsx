@@ -121,6 +121,11 @@ function Checkout() {
   const [mapCenter, setMapCenter] =
     useState(shopLocation);
 
+  const [
+  orderPlaced,
+  setOrderPlaced,
+] = useState(false);
+
   // STATES
   const [loading, setLoading] =
     useState(false);
@@ -392,9 +397,25 @@ function Checkout() {
 
               ...prev,
 
-              address:
-                data.display_name ||
-                "",
+             address:
+
+  `${
+
+    data.address?.road || ""
+
+  } ${
+
+    data.address?.house_number || ""
+
+  } ${
+
+    data.address?.suburb || ""
+
+  } ${
+
+    data.address?.neighbourhood || ""
+
+  }`.trim(),
 
               city:
                 data.address?.city ||
@@ -823,6 +844,8 @@ function Checkout() {
             "Thank you for shopping with us ❤️"
           );
 
+          setOrderPlaced(true);
+
           // OPEN WHATSAPP
           setTimeout(() => {
 
@@ -831,14 +854,6 @@ function Checkout() {
             );
 
           }, 700);
-
-          // REDIRECT
-          setTimeout(() => {
-
-            navigate("/");
-
-          }, 2500);
-
         }
 
         // ONLINE PAYMENT
@@ -900,6 +915,8 @@ function Checkout() {
                     "Thank you for shopping with us ❤️"
                   );
 
+                  setOrderPlaced(true);
+
                   // OPEN WHATSAPP
                   setTimeout(() => {
 
@@ -908,13 +925,6 @@ function Checkout() {
                     );
 
                   }, 700);
-
-                  // REDIRECT
-                  setTimeout(() => {
-
-                    navigate("/");
-
-                  }, 2500);
 
                 } catch (error) {
 
@@ -973,6 +983,49 @@ function Checkout() {
       }
 
     };
+
+    if (orderPlaced) {
+
+  return (
+
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-white px-6 text-center">
+
+      <div className="bg-white shadow-2xl rounded-3xl p-12 max-w-2xl">
+
+        <h1 className="text-6xl mb-6">
+
+          🎉
+
+        </h1>
+
+        <h2 className="text-5xl font-extrabold text-green-700 mb-6">
+
+          Order Placed Successfully
+
+        </h2>
+
+        <p className="text-2xl text-gray-600 mb-10">
+
+          Thank you for shopping with us ❤️
+
+        </p>
+
+        <Link
+          to="/"
+          className="bg-green-600 hover:bg-green-700 text-white px-10 py-5 rounded-2xl text-2xl font-bold transition duration-300"
+        >
+
+          Continue Shopping
+
+        </Link>
+
+      </div>
+
+    </div>
+
+  );
+
+}
 
   return (
 
@@ -1228,8 +1281,24 @@ function Checkout() {
                             ...prev,
 
                             address:
-                              data.display_name ||
-                              "",
+
+  `${
+
+    data.address?.road || ""
+
+  } ${
+
+    data.address?.house_number || ""
+
+  } ${
+
+    data.address?.suburb || ""
+
+  } ${
+
+    data.address?.neighbourhood || ""
+
+  }`.trim(),
 
                             city:
                               data.address?.city ||
