@@ -4,9 +4,8 @@ import {
   useState,
 } from "react";
 
-import Autocomplete from "react-google-autocomplete";
-
 import {
+  Autocomplete,
   GoogleMap,
   Marker,
   useJsApiLoader,
@@ -1072,83 +1071,90 @@ function Checkout() {
               className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
             />
 
-            {/* GOOGLE AUTOCOMPLETE */}
-            <Autocomplete
-              onPlaceSelected={(
-                place
-              ) => {
+           {/* GOOGLE AUTOCOMPLETE */}
 
-                const lat =
-                  place.geometry.location.lat();
+<Autocomplete
 
-                const lng =
-                  place.geometry.location.lng();
+  onLoad={(autocomplete) => {
 
-                const address =
-                  place.formatted_address;
+    window.googleAutocomplete =
+      autocomplete;
 
-                setCustomerInfo({
+  }}
 
-                  ...customerInfo,
+  onPlaceChanged={() => {
 
-                  address,
+    const place =
+      window.googleAutocomplete.getPlace();
 
-                  city:
-                    place.address_components?.find(
-                      (component) =>
-                        component.types.includes(
-                          "locality"
-                        )
-                    )?.long_name || "",
+    if (
+      !place.geometry
+    ) return;
 
-                  pincode:
-                    place.address_components?.find(
-                      (component) =>
-                        component.types.includes(
-                          "postal_code"
-                        )
-                    )?.long_name || "",
+    const lat =
+      place.geometry.location.lat();
 
-                });
+    const lng =
+      place.geometry.location.lng();
 
-                const location = {
+    const address =
+      place.formatted_address;
 
-                  lat,
+    setCustomerInfo({
 
-                  lng,
+      ...customerInfo,
 
-                };
+      address,
 
-                setCustomerLocation(
-                  location
-                );
+      city:
+        place.address_components?.find(
+          (component) =>
+            component.types.includes(
+              "locality"
+            )
+        )?.long_name || "",
 
-                setMapCenter(
-                  location
-                );
+      pincode:
+        place.address_components?.find(
+          (component) =>
+            component.types.includes(
+              "postal_code"
+            )
+        )?.long_name || "",
 
-                checkSavedLocation(
-                  location
-                );
+    });
 
-              }}
+    const location = {
 
-              options={{
+      lat,
 
-                types: ["geocode"],
+      lng,
 
-                componentRestrictions: {
+    };
 
-                  country: "in",
+    setCustomerLocation(
+      location
+    );
 
-                },
+    setMapCenter(
+      location
+    );
 
-              }}
+    checkSavedLocation(
+      location
+    );
 
-              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+  }}
+>
 
-              placeholder="Search exact delivery address"
-            />
+  <input
+    type="text"
+    placeholder="Search exact delivery address"
+    className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+  />
+
+</Autocomplete>
+
 
             {/* GOOGLE MAP */}
             <div className="rounded-3xl overflow-hidden">
