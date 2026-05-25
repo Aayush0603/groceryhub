@@ -492,171 +492,304 @@ function Profile() {
         </div>
 
         {/* SAVED ADDRESSES */}
-        <div className="bg-white rounded-3xl shadow-2xl p-10">
+<div className="bg-white rounded-3xl shadow-2xl p-10">
 
-          <div className="flex items-center gap-4 mb-10">
+  <div className="flex items-center justify-between mb-10">
 
-            <FaMapMarkerAlt className="text-4xl text-green-600" />
+    <div className="flex items-center gap-4">
 
-            <h2 className="text-4xl font-extrabold text-gray-900">
+      <FaMapMarkerAlt className="text-4xl text-green-600" />
 
-              Saved Addresses
+      <h2 className="text-4xl font-extrabold text-gray-900">
 
-            </h2>
+        Saved Addresses
 
-          </div>
+      </h2>
 
-          {savedAddresses.length === 0 ? (
+    </div>
 
-            <div className="bg-gray-100 rounded-2xl p-10 text-center">
+  </div>
 
-              <h3 className="text-2xl font-bold text-gray-700">
+  {savedAddresses.length === 0 ? (
 
-                No Saved Addresses
+    <div className="bg-gray-100 rounded-2xl p-10 text-center">
 
-              </h3>
+      <h3 className="text-2xl font-bold text-gray-700">
 
-              <p className="text-gray-500 mt-3">
+        No Saved Addresses
 
-                Add an address during checkout
+      </h3>
+
+      <p className="text-gray-500 mt-3">
+
+        Add an address during checkout
+
+      </p>
+
+    </div>
+
+  ) : (
+
+    <div className="space-y-6">
+
+      {savedAddresses.map(
+        (
+          address,
+          index
+        ) => (
+
+          <div
+            key={index}
+            className={`border-2 rounded-3xl p-8 transition duration-300
+            ${
+              address.isDefault
+
+                ? "border-green-500 bg-green-50"
+
+                : "border-gray-200"
+            }`}
+          >
+
+            {/* HEADER */}
+            <div className="flex items-center justify-between mb-5">
+
+              <div className="flex items-center gap-4">
+
+                <FaHome className="text-3xl text-green-600" />
+
+                <div>
+
+                  <h3 className="text-2xl font-bold text-gray-900">
+
+                    {address.type}
+
+                  </h3>
+
+                  {address.isDefault && (
+
+                    <p className="text-green-700 font-bold mt-1">
+
+                      Default Address
+
+                    </p>
+
+                  )}
+
+                </div>
+
+              </div>
+
+              {!address.isDefault && (
+
+                <button
+                  onClick={() =>
+                    setAsDefaultAddress(
+                      index
+                    )
+                  }
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-bold transition duration-300"
+                >
+
+                  Set Default
+
+                </button>
+
+              )}
+
+            </div>
+
+            {/* ADDRESS DETAILS */}
+            <div className="space-y-3 text-gray-700 text-lg">
+
+              <p>
+
+                <span className="font-bold">
+
+                  Address:
+
+                </span>{" "}
+
+                {address.address}
+
+              </p>
+
+              <p>
+
+                <span className="font-bold">
+
+                  Landmark:
+
+                </span>{" "}
+
+                {address.landmark || "N/A"}
+
+              </p>
+
+              <p>
+
+                <span className="font-bold">
+
+                  City:
+
+                </span>{" "}
+
+                {address.city}
+
+              </p>
+
+              <p>
+
+                <span className="font-bold">
+
+                  Pincode:
+
+                </span>{" "}
+
+                {address.pincode}
 
               </p>
 
             </div>
 
-          ) : (
+            {/* ACTION BUTTONS */}
+            <div className="flex gap-4 mt-8">
 
-            <div className="space-y-6">
+              {/* EDIT */}
+              <button
+                onClick={() => {
 
-              {savedAddresses.map(
-                (
-                  address,
-                  index
-                ) => (
+                  toast(
+                    "Please edit this address from Checkout page"
+                  );
 
-                  <div
-                    key={index}
-                    className={`border-2 rounded-3xl p-8 transition duration-300
-                    ${
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition duration-300"
+              >
+
+                Edit
+
+              </button>
+
+              {/* DELETE */}
+              <button
+                onClick={async () => {
+
+                  try {
+
+                    const updatedAddresses =
+                      savedAddresses.filter(
+                        (
+                          _,
+                          i
+                        ) =>
+                          i !== index
+                      );
+
+                    await updateDoc(
+
+                      doc(
+                        db,
+                        "users",
+                        currentUser.uid
+                      ),
+
+                      {
+
+                        savedAddresses:
+                          updatedAddresses,
+
+                      }
+
+                    );
+
+                    setSavedAddresses(
+                      updatedAddresses
+                    );
+
+                    // REMOVE DEFAULT
+                    if (
                       address.isDefault
+                    ) {
 
-                        ? "border-green-500 bg-green-50"
+                      setDefaultAddress(
+                        null
+                      );
 
-                        : "border-gray-200"
-                    }`}
-                  >
+                    }
 
-                    {/* HEADER */}
-                    <div className="flex items-center justify-between mb-5">
+                    // AUTO SET FIRST AS DEFAULT
+                    if (
+                      updatedAddresses.length > 0 &&
+                      !updatedAddresses.some(
+                        (item) =>
+                          item.isDefault
+                      )
+                    ) {
 
-                      <div className="flex items-center gap-4">
+                      updatedAddresses[0].isDefault =
+                        true;
 
-                        <FaHome className="text-3xl text-green-600" />
+                      await updateDoc(
 
-                        <div>
+                        doc(
+                          db,
+                          "users",
+                          currentUser.uid
+                        ),
 
-                          <h3 className="text-2xl font-bold text-gray-900">
+                        {
 
-                            {address.type}
+                          savedAddresses:
+                            updatedAddresses,
 
-                          </h3>
+                        }
 
-                          {address.isDefault && (
+                      );
 
-                            <p className="text-green-700 font-bold mt-1">
+                      setSavedAddresses(
+                        updatedAddresses
+                      );
 
-                              Default Address
+                      setDefaultAddress(
+                        updatedAddresses[0]
+                      );
 
-                            </p>
+                    }
 
-                          )}
+                    toast.success(
+                      "Address deleted successfully"
+                    );
 
-                        </div>
+                  } catch (error) {
 
-                      </div>
+                    console.error(error);
 
-                      {!address.isDefault && (
+                    toast.error(
+                      "Failed to delete address"
+                    );
 
-                        <button
-                          onClick={() =>
-                            setAsDefaultAddress(
-                              index
-                            )
-                          }
-                          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-bold transition duration-300"
-                        >
+                  }
 
-                          Set Default
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-2xl font-bold transition duration-300"
+              >
 
-                        </button>
+                Delete
 
-                      )}
-
-                    </div>
-
-                    {/* ADDRESS */}
-                    <div className="space-y-3 text-gray-700 text-lg">
-
-                      <p>
-
-                        <span className="font-bold">
-
-                          Address:
-
-                        </span>{" "}
-
-                        {address.address}
-
-                      </p>
-
-                      <p>
-
-                        <span className="font-bold">
-
-                          Landmark:
-
-                        </span>{" "}
-
-                        {address.landmark}
-
-                      </p>
-
-                      <p>
-
-                        <span className="font-bold">
-
-                          City:
-
-                        </span>{" "}
-
-                        {address.city}
-
-                      </p>
-
-                      <p>
-
-                        <span className="font-bold">
-
-                          Pincode:
-
-                        </span>{" "}
-
-                        {address.pincode}
-
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                )
-              )}
+              </button>
 
             </div>
 
-          )}
+          </div>
 
-        </div>
+        )
+      )}
+
+    </div>
+
+  )}
+
+</div>
 
       </div>
 

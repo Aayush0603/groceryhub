@@ -1394,6 +1394,22 @@ const handleMapClick = (
 
       });
 
+      setCustomerLocation({
+
+  lat: item.lat,
+
+  lng: item.lng,
+
+});
+
+checkSavedLocation({
+
+  lat: item.lat,
+
+  lng: item.lng,
+
+});
+
     }}
     className="text-blue-600 font-bold"
   >
