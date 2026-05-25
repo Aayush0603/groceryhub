@@ -16,7 +16,6 @@ import { motion } from "framer-motion";
 
 import {
   Link,
-  useNavigate,
 } from "react-router-dom";
 
 import toast from "react-hot-toast";
@@ -59,9 +58,6 @@ function Checkout() {
     fetchUserProfile,
   } = useContext(AuthContext);
 
-  const navigate =
-  useNavigate();
-
   // GOOGLE MAPS
   const { isLoaded } =
     useJsApiLoader({
@@ -73,37 +69,6 @@ function Checkout() {
       libraries,
 
     });
-
-  // EMPTY CART
-  if (
-    !cartItems ||
-    cartItems.length === 0
-  ) {
-
-    return (
-
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 text-center">
-
-        <h1 className="text-5xl font-extrabold text-gray-900 mb-6">
-
-          Your Cart is Empty 🛒
-
-        </h1>
-
-        <Link
-          to="/"
-          className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl text-xl font-bold transition duration-300"
-        >
-
-          Continue Shopping
-
-        </Link>
-
-      </div>
-
-    );
-
-  }
 
   // SHOP LOCATION
   const shopLocation = {
@@ -337,142 +302,157 @@ function Checkout() {
     };
 
   // DETECT LOCATION
-  const detectLocation = () => {
+const detectLocation = () => {
 
-    if (
-      !navigator.geolocation
-    ) {
+  if (!navigator.geolocation) {
 
-      toast.error(
-        "Geolocation not supported"
+    toast.error(
+      "Geolocation not supported"
+    );
+
+    return;
+
+  }
+
+  navigator.geolocation.getCurrentPosition(
+
+    (position) => {
+
+      const lat =
+        position.coords.latitude;
+
+      const lng =
+        position.coords.longitude;
+
+      const location = {
+
+        lat,
+        lng,
+
+      };
+
+      // UPDATE LOCATION
+      setCustomerLocation(
+        location
       );
 
-      return;
+      setMapCenter(
+        location
+      );
 
-    }
+      checkSavedLocation(
+        location
+      );
 
-    navigator.geolocation.getCurrentPosition(
+      // GOOGLE GEOCODER
+      const geocoder =
+        new window.google.maps.Geocoder();
 
-      async (position) => {
+      geocoder.geocode(
 
-        try {
-
-          const lat =
-            position.coords.latitude;
-
-          const lng =
-            position.coords.longitude;
-
-          const location = {
-
+        {
+          location: {
             lat,
-
             lng,
+          },
+        },
 
-          };
+        (
+          results,
+          status
+        ) => {
 
-          setCustomerLocation(
-            location
-          );
+          if (
 
-          setMapCenter(
-            location
-          );
+            status === "OK" &&
+            results &&
+            results.length > 0
 
-          checkSavedLocation(
-            location
-          );
+          ) {
 
-         const geocoder =
-  new window.google.maps.Geocoder();
+            const result =
+              results[0];
 
-const response =
-  await geocoder.geocode({
+            const addressComponents =
+              result.address_components;
 
-    location: {
+            setCustomerInfo(
+              (prev) => ({
 
-      lat,
+                ...prev,
 
-      lng,
+                address:
+                  result.formatted_address ||
+                  "",
 
-    },
+                city:
+                  addressComponents.find(
+                    (component) =>
+                      component.types.includes(
+                        "locality"
+                      )
+                  )?.long_name || "",
 
-  });
+                pincode:
+                  addressComponents.find(
+                    (component) =>
+                      component.types.includes(
+                        "postal_code"
+                      )
+                  )?.long_name || "",
 
-if (
-  response.results &&
-  response.results.length > 0
-) {
+                landmark:
+                  addressComponents.find(
+                    (component) =>
+                      component.types.includes(
+                        "sublocality"
+                      )
+                  )?.long_name || "",
 
-  const result =
-    response.results[0];
+              })
+            );
 
-  const addressComponents =
-    result.address_components;
+            toast.success(
+              "Location detected successfully"
+            );
 
-  setCustomerInfo(
-    (prev) => ({
+          }
 
-      ...prev,
+          else {
 
-      address:
-        result.formatted_address,
+            toast.error(
+              "Failed to fetch address"
+            );
 
-      city:
-        addressComponents.find(
-          (component) =>
-            component.types.includes(
-              "locality"
-            )
-        )?.long_name || "",
-
-      pincode:
-        addressComponents.find(
-          (component) =>
-            component.types.includes(
-              "postal_code"
-            )
-        )?.long_name || "",
-
-      landmark:
-        addressComponents.find(
-          (component) =>
-            component.types.includes(
-              "sublocality"
-            )
-        )?.long_name || "",
-
-    })
-  );
-
-}
-
-          toast.success(
-            "Location detected successfully"
-          );
-
-        } catch (error) {
-
-          console.error(error);
-
-          toast.error(
-            "Failed to fetch address"
-          );
+          }
 
         }
 
-      },
+      );
 
-      () => {
+    },
 
-        toast.error(
-          "Location access denied"
-        );
+    () => {
 
-      }
-    );
+      toast.error(
+        "Location access denied"
+      );
 
-  };
+    },
+
+    {
+
+      enableHighAccuracy: true,
+
+      timeout: 10000,
+
+      maximumAge: 0,
+
+    }
+
+  );
+
+};
 
   // FETCH PROFILE
   useEffect(() => {
@@ -990,8 +970,8 @@ if (
       }
 
     };
-
-    if (orderPlaced) {
+// SUCCESS SCREEN
+if (orderPlaced) {
 
   return (
 
@@ -1000,9 +980,7 @@ if (
       <div className="bg-white shadow-2xl rounded-3xl p-12 max-w-2xl">
 
         <h1 className="text-6xl mb-6">
-
           🎉
-
         </h1>
 
         <h2 className="text-5xl font-extrabold text-green-700 mb-6">
@@ -1027,6 +1005,37 @@ if (
         </Link>
 
       </div>
+
+    </div>
+
+  );
+
+}
+
+// EMPTY CART SCREEN
+if (
+  !cartItems ||
+  cartItems.length === 0
+) {
+
+  return (
+
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 text-center">
+
+      <h1 className="text-5xl font-extrabold text-gray-900 mb-6">
+
+        Your Cart is Empty 🛒
+
+      </h1>
+
+      <Link
+        to="/"
+        className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl text-xl font-bold transition duration-300"
+      >
+
+        Continue Shopping
+
+      </Link>
 
     </div>
 
@@ -1230,180 +1239,133 @@ if (
 
                     draggable={true}
 
-                    onDragEnd={async (
-                      e
-                    ) => {
+                    onDragEnd={(e) => {
 
-                      const lat =
-                        e.latLng.lat();
+  const lat =
+    e.latLng.lat();
 
-                      const lng =
-                        e.latLng.lng();
+  const lng =
+    e.latLng.lng();
 
-                      const location = {
+  const location = {
 
-                        lat,
+    lat,
 
-                        lng,
+    lng,
 
-                      };
+  };
 
-                      setMapCenter(
-                        location
-                      );
+  // UPDATE MAP
+  setMapCenter(
+    location
+  );
 
-                      setCustomerLocation(
-                        location
-                      );
+  // UPDATE LOCATION
+  setCustomerLocation(
+    location
+  );
 
-                      checkSavedLocation(
-                        location
-                      );
+  // CHECK DELIVERY
+  checkSavedLocation(
+    location
+  );
 
-                      setCustomerInfo(
-                        (prev) => ({
-
-                          ...prev,
-
-                          address:
-                            "Fetching address...",
-
-                        })
-                      );
-
-                      try {
-
-                        const geocoder =
-  new window.google.maps.Geocoder();
-
-const response =
-  await geocoder.geocode({
-
-    location: {
-
-      lat,
-
-      lng,
-
-    },
-
-  });
-
-if (
-  response.results &&
-  response.results.length > 0
-) {
-
-  const result =
-    response.results[0];
-
-  const addressComponents =
-    result.address_components;
-
+  // TEMP ADDRESS
   setCustomerInfo(
     (prev) => ({
 
       ...prev,
 
       address:
-        result.formatted_address,
-
-      city:
-        addressComponents.find(
-          (component) =>
-            component.types.includes(
-              "locality"
-            )
-        )?.long_name || "",
-
-      pincode:
-        addressComponents.find(
-          (component) =>
-            component.types.includes(
-              "postal_code"
-            )
-        )?.long_name || "",
-
-      landmark:
-        addressComponents.find(
-          (component) =>
-            component.types.includes(
-              "sublocality"
-            )
-        )?.long_name || "",
+        "Fetching address...",
 
     })
   );
 
-}
+  // GOOGLE GEOCODER
+  const geocoder =
+    new window.google.maps.Geocoder();
 
-                        setCustomerInfo(
-                          (prev) => ({
+  geocoder.geocode(
 
-                            ...prev,
+    {
 
-                            address:
+      location: {
 
-  `${
+        lat,
 
-    data.address?.road || ""
+        lng,
 
-  } ${
+      },
 
-    data.address?.house_number || ""
+    },
 
-  } ${
+    (
+      results,
+      status
+    ) => {
 
-    data.address?.suburb || ""
+      if (
+       status === "OK" &&
+       results &&
+       results.length > 0
+      ) {
 
-  } ${
+        const result =
+          results[0];
 
-    data.address?.neighbourhood || ""
+        const addressComponents =
+          result.address_components;
 
-  }`.trim(),
+        setCustomerInfo(
+          (prev) => ({
 
-                            city:
-                              data.address?.city ||
+            ...prev,
 
-                              data.address?.town ||
+            address:
+              result.formatted_address,
 
-                              data.address?.village ||
+            city:
+              addressComponents.find(
+                (component) =>
+                  component.types.includes(
+                    "locality"
+                  )
+              )?.long_name || "",
 
-                              "",
+            pincode:
+              addressComponents.find(
+                (component) =>
+                  component.types.includes(
+                    "postal_code"
+                  )
+              )?.long_name || "",
 
-                            pincode:
-                              data.address?.postcode ||
-                              "",
+            landmark:
+              addressComponents.find(
+                (component) =>
+                  component.types.includes(
+                    "sublocality"
+                  )
+              )?.long_name || "",
 
-                            landmark:
-                              data.address?.suburb ||
+          })
+        );
 
-                              data.address?.neighbourhood ||
+      } else {
 
-                              "",
+        toast.error(
+          "Failed to fetch address"
+        );
 
-                          })
-                        );
+      }
 
-                        toast.success(
-                          "Location updated"
-                        );
+    }
+  );
 
-                      } catch (error) {
+}} 
 
-                        console.error(
-                          error
-                        );
-
-                        toast.error(
-                          "Failed to fetch address"
-                        );
-
-                      }
-
-                    }}
-                  />
-
+/>
                 </GoogleMap>
 
               )}
