@@ -383,62 +383,69 @@ function Checkout() {
             location
           );
 
-          const response =
-            await axios.get(
+         const geocoder =
+  new window.google.maps.Geocoder();
 
-              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
-            );
+const response =
+  await geocoder.geocode({
 
-          const data =
-            response.data;
+    location: {
 
-          setCustomerInfo(
-            (prev) => ({
+      lat,
 
-              ...prev,
+      lng,
 
-             address:
+    },
 
-  `${
+  });
 
-    data.address?.road || ""
+if (
+  response.results &&
+  response.results.length > 0
+) {
 
-  } ${
+  const result =
+    response.results[0];
 
-    data.address?.house_number || ""
+  const addressComponents =
+    result.address_components;
 
-  } ${
+  setCustomerInfo(
+    (prev) => ({
 
-    data.address?.suburb || ""
+      ...prev,
 
-  } ${
+      address:
+        result.formatted_address,
 
-    data.address?.neighbourhood || ""
+      city:
+        addressComponents.find(
+          (component) =>
+            component.types.includes(
+              "locality"
+            )
+        )?.long_name || "",
 
-  }`.trim(),
+      pincode:
+        addressComponents.find(
+          (component) =>
+            component.types.includes(
+              "postal_code"
+            )
+        )?.long_name || "",
 
-              city:
-                data.address?.city ||
+      landmark:
+        addressComponents.find(
+          (component) =>
+            component.types.includes(
+              "sublocality"
+            )
+        )?.long_name || "",
 
-                data.address?.town ||
+    })
+  );
 
-                data.address?.village ||
-
-                "",
-
-              pincode:
-                data.address?.postcode ||
-                "",
-
-              landmark:
-                data.address?.suburb ||
-
-                data.address?.neighbourhood ||
-
-                "",
-
-            })
-          );
+}
 
           toast.success(
             "Location detected successfully"
@@ -1266,14 +1273,69 @@ function Checkout() {
 
                       try {
 
-                        const response =
-                          await axios.get(
+                        const geocoder =
+  new window.google.maps.Geocoder();
 
-                            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
-                          );
+const response =
+  await geocoder.geocode({
 
-                        const data =
-                          response.data;
+    location: {
+
+      lat,
+
+      lng,
+
+    },
+
+  });
+
+if (
+  response.results &&
+  response.results.length > 0
+) {
+
+  const result =
+    response.results[0];
+
+  const addressComponents =
+    result.address_components;
+
+  setCustomerInfo(
+    (prev) => ({
+
+      ...prev,
+
+      address:
+        result.formatted_address,
+
+      city:
+        addressComponents.find(
+          (component) =>
+            component.types.includes(
+              "locality"
+            )
+        )?.long_name || "",
+
+      pincode:
+        addressComponents.find(
+          (component) =>
+            component.types.includes(
+              "postal_code"
+            )
+        )?.long_name || "",
+
+      landmark:
+        addressComponents.find(
+          (component) =>
+            component.types.includes(
+              "sublocality"
+            )
+        )?.long_name || "",
+
+    })
+  );
+
+}
 
                         setCustomerInfo(
                           (prev) => ({
