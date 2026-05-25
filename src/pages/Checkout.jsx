@@ -14,7 +14,10 @@ import axios from "axios";
 
 import { motion } from "framer-motion";
 
-import { Link } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import toast from "react-hot-toast";
 
@@ -55,6 +58,9 @@ function Checkout() {
     currentUser,
     fetchUserProfile,
   } = useContext(AuthContext);
+
+  const navigate =
+  useNavigate();
 
   // GOOGLE MAPS
   const { isLoaded } =
@@ -829,8 +835,7 @@ function Checkout() {
           // REDIRECT
           setTimeout(() => {
 
-            window.location.href =
-              "/";
+            navigate("/");
 
           }, 2500);
 
@@ -907,8 +912,7 @@ function Checkout() {
                   // REDIRECT
                   setTimeout(() => {
 
-                    window.location.href =
-                      "/";
+                    navigate("/");
 
                   }, 2500);
 
