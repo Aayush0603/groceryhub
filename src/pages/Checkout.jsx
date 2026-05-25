@@ -107,6 +107,12 @@ function Checkout() {
   const [savedAddresses, setSavedAddresses] =
     useState([]);
 
+  const [addressType, setAddressType] =
+  useState("Home");
+
+const [editingIndex, setEditingIndex] =
+  useState(null);
+
   const [saveAddress, setSaveAddress] =
     useState(true);
 
@@ -609,8 +615,80 @@ const detectLocation = () => {
                 customerInfo.pincode
           );
 
-        if (alreadyExists)
-          return;
+        if (alreadyExists) {
+
+  toast.error(
+    "Address already saved"
+  );
+
+  return;
+
+}
+
+// EDIT EXISTING ADDRESS
+if (
+  editingIndex !== null
+) {
+
+  const updatedAddresses =
+    [...savedAddresses];
+
+  updatedAddresses[
+    editingIndex
+  ] = {
+
+    type: addressType,
+
+    address:
+      customerInfo.address,
+
+    city:
+      customerInfo.city,
+
+    pincode:
+      customerInfo.pincode,
+
+    landmark:
+      customerInfo.landmark,
+
+    lat:
+      customerLocation?.lat || "",
+
+    lng:
+      customerLocation?.lng || "",
+
+    isDefault: true,
+
+  };
+
+  await updateDoc(
+
+    userRef,
+
+    {
+
+      savedAddresses:
+        updatedAddresses,
+
+    }
+
+  );
+
+  setSavedAddresses(
+    updatedAddresses
+  );
+
+  setEditingIndex(
+    null
+  );
+
+  toast.success(
+    "Address updated"
+  );
+
+  return;
+
+}
 
         await updateDoc(
           userRef,
@@ -619,7 +697,7 @@ const detectLocation = () => {
             savedAddresses:
               arrayUnion({
 
-                type: "Home",
+               type: addressType,
 
                 address:
                   customerInfo.address,
@@ -1261,7 +1339,7 @@ const handleMapClick = (
 
                         <FaHome className="text-green-600" />
 
-                        <h3 className="font-bold">
+                       <h3 className="font-bold text-lg">
 
                           {item.type}
 
@@ -1274,6 +1352,113 @@ const handleMapClick = (
                         {item.address}
 
                       </p>
+
+                      <div className="flex gap-4 mt-4">
+
+  <button
+    onClick={(e) => {
+
+      e.stopPropagation();
+
+      setEditingIndex(
+        index
+      );
+
+      setAddressType(
+        item.type
+      );
+
+      setCustomerInfo({
+
+        ...customerInfo,
+
+        address:
+          item.address,
+
+        city:
+          item.city,
+
+        pincode:
+          item.pincode,
+
+        landmark:
+          item.landmark,
+
+      });
+
+      setMapCenter({
+
+        lat: item.lat,
+
+        lng: item.lng,
+
+      });
+
+    }}
+    className="text-blue-600 font-bold"
+  >
+
+    Edit
+
+  </button>
+
+  <button
+    onClick={async (e) => {
+
+      e.stopPropagation();
+
+      try {
+
+        const updatedAddresses =
+          savedAddresses.filter(
+            (
+              _,
+              i
+            ) =>
+              i !== index
+          );
+
+        setSavedAddresses(
+          updatedAddresses
+        );
+
+        await updateDoc(
+          doc(
+            db,
+            "users",
+            currentUser.uid
+          ),
+          {
+
+            savedAddresses:
+              updatedAddresses,
+
+          }
+        );
+
+        toast.success(
+          "Address deleted"
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        toast.error(
+          "Failed to delete address"
+        );
+
+      }
+
+    }}
+    className="text-red-600 font-bold"
+  >
+
+    Delete
+
+  </button>
+
+</div>
 
                     </button>
 
@@ -1515,6 +1700,32 @@ const handleMapClick = (
             />
 
           </div>
+
+          {/* ADDRESS TYPE */}
+
+<select
+  value={addressType}
+  onChange={(e) =>
+    setAddressType(
+      e.target.value
+    )
+  }
+  className="w-full border border-gray-200 rounded-2xl p-5 outline-none mb-6"
+>
+
+  <option value="Home">
+    Home
+  </option>
+
+  <option value="Work">
+    Work
+  </option>
+
+  <option value="Other">
+    Other
+  </option>
+
+</select>
 
           {/* SAVE ADDRESS */}
           <div className="mt-6">
