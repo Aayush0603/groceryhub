@@ -5,7 +5,6 @@ import {
 } from "react";
 
 import {
-  Autocomplete,
   GoogleMap,
   MarkerF,
   useJsApiLoader,
@@ -1071,205 +1070,127 @@ function Checkout() {
               className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
             />
 
-           {/* GOOGLE AUTOCOMPLETE */}
 
-{/* GOOGLE AUTOCOMPLETE */}
 
-<Autocomplete
+{/* ADDRESS */}
 
-  onLoad={(autocomplete) => {
+<input
+  type="text"
+  name="address"
+  placeholder="Enter Delivery Address"
+  value={customerInfo.address}
+  onChange={handleChange}
+  className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+/>
 
-    window.googleAutocomplete =
-      autocomplete;
 
-  }}
+           {/* GOOGLE MAP */}
 
-  onPlaceChanged={() => {
+<div className="rounded-3xl overflow-hidden">
 
-    const place =
-      window.googleAutocomplete.getPlace();
+  {isLoaded && (
 
-    if (
-      !place.geometry
-    ) return;
+    <GoogleMap
+      mapContainerStyle={{
 
-    const lat =
-      place.geometry.location.lat();
+        width: "100%",
 
-    const lng =
-      place.geometry.location.lng();
+        height: "350px",
 
-    const address =
-      place.formatted_address;
+      }}
 
-    setCustomerInfo((prev) => ({
+      center={mapCenter}
 
-      ...prev,
+      zoom={15}
+    >
 
-      address,
+      <MarkerF
+        position={mapCenter}
 
-      city:
-        place.address_components?.find(
-          (component) =>
-            component.types.includes(
-              "locality"
-            )
-        )?.long_name || "",
+        draggable={true}
 
-      pincode:
-        place.address_components?.find(
-          (component) =>
-            component.types.includes(
-              "postal_code"
-            )
-        )?.long_name || "",
+        onDragEnd={async (
+          e
+        ) => {
 
-    }));
+          const lat =
+            e.latLng.lat();
 
-    const location = {
+          const lng =
+            e.latLng.lng();
 
-      lat,
+          const location = {
 
-      lng,
+            lat,
 
-    };
+            lng,
 
-    setCustomerLocation(
-      location
-    );
+          };
 
-    setMapCenter(
-      location
-    );
+          setMapCenter(
+            location
+          );
 
-    checkSavedLocation(
-      location
-    );
+          setCustomerLocation(
+            location
+          );
 
-  }}
->
+          checkSavedLocation(
+            location
+          );
 
-  <input
-    type="text"
-    defaultValue={
-      customerInfo.address
-    }
-    placeholder="Search exact delivery address"
-    className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
-  />
+          try {
 
-</Autocomplete>
+            const response =
+              await axios.get(
 
+                `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+              );
 
-            {/* GOOGLE MAP */}
-            <div className="rounded-3xl overflow-hidden">
+            const data =
+              response.data;
 
-              {isLoaded && (
+            setCustomerInfo(
+              (prev) => ({
 
-                <GoogleMap
-                  mapContainerStyle={{
+                ...prev,
 
-                    width: "100%",
+                address:
+                  data.display_name ||
+                  "",
 
-                    height: "350px",
+                city:
+                  data.address?.city ||
 
-                  }}
+                  data.address?.town ||
 
-                  center={mapCenter}
+                  data.address?.village ||
 
-                  zoom={15}
-                >
+                  "",
 
-                  <MarkerF
-                    position={mapCenter}
+                pincode:
+                  data.address?.postcode ||
+                  "",
 
-                    draggable={true}
+              })
+            );
 
-                    onDragEnd={async (
-                      e
-                    ) => {
+          } catch (error) {
 
-                      const lat =
-                        e.latLng.lat();
+            console.error(
+              error
+            );
 
-                      const lng =
-                        e.latLng.lng();
+          }
 
-                      const location = {
+        }}
+      />
 
-                        lat,
+    </GoogleMap>
 
-                        lng,
+  )}
 
-                      };
-
-                      setMapCenter(
-                        location
-                      );
-
-                      setCustomerLocation(
-                        location
-                      );
-
-                      checkSavedLocation(
-                        location
-                      );
-
-                      try {
-
-                        const response =
-                          await axios.get(
-
-                            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
-                          );
-
-                        const data =
-                          response.data;
-
-                        setCustomerInfo(
-                          (
-                            prev
-                          ) => ({
-
-                            ...prev,
-
-                            address:
-                              data.display_name ||
-                              "",
-
-                            city:
-                              data.address?.city ||
-
-                              data.address?.town ||
-
-                              data.address?.village ||
-
-                              "",
-
-                            pincode:
-                              data.address?.postcode ||
-                              "",
-
-                          })
-                        );
-
-                      } catch (error) {
-
-                        console.error(
-                          error
-                        );
-
-                      }
-
-                    }}
-                  />
-
-                </GoogleMap>
-
-              )}
-
-            </div>
-
+</div>
             <input
               type="text"
               name="landmark"
