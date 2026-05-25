@@ -69,6 +69,28 @@ function Profile() {
   const [defaultAddress, setDefaultAddress] =
     useState(null);
 
+  const [showAddressModal, setShowAddressModal] =
+  useState(false);
+
+const [editingIndex, setEditingIndex] =
+  useState(null);
+
+const [addressType, setAddressType] =
+  useState("Home");
+
+const [addressData, setAddressData] =
+  useState({
+
+    address: "",
+
+    city: "",
+
+    pincode: "",
+
+    landmark: "",
+
+  });
+
   // FETCH PROFILE
   const fetchProfile =
     async () => {
@@ -656,19 +678,43 @@ function Profile() {
 
               {/* EDIT */}
               <button
-                onClick={() => {
+  onClick={() => {
 
-                  toast(
-                    "Please edit this address from Checkout page"
-                  );
+    setEditingIndex(
+      index
+    );
 
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition duration-300"
-              >
+    setAddressType(
+      address.type
+    );
 
-                Edit
+    setAddressData({
 
-              </button>
+      address:
+        address.address,
+
+      city:
+        address.city,
+
+      pincode:
+        address.pincode,
+
+      landmark:
+        address.landmark,
+
+    });
+
+    setShowAddressModal(
+      true
+    );
+
+  }}
+  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition duration-300"
+>
+
+  Edit
+
+</button>
 
               {/* DELETE */}
               <button
@@ -791,7 +837,221 @@ function Profile() {
 
 </div>
 
+    </div>
+
+    {/* ADDRESS MODAL */}
+{showAddressModal && (
+
+  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
+
+    <div className="bg-white rounded-3xl p-8 w-full max-w-2xl">
+
+      <h2 className="text-3xl font-bold mb-8">
+
+        Edit Address
+
+      </h2>
+
+      {/* TYPE */}
+      <select
+        value={addressType}
+        onChange={(e) =>
+          setAddressType(
+            e.target.value
+          )
+        }
+        className="w-full border border-gray-200 rounded-2xl p-5 mb-5 outline-none"
+      >
+
+        <option>
+          Home
+        </option>
+
+        <option>
+          Work
+        </option>
+
+        <option>
+          Other
+        </option>
+
+      </select>
+
+      {/* ADDRESS */}
+      <input
+        type="text"
+        value={addressData.address}
+        onChange={(e) =>
+          setAddressData({
+
+            ...addressData,
+
+            address:
+              e.target.value,
+
+          })
+        }
+        placeholder="Address"
+        className="w-full border border-gray-200 rounded-2xl p-5 mb-5 outline-none"
+      />
+
+      {/* CITY */}
+      <input
+        type="text"
+        value={addressData.city}
+        onChange={(e) =>
+          setAddressData({
+
+            ...addressData,
+
+            city:
+              e.target.value,
+
+          })
+        }
+        placeholder="City"
+        className="w-full border border-gray-200 rounded-2xl p-5 mb-5 outline-none"
+      />
+
+      {/* PINCODE */}
+      <input
+        type="text"
+        value={addressData.pincode}
+        onChange={(e) =>
+          setAddressData({
+
+            ...addressData,
+
+            pincode:
+              e.target.value,
+
+          })
+        }
+        placeholder="Pincode"
+        className="w-full border border-gray-200 rounded-2xl p-5 mb-5 outline-none"
+      />
+
+      {/* LANDMARK */}
+      <input
+        type="text"
+        value={addressData.landmark}
+        onChange={(e) =>
+          setAddressData({
+
+            ...addressData,
+
+            landmark:
+              e.target.value,
+
+          })
+        }
+        placeholder="Landmark"
+        className="w-full border border-gray-200 rounded-2xl p-5 mb-8 outline-none"
+      />
+
+      {/* BUTTONS */}
+      <div className="flex gap-4">
+
+        <button
+          onClick={async () => {
+
+            try {
+
+              const updatedAddresses =
+                [...savedAddresses];
+
+              updatedAddresses[
+                editingIndex
+              ] = {
+
+                ...updatedAddresses[
+                  editingIndex
+                ],
+
+                type:
+                  addressType,
+
+                address:
+                  addressData.address,
+
+                city:
+                  addressData.city,
+
+                pincode:
+                  addressData.pincode,
+
+                landmark:
+                  addressData.landmark,
+
+              };
+
+              await updateDoc(
+
+                doc(
+                  db,
+                  "users",
+                  currentUser.uid
+                ),
+
+                {
+
+                  savedAddresses:
+                    updatedAddresses,
+
+                }
+
+              );
+
+              setSavedAddresses(
+                updatedAddresses
+              );
+
+              setShowAddressModal(
+                false
+              );
+
+              toast.success(
+                "Address updated successfully"
+              );
+
+            } catch (error) {
+
+              console.error(error);
+
+              toast.error(
+                "Failed to update address"
+              );
+
+            }
+
+          }}
+          className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-bold"
+        >
+
+          Save Changes
+
+        </button>
+
+        <button
+          onClick={() =>
+            setShowAddressModal(
+              false
+            )
+          }
+          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-4 rounded-2xl font-bold"
+        >
+
+          Cancel
+
+        </button>
+
       </div>
+
+    </div>
+
+  </div>
+
+)}
 
     </section>
 
