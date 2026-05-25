@@ -7,7 +7,7 @@ import {
 import {
   Autocomplete,
   GoogleMap,
-  Marker,
+  MarkerF,
   useJsApiLoader,
 } from "@react-google-maps/api";
 
@@ -1073,6 +1073,8 @@ function Checkout() {
 
            {/* GOOGLE AUTOCOMPLETE */}
 
+{/* GOOGLE AUTOCOMPLETE */}
+
 <Autocomplete
 
   onLoad={(autocomplete) => {
@@ -1100,9 +1102,9 @@ function Checkout() {
     const address =
       place.formatted_address;
 
-    setCustomerInfo({
+    setCustomerInfo((prev) => ({
 
-      ...customerInfo,
+      ...prev,
 
       address,
 
@@ -1122,7 +1124,7 @@ function Checkout() {
             )
         )?.long_name || "",
 
-    });
+    }));
 
     const location = {
 
@@ -1149,6 +1151,9 @@ function Checkout() {
 
   <input
     type="text"
+    defaultValue={
+      customerInfo.address
+    }
     placeholder="Search exact delivery address"
     className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
   />
@@ -1175,7 +1180,7 @@ function Checkout() {
                   zoom={15}
                 >
 
-                  <Marker
+                  <MarkerF
                     position={mapCenter}
 
                     draggable={true}
