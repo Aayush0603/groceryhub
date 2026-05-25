@@ -41,6 +41,8 @@ import { CartContext } from "../context/CartContext";
 
 import { AuthContext } from "../context/AuthContext";
 
+const libraries = ["places"];
+
 function Checkout() {
 
   const {
@@ -60,15 +62,15 @@ function Checkout() {
 
   // GOOGLE MAPS
   const { isLoaded } =
-    useJsApiLoader({
+  useJsApiLoader({
 
-      googleMapsApiKey:
-        import.meta.env
-          .VITE_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey:
+      import.meta.env
+        .VITE_GOOGLE_MAPS_API_KEY,
 
-      libraries: ["places"],
+    libraries,
 
-    });
+  });
 
   // EMPTY CART
   if (
@@ -743,8 +745,12 @@ function Checkout() {
 
         `💰 Total: ₹${finalTotal}`;
 
-      window.location.href =
-        `https://wa.me/919172607711?text=${message}`;
+      window.open(
+
+  `https://wa.me/919172607711?text=${message}`,
+
+  "_blank"
+);
 
     };
 
@@ -791,22 +797,37 @@ function Checkout() {
         ) {
 
           const orderId =
-            await saveOrder();
+  await saveOrder();
 
-          sendWhatsAppMessage(
-            orderId
-          );
+// CLEAR CART
+clearCart();
 
-          toast.success(
-            "Order placed successfully"
-          );
+// SHOW SUCCESS
+toast.success(
+  "Thank you for shopping with us ❤️"
+);
 
-          clearCart();
+// OPEN WHATSAPP
+setTimeout(() => {
 
-        }
+  sendWhatsAppMessage(
+    orderId
+  );
 
-        // ONLINE PAYMENT
-        else {
+}, 500);
+
+// REDIRECT HOME
+// REDIRECT HOME
+setTimeout(() => {
+
+  window.location.href = "/";
+
+}, 2000);
+
+}
+
+// ONLINE PAYMENT
+else {
 
           const response =
             await axios.post(
@@ -849,17 +870,33 @@ function Checkout() {
               async () => {
 
                 const orderId =
-                  await saveOrder();
+  await saveOrder();
 
-                sendWhatsAppMessage(
-                  orderId
-                );
+// CLEAR CART
+clearCart();
 
-                toast.success(
-                  "Payment Successful"
-                );
+// SUCCESS MESSAGE
+toast.success(
+  "Thank you for shopping with us ❤️"
+);
 
-                clearCart();
+// OPEN WHATSAPP
+setTimeout(() => {
+
+  sendWhatsAppMessage(
+    orderId
+  );
+
+}, 500);
+
+// REDIRECT HOME
+setTimeout(() => {
+
+  window.location.href = "/";
+
+}, 2000);
+
+                
 
               },
 
