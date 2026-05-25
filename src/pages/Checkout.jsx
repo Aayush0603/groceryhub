@@ -4,6 +4,14 @@ import {
   useState,
 } from "react";
 
+import Autocomplete from "react-google-autocomplete";
+
+import {
+  GoogleMap,
+  Marker,
+  useJsApiLoader,
+} from "@react-google-maps/api";
+
 import axios from "axios";
 
 import { motion } from "framer-motion";
@@ -43,8 +51,26 @@ function Checkout() {
     clearCart,
   } = useContext(CartContext);
 
-  const { currentUser } =
-    useContext(AuthContext);
+  const {
+
+  currentUser,
+
+  fetchUserProfile,
+
+} = useContext(AuthContext);
+
+
+  // GOOGLE MAPS
+  const { isLoaded } =
+    useJsApiLoader({
+
+      googleMapsApiKey:
+        import.meta.env
+          .VITE_GOOGLE_MAPS_API_KEY,
+
+      libraries: ["places"],
+
+    });
 
   // EMPTY CART
   if (
@@ -85,6 +111,10 @@ function Checkout() {
     lng: 75.69683612021862,
 
   };
+
+  // MAP CENTER
+  const [mapCenter, setMapCenter] =
+    useState(shopLocation);
 
   // DELIVERY RADIUS
   const deliveryRadius = 15;
@@ -293,113 +323,113 @@ function Checkout() {
 
     };
 
-  // USE CURRENT LOCATION
+  // CURRENT LOCATION
   const detectLocation = () => {
 
-  if (
-    !navigator.geolocation
-  ) {
+    if (
+      !navigator.geolocation
+    ) {
 
-    toast.error(
-      "Geolocation not supported"
-    );
+      toast.error(
+        "Geolocation not supported"
+      );
 
-    return;
+      return;
 
-  }
+    }
 
-  navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.getCurrentPosition(
 
-    async (position) => {
+      async (position) => {
 
-      try {
+        try {
 
-        const lat =
-          position.coords.latitude;
+          const lat =
+            position.coords.latitude;
 
-        const lng =
-          position.coords.longitude;
+          const lng =
+            position.coords.longitude;
 
-        // SAVE LOCATION
-        const location = {
+          const location = {
 
-          lat,
+            lat,
 
-          lng,
+            lng,
 
-        };
+          };
 
-        setCustomerLocation(
-          location
-        );
-
-        // CHECK DISTANCE
-        checkSavedLocation(
-          location
-        );
-
-        // REVERSE GEOCODING
-        const response =
-          await axios.get(
-
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+          setCustomerLocation(
+            location
           );
 
-        const data =
-          response.data;
+          setMapCenter(
+            location
+          );
 
-        // AUTO FILL ADDRESS
-        setCustomerInfo(
-          (prev) => ({
+          checkSavedLocation(
+            location
+          );
 
-            ...prev,
+          const response =
+            await axios.get(
 
-            address:
-              data.display_name ||
-              "",
+              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+            );
 
-            city:
-              data.address?.city ||
+          const data =
+            response.data;
 
-              data.address?.town ||
+          setCustomerInfo(
+            (prev) => ({
 
-              data.address?.village ||
+              ...prev,
 
-              "",
+              address:
+                data.display_name ||
+                "",
 
-            pincode:
-              data.address?.postcode ||
-              "",
+              city:
+                data.address?.city ||
 
-          })
-        );
+                data.address?.town ||
 
-        toast.success(
-          "Location detected successfully"
-        );
+                data.address?.village ||
 
-      } catch (error) {
+                "",
 
-        console.error(error);
+              pincode:
+                data.address?.postcode ||
+                "",
+
+            })
+          );
+
+          toast.success(
+            "Location detected successfully"
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
+          toast.error(
+            "Failed to fetch address"
+          );
+
+        }
+
+      },
+
+      () => {
 
         toast.error(
-          "Failed to fetch address"
+          "Location access denied"
         );
 
       }
+    );
 
-    },
-
-    () => {
-
-      toast.error(
-        "Location access denied"
-      );
-
-    }
-  );
-
-};
+  };
 
   // FETCH USER DATA
   useEffect(() => {
@@ -493,7 +523,7 @@ function Checkout() {
 
                 });
 
-                checkSavedLocation({
+                const location = {
 
                   lat:
                     defaultAddress.lat,
@@ -501,7 +531,15 @@ function Checkout() {
                   lng:
                     defaultAddress.lng,
 
-                });
+                };
+
+                setMapCenter(
+                  location
+                );
+
+                checkSavedLocation(
+                  location
+                );
 
               }
 
@@ -523,64 +561,83 @@ function Checkout() {
 
   // SAVE ADDRESS
   const saveCustomerAddress =
-    async () => {
+  async () => {
 
-      try {
+    try {
 
-        if (
-          !saveAddress
-        ) return;
+      if (!saveAddress)
+        return;
 
-        const userRef =
-          doc(
-            db,
-            "users",
-            currentUser.uid
-          );
-
-        await updateDoc(
-          userRef,
-          {
-
-            savedAddresses:
-              arrayUnion({
-
-                type: "Home",
-
-                address:
-                  customerInfo.address,
-
-                city:
-                  customerInfo.city,
-
-                pincode:
-                  customerInfo.pincode,
-
-                landmark:
-                  customerInfo.landmark,
-
-                lat:
-                  customerLocation?.lat || "",
-
-                lng:
-                  customerLocation?.lng || "",
-
-                isDefault:
-                  savedAddresses.length === 0,
-
-              }),
-
-          }
+      const userRef =
+        doc(
+          db,
+          "users",
+          currentUser.uid
         );
 
-      } catch (error) {
+      // CHECK DUPLICATE
+      const alreadyExists =
+        savedAddresses.some(
+          (item) =>
 
-        console.error(error);
+            item.address ===
+              customerInfo.address &&
 
-      }
+            item.pincode ===
+              customerInfo.pincode
+        );
 
-    };
+      // SKIP DUPLICATE
+      if (alreadyExists)
+        return;
 
+      await updateDoc(
+        userRef,
+        {
+
+          savedAddresses:
+            arrayUnion({
+
+              type: "Home",
+
+              address:
+                customerInfo.address,
+
+              city:
+                customerInfo.city,
+
+              pincode:
+                customerInfo.pincode,
+
+              landmark:
+                customerInfo.landmark,
+
+              lat:
+                customerLocation?.lat || "",
+
+              lng:
+                customerLocation?.lng || "",
+
+              isDefault:
+                savedAddresses.length === 0,
+
+            }),
+
+        }
+      );
+
+      // REFRESH USER
+      await fetchUserProfile(
+        currentUser.uid
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  };
   // SAVE ORDER
   const saveOrder =
     async () => {
@@ -931,7 +988,7 @@ function Checkout() {
 
                         });
 
-                        checkSavedLocation({
+                        const location = {
 
                           lat:
                             item.lat,
@@ -939,7 +996,15 @@ function Checkout() {
                           lng:
                             item.lng,
 
-                        });
+                        };
+
+                        setMapCenter(
+                          location
+                        );
+
+                        checkSavedLocation(
+                          location
+                        );
 
                       }}
                       className="w-full text-left bg-gray-100 hover:bg-green-50 border border-gray-200 rounded-2xl p-5 transition duration-300"
@@ -974,7 +1039,7 @@ function Checkout() {
 
           )}
 
-          {/* DETECT LOCATION */}
+          {/* CURRENT LOCATION */}
           <button
             onClick={
               detectLocation
@@ -1007,13 +1072,192 @@ function Checkout() {
               className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
             />
 
-            <textarea
-              name="address"
-              placeholder="Delivery Address"
-              value={customerInfo.address}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-2xl p-5 outline-none h-32"
+            {/* GOOGLE AUTOCOMPLETE */}
+            <Autocomplete
+              onPlaceSelected={(
+                place
+              ) => {
+
+                const lat =
+                  place.geometry.location.lat();
+
+                const lng =
+                  place.geometry.location.lng();
+
+                const address =
+                  place.formatted_address;
+
+                setCustomerInfo({
+
+                  ...customerInfo,
+
+                  address,
+
+                  city:
+                    place.address_components?.find(
+                      (component) =>
+                        component.types.includes(
+                          "locality"
+                        )
+                    )?.long_name || "",
+
+                  pincode:
+                    place.address_components?.find(
+                      (component) =>
+                        component.types.includes(
+                          "postal_code"
+                        )
+                    )?.long_name || "",
+
+                });
+
+                const location = {
+
+                  lat,
+
+                  lng,
+
+                };
+
+                setCustomerLocation(
+                  location
+                );
+
+                setMapCenter(
+                  location
+                );
+
+                checkSavedLocation(
+                  location
+                );
+
+              }}
+
+              options={{
+
+                types: ["geocode"],
+
+                componentRestrictions: {
+
+                  country: "in",
+
+                },
+
+              }}
+
+              className="w-full border border-gray-200 rounded-2xl p-5 outline-none"
+
+              placeholder="Search exact delivery address"
             />
+
+            {/* GOOGLE MAP */}
+            <div className="rounded-3xl overflow-hidden">
+
+              {isLoaded && (
+
+                <GoogleMap
+                  mapContainerStyle={{
+
+                    width: "100%",
+
+                    height: "350px",
+
+                  }}
+
+                  center={mapCenter}
+
+                  zoom={15}
+                >
+
+                  <Marker
+                    position={mapCenter}
+
+                    draggable={true}
+
+                    onDragEnd={async (
+                      e
+                    ) => {
+
+                      const lat =
+                        e.latLng.lat();
+
+                      const lng =
+                        e.latLng.lng();
+
+                      const location = {
+
+                        lat,
+
+                        lng,
+
+                      };
+
+                      setMapCenter(
+                        location
+                      );
+
+                      setCustomerLocation(
+                        location
+                      );
+
+                      checkSavedLocation(
+                        location
+                      );
+
+                      try {
+
+                        const response =
+                          await axios.get(
+
+                            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+                          );
+
+                        const data =
+                          response.data;
+
+                        setCustomerInfo(
+                          (
+                            prev
+                          ) => ({
+
+                            ...prev,
+
+                            address:
+                              data.display_name ||
+                              "",
+
+                            city:
+                              data.address?.city ||
+
+                              data.address?.town ||
+
+                              data.address?.village ||
+
+                              "",
+
+                            pincode:
+                              data.address?.postcode ||
+                              "",
+
+                          })
+                        );
+
+                      } catch (error) {
+
+                        console.error(
+                          error
+                        );
+
+                      }
+
+                    }}
+                  />
+
+                </GoogleMap>
+
+              )}
+
+            </div>
 
             <input
               type="text"
@@ -1098,7 +1342,213 @@ function Checkout() {
 
         </motion.div>
 
-        {/* RIGHT SIDE REMAINS SAME */}
+        {/* RIGHT SIDE */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            x: 50,
+          }}
+          animate={{
+            opacity: 1,
+            x: 0,
+          }}
+          className="bg-white rounded-3xl shadow-2xl p-10 h-fit"
+        >
+
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-10">
+
+            Order Summary
+
+          </h2>
+
+          {/* ITEMS */}
+          <div className="space-y-5 mb-10">
+
+            {cartItems.map(
+              (
+                item,
+                index
+              ) => (
+
+                <div
+                  key={index}
+                  className="flex justify-between items-center"
+                >
+
+                  <div>
+
+                    <h3 className="font-bold text-lg">
+
+                      {item.name}
+
+                    </h3>
+
+                    <p className="text-gray-500">
+
+                      Qty: {item.quantity}
+
+                    </p>
+
+                  </div>
+
+                  <h3 className="font-bold text-lg">
+
+                    ₹
+                    {item.price *
+                      item.quantity}
+
+                  </h3>
+
+                </div>
+
+              )
+            )}
+
+          </div>
+
+          {/* PAYMENT */}
+          <div className="mb-10">
+
+            <h3 className="text-2xl font-bold text-gray-900 mb-5">
+
+              Payment Method
+
+            </h3>
+
+            <div className="space-y-4">
+
+              <button
+                onClick={() =>
+                  setPaymentMethod(
+                    "Cash on Delivery"
+                  )
+                }
+                className={`w-full p-5 rounded-2xl border-2 font-bold transition duration-300
+                ${
+                  paymentMethod ===
+                  "Cash on Delivery"
+
+                    ? "border-green-600 bg-green-50 text-green-700"
+
+                    : "border-gray-200"
+                }`}
+              >
+
+                Cash On Delivery
+
+              </button>
+
+              <button
+                onClick={() =>
+                  setPaymentMethod(
+                    "Online Payment"
+                  )
+                }
+                className={`w-full p-5 rounded-2xl border-2 font-bold transition duration-300
+                ${
+                  paymentMethod ===
+                  "Online Payment"
+
+                    ? "border-green-600 bg-green-50 text-green-700"
+
+                    : "border-gray-200"
+                }`}
+              >
+
+                Online Payment
+
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* TOTALS */}
+          <div className="space-y-5">
+
+            <div className="flex justify-between text-xl">
+
+              <span>
+
+                Subtotal
+
+              </span>
+
+              <span>
+
+                ₹{totalPrice}
+
+              </span>
+
+            </div>
+
+            <div className="flex justify-between text-xl">
+
+              <span>
+
+                Delivery Charge
+
+              </span>
+
+              <span>
+
+                ₹{deliveryCharge}
+
+              </span>
+
+            </div>
+
+            <div className="border-t border-gray-200 pt-5 flex justify-between items-center">
+
+              <h1 className="text-3xl font-extrabold text-gray-900">
+
+                Total
+
+              </h1>
+
+              <h1 className="text-4xl font-extrabold text-green-700">
+
+                ₹{finalTotal}
+
+              </h1>
+
+            </div>
+
+          </div>
+
+          {/* BUTTON */}
+          <button
+            onClick={placeOrder}
+            disabled={
+              loading ||
+              !deliveryAvailable
+            }
+            className={`w-full mt-10 py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4
+            ${
+              loading ||
+              !deliveryAvailable
+
+                ? "bg-gray-400 cursor-not-allowed text-white"
+
+                : "bg-green-600 hover:bg-green-700 text-white"
+            }`}
+          >
+
+            <FaWhatsapp />
+
+            {loading
+              ? "Processing..."
+              : paymentMethod ===
+                "Online Payment"
+
+              ? "Pay Now"
+
+              : "Place Order"}
+
+          </button>
+
+        </motion.div>
+
       </div>
 
     </section>

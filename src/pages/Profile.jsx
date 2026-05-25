@@ -10,6 +10,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 import {
@@ -21,14 +22,21 @@ import { AuthContext } from "../context/AuthContext";
 import {
   FaUserCircle,
   FaSave,
+  FaHome,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 
 function Profile() {
 
-  // CURRENT USER
+  // AUTH CONTEXT
   const {
+
     currentUser,
-    login,
+
+    updateUser,
+
+    fetchUserProfile,
+
   } = useContext(AuthContext);
 
   // LOADING
@@ -49,15 +57,17 @@ function Profile() {
 
       phone: "",
 
-      address: "",
-
-      city: "",
-
-      pincode: "",
-
       role: "customer",
 
     });
+
+  // SAVED ADDRESSES
+  const [savedAddresses, setSavedAddresses] =
+    useState([]);
+
+  // DEFAULT ADDRESS
+  const [defaultAddress, setDefaultAddress] =
+    useState(null);
 
   // FETCH PROFILE
   const fetchProfile =
@@ -103,20 +113,38 @@ function Profile() {
             phone:
               userData.phone || "",
 
-            address:
-              userData.address || "",
-
-            city:
-              userData.city || "",
-
-            pincode:
-              userData.pincode || "",
-
             role:
               userData.role ||
               "customer",
 
           });
+
+          // ADDRESSES
+          if (
+            userData.savedAddresses
+          ) {
+
+            setSavedAddresses(
+
+              userData.savedAddresses
+
+            );
+
+            const defaultAddr =
+              userData.savedAddresses.find(
+                (item) =>
+                  item.isDefault
+              );
+
+            if (defaultAddr) {
+
+              setDefaultAddress(
+                defaultAddr
+              );
+
+            }
+
+          }
 
         }
 
@@ -176,21 +204,6 @@ function Profile() {
 
       }
 
-      // PINCODE VALIDATION
-      if (
-        profileData.pincode &&
-        profileData.pincode.length !==
-          6
-      ) {
-
-        toast.error(
-          "Pincode must be 6 digits"
-        );
-
-        return;
-
-      }
-
       try {
 
         setSaving(true);
@@ -221,10 +234,13 @@ function Profile() {
 
         );
 
-        // UPDATE SESSION
-        login({
+        // REFRESH USER
+        await fetchUserProfile(
+          currentUser.uid
+        );
 
-          ...currentUser,
+        // UPDATE LOCAL USER
+        updateUser({
 
           ...profileData,
 
@@ -250,6 +266,80 @@ function Profile() {
 
     };
 
+  // SET DEFAULT ADDRESS
+  const setAsDefaultAddress =
+    async (selectedIndex) => {
+
+      try {
+
+        const updatedAddresses =
+          savedAddresses.map(
+            (
+              item,
+              index
+            ) => ({
+
+              ...item,
+
+              isDefault:
+                index ===
+                selectedIndex,
+
+            })
+          );
+
+        // UPDATE FIREBASE
+        await updateDoc(
+
+          doc(
+            db,
+            "users",
+            currentUser.uid
+          ),
+
+          {
+
+            savedAddresses:
+              updatedAddresses,
+
+          }
+        );
+
+        // UPDATE STATE
+        setSavedAddresses(
+          updatedAddresses
+        );
+
+        const selectedAddress =
+          updatedAddresses[
+            selectedIndex
+          ];
+
+        setDefaultAddress(
+          selectedAddress
+        );
+
+        // REFRESH PROFILE
+        await fetchUserProfile(
+          currentUser.uid
+        );
+
+        toast.success(
+          "Default address updated"
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        toast.error(
+          "Failed to update address"
+        );
+
+      }
+
+    };
+
   // LOADING
   if (loading) {
 
@@ -269,212 +359,302 @@ function Profile() {
 
     <section className="min-h-screen bg-gray-100 py-28 px-6">
 
-      <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
+      <div className="max-w-5xl mx-auto space-y-10">
 
-        {/* TOP */}
-        <div className="bg-green-600 text-white p-10 text-center">
+        {/* PROFILE CARD */}
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-          <FaUserCircle className="text-8xl mx-auto mb-5" />
+          {/* TOP */}
+          <div className="bg-green-600 text-white p-10 text-center">
 
-          <h1 className="text-5xl font-extrabold">
+            <FaUserCircle className="text-8xl mx-auto mb-5" />
 
-            My Profile
+            <h1 className="text-5xl font-extrabold">
 
-          </h1>
+              My Profile
 
-          <p className="mt-4 text-lg text-green-100">
+            </h1>
 
-            Manage your account details
+            <p className="mt-4 text-lg text-green-100">
 
-          </p>
+              Manage your account details
 
-        </div>
-
-        {/* FORM */}
-        <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-          {/* NAME */}
-          <div>
-
-            <label className="block text-lg font-bold text-gray-700 mb-3">
-
-              Full Name
-
-            </label>
-
-            <input
-              type="text"
-              name="name"
-              value={profileData.name}
-              onChange={handleChange}
-              placeholder="Enter your name"
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
-            />
+            </p>
 
           </div>
 
-          {/* EMAIL */}
-          <div>
+          {/* FORM */}
+          <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
 
-            <label className="block text-lg font-bold text-gray-700 mb-3">
+            {/* NAME */}
+            <div>
 
-              Email (Optional)
+              <label className="block text-lg font-bold text-gray-700 mb-3">
 
-            </label>
+                Full Name
 
-            <input
-              type="email"
-              name="email"
-              value={profileData.email}
-              onChange={handleChange}
-              placeholder="Enter email"
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
-            />
+              </label>
 
-          </div>
+              <input
+                type="text"
+                name="name"
+                value={profileData.name}
+                onChange={handleChange}
+                placeholder="Enter your name"
+                className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
+              />
 
-          {/* PHONE */}
-          <div>
+            </div>
 
-            <label className="block text-lg font-bold text-gray-700 mb-3">
+            {/* EMAIL */}
+            <div>
 
-              Phone Number
+              <label className="block text-lg font-bold text-gray-700 mb-3">
 
-            </label>
+                Email
 
-            <input
-              type="text"
-              name="phone"
-              value={profileData.phone}
-              onChange={(e) => {
+              </label>
 
-                const value =
-                  e.target.value.replace(
-                    /\D/g,
-                    ""
-                  );
+              <input
+                type="email"
+                name="email"
+                value={profileData.email}
+                onChange={handleChange}
+                placeholder="Enter email"
+                className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
+              />
 
-                if (
-                  value.length <= 10
-                ) {
+            </div>
 
-                  setProfileData({
+            {/* PHONE */}
+            <div>
 
-                    ...profileData,
+              <label className="block text-lg font-bold text-gray-700 mb-3">
 
-                    phone: value,
+                Phone Number
 
-                  });
+              </label>
 
-                }
+              <input
+                type="text"
+                name="phone"
+                value={profileData.phone}
+                onChange={(e) => {
 
-              }}
-              placeholder="Enter phone number"
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
-            />
+                  const value =
+                    e.target.value.replace(
+                      /\D/g,
+                      ""
+                    );
 
-          </div>
+                  if (
+                    value.length <= 10
+                  ) {
 
-          {/* CITY */}
-          <div>
+                    setProfileData({
 
-            <label className="block text-lg font-bold text-gray-700 mb-3">
+                      ...profileData,
 
-              City
+                      phone: value,
 
-            </label>
+                    });
 
-            <input
-              type="text"
-              name="city"
-              value={profileData.city}
-              onChange={handleChange}
-              placeholder="Enter city"
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
-            />
+                  }
 
-          </div>
+                }}
+                placeholder="Enter phone number"
+                className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
+              />
 
-          {/* PINCODE */}
-          <div>
-
-            <label className="block text-lg font-bold text-gray-700 mb-3">
-
-              Pincode
-
-            </label>
-
-            <input
-              type="text"
-              name="pincode"
-              value={profileData.pincode}
-              onChange={(e) => {
-
-                const value =
-                  e.target.value.replace(
-                    /\D/g,
-                    ""
-                  );
-
-                if (
-                  value.length <= 6
-                ) {
-
-                  setProfileData({
-
-                    ...profileData,
-
-                    pincode: value,
-
-                  });
-
-                }
-
-              }}
-              placeholder="Enter pincode"
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
-            />
+            </div>
 
           </div>
 
-          {/* ADDRESS */}
-          <div className="md:col-span-2">
+          {/* SAVE BUTTON */}
+          <div className="p-10 pt-0">
 
-            <label className="block text-lg font-bold text-gray-700 mb-3">
+            <button
+              onClick={saveProfile}
+              disabled={saving}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4"
+            >
 
-              Address
+              <FaSave />
 
-            </label>
+              {saving
+                ? "Saving..."
+                : "Save Profile"}
 
-            <textarea
-              rows="5"
-              name="address"
-              value={profileData.address}
-              onChange={handleChange}
-              placeholder="Enter full address"
-              className="w-full p-5 rounded-2xl border border-gray-200 outline-none focus:border-green-500"
-            />
+            </button>
 
           </div>
 
         </div>
 
-        {/* SAVE BUTTON */}
-        <div className="p-10 pt-0">
+        {/* SAVED ADDRESSES */}
+        <div className="bg-white rounded-3xl shadow-2xl p-10">
 
-          <button
-            onClick={saveProfile}
-            disabled={saving}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-5 rounded-2xl text-2xl font-bold transition duration-300 flex items-center justify-center gap-4"
-          >
+          <div className="flex items-center gap-4 mb-10">
 
-            <FaSave />
+            <FaMapMarkerAlt className="text-4xl text-green-600" />
 
-            {saving
-              ? "Saving..."
-              : "Save Profile"}
+            <h2 className="text-4xl font-extrabold text-gray-900">
 
-          </button>
+              Saved Addresses
+
+            </h2>
+
+          </div>
+
+          {savedAddresses.length === 0 ? (
+
+            <div className="bg-gray-100 rounded-2xl p-10 text-center">
+
+              <h3 className="text-2xl font-bold text-gray-700">
+
+                No Saved Addresses
+
+              </h3>
+
+              <p className="text-gray-500 mt-3">
+
+                Add an address during checkout
+
+              </p>
+
+            </div>
+
+          ) : (
+
+            <div className="space-y-6">
+
+              {savedAddresses.map(
+                (
+                  address,
+                  index
+                ) => (
+
+                  <div
+                    key={index}
+                    className={`border-2 rounded-3xl p-8 transition duration-300
+                    ${
+                      address.isDefault
+
+                        ? "border-green-500 bg-green-50"
+
+                        : "border-gray-200"
+                    }`}
+                  >
+
+                    {/* HEADER */}
+                    <div className="flex items-center justify-between mb-5">
+
+                      <div className="flex items-center gap-4">
+
+                        <FaHome className="text-3xl text-green-600" />
+
+                        <div>
+
+                          <h3 className="text-2xl font-bold text-gray-900">
+
+                            {address.type}
+
+                          </h3>
+
+                          {address.isDefault && (
+
+                            <p className="text-green-700 font-bold mt-1">
+
+                              Default Address
+
+                            </p>
+
+                          )}
+
+                        </div>
+
+                      </div>
+
+                      {!address.isDefault && (
+
+                        <button
+                          onClick={() =>
+                            setAsDefaultAddress(
+                              index
+                            )
+                          }
+                          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-bold transition duration-300"
+                        >
+
+                          Set Default
+
+                        </button>
+
+                      )}
+
+                    </div>
+
+                    {/* ADDRESS */}
+                    <div className="space-y-3 text-gray-700 text-lg">
+
+                      <p>
+
+                        <span className="font-bold">
+
+                          Address:
+
+                        </span>{" "}
+
+                        {address.address}
+
+                      </p>
+
+                      <p>
+
+                        <span className="font-bold">
+
+                          Landmark:
+
+                        </span>{" "}
+
+                        {address.landmark}
+
+                      </p>
+
+                      <p>
+
+                        <span className="font-bold">
+
+                          City:
+
+                        </span>{" "}
+
+                        {address.city}
+
+                      </p>
+
+                      <p>
+
+                        <span className="font-bold">
+
+                          Pincode:
+
+                        </span>{" "}
+
+                        {address.pincode}
+
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          )}
 
         </div>
 

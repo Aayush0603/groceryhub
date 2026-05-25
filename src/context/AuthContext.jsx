@@ -4,61 +4,180 @@ import {
   useState,
 } from "react";
 
+import {
+  doc,
+  getDoc,
+} from "firebase/firestore";
+
+import { db } from "../firebase/firebase";
+
 // CREATE CONTEXT
 export const AuthContext =
   createContext();
 
-function AuthProvider({ children }) {
+function AuthProvider({
+  children,
+}) {
 
   // CURRENT USER
-  const [currentUser, setCurrentUser] =
-    useState(null);
+  const [
+    currentUser,
+    setCurrentUser,
+  ] = useState(null);
 
   // LOADING
   const [loading, setLoading] =
     useState(true);
 
+  // FETCH LATEST USER PROFILE
+  const fetchUserProfile =
+    async (uid) => {
+
+      try {
+
+        const userRef =
+          doc(
+            db,
+            "users",
+            uid
+          );
+
+        const userSnap =
+          await getDoc(
+            userRef
+          );
+
+        if (
+          userSnap.exists()
+        ) {
+
+          const userData = {
+
+            uid,
+
+            ...userSnap.data(),
+
+          };
+
+          // UPDATE STATE
+          setCurrentUser(
+            userData
+          );
+
+          // UPDATE LOCAL STORAGE
+          localStorage.setItem(
+
+            "grocery-user",
+
+            JSON.stringify(
+              userData
+            )
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
+    };
+
   // CHECK SAVED SESSION
   useEffect(() => {
 
+    const checkSession =
+      async () => {
+
+        try {
+
+          const savedUser =
+            localStorage.getItem(
+              "grocery-user"
+            );
+
+          if (savedUser) {
+
+            const parsedUser =
+              JSON.parse(
+                savedUser
+              );
+
+            // TEMP USER
+            setCurrentUser(
+              parsedUser
+            );
+
+            // FETCH LATEST FIREBASE DATA
+            await fetchUserProfile(
+              parsedUser.uid
+            );
+
+          }
+
+        } catch (error) {
+
+          console.error(error);
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      };
+
+    checkSession();
+
+  }, []);
+
+  // LOGIN USER
+  const login = async (
+    userData
+  ) => {
+
     try {
 
-      const savedUser =
-        localStorage.getItem(
-          "grocery-user"
-        );
-
-      if (savedUser) {
-
-        setCurrentUser(
-          JSON.parse(savedUser)
-        );
-
-      }
+      // FETCH COMPLETE PROFILE
+      await fetchUserProfile(
+        userData.uid
+      );
 
     } catch (error) {
 
       console.error(error);
 
-    } finally {
-
-      setLoading(false);
-
     }
 
-  }, []);
-
-  // LOGIN USER
-  const login = (userData) => {
-
-    setCurrentUser(userData);
-
-    localStorage.setItem(
-      "grocery-user",
-      JSON.stringify(userData)
-    );
-
   };
+
+  // UPDATE USER LOCALLY
+  const updateUser =
+    (updatedData) => {
+
+      const updatedUser = {
+
+        ...currentUser,
+
+        ...updatedData,
+
+      };
+
+      setCurrentUser(
+        updatedUser
+      );
+
+      localStorage.setItem(
+
+        "grocery-user",
+
+        JSON.stringify(
+          updatedUser
+        )
+      );
+
+    };
 
   // LOGOUT USER
   const logout = () => {
@@ -69,7 +188,7 @@ function AuthProvider({ children }) {
       "grocery-user"
     );
 
-    // CLEAR CART ALSO
+    // CLEAR CART
     localStorage.removeItem(
       "grocery-cart"
     );
@@ -87,10 +206,15 @@ function AuthProvider({ children }) {
 
         logout,
 
+        updateUser,
+
+        fetchUserProfile,
+
       }}
     >
 
-      {!loading && children}
+      {!loading &&
+        children}
 
     </AuthContext.Provider>
 
