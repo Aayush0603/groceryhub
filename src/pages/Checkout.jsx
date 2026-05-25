@@ -444,9 +444,9 @@ const detectLocation = () => {
 
       enableHighAccuracy: true,
 
-      timeout: 10000,
+      timeout: 15000,
 
-      maximumAge: 0,
+      maximumAge: 60000,
 
     }
 
@@ -1043,6 +1043,119 @@ if (
 
 }
 
+// HANDLE MAP CLICK
+const handleMapClick = (
+  e
+) => {
+
+  const lat =
+    e.latLng.lat();
+
+  const lng =
+    e.latLng.lng();
+
+  const location = {
+
+    lat,
+    lng,
+
+  };
+
+  // UPDATE MAP
+  setMapCenter(
+    location
+  );
+
+  // UPDATE LOCATION
+  setCustomerLocation(
+    location
+  );
+
+  // CHECK DELIVERY
+  checkSavedLocation(
+    location
+  );
+
+  // GOOGLE GEOCODER
+  const geocoder =
+    new window.google.maps.Geocoder();
+
+  geocoder.geocode(
+
+    {
+
+      location: {
+
+        lat,
+        lng,
+
+      },
+
+    },
+
+    (
+      results,
+      status
+    ) => {
+
+      if (
+
+        status === "OK" &&
+        results &&
+        results.length > 0
+
+      ) {
+
+        const result =
+          results[0];
+
+        const addressComponents =
+          result.address_components;
+
+        setCustomerInfo(
+          (prev) => ({
+
+            ...prev,
+
+            address:
+              result.formatted_address ||
+              "",
+
+            city:
+              addressComponents.find(
+                (component) =>
+                  component.types.includes(
+                    "locality"
+                  )
+              )?.long_name || "",
+
+            pincode:
+              addressComponents.find(
+                (component) =>
+                  component.types.includes(
+                    "postal_code"
+                  )
+              )?.long_name || "",
+
+            landmark:
+              addressComponents.find(
+                (component) =>
+                  component.types.includes(
+                    "sublocality"
+                  )
+              )?.long_name || "",
+
+          })
+        );
+
+      }
+
+    }
+
+  );
+
+};
+
   return (
 
     <section className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 py-28 px-6">
@@ -1232,6 +1345,8 @@ if (
                   center={mapCenter}
 
                   zoom={15}
+
+                  onClick={handleMapClick}
                 >
 
                   <MarkerF
