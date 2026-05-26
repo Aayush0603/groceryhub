@@ -806,53 +806,6 @@ if (
 
     };
 
-  // WHATSAPP
-  const sendWhatsAppMessage =
-    (
-      orderId
-    ) => {
-
-      const products =
-        cartItems
-          .map(
-            (
-              item
-            ) =>
-
-              `${item.name} x ${item.quantity}`
-          )
-          .join("%0A");
-
-      const message =
-        `🛒 *New Grocery Order* %0A%0A` +
-
-        `📦 Order ID: ${orderId}%0A%0A` +
-
-        `👤 Name: ${customerInfo.name}%0A` +
-
-        `📱 Phone: ${customerInfo.phone}%0A` +
-
-        `📍 Address: ${customerInfo.address}%0A` +
-
-        `🏙️ City: ${customerInfo.city}%0A` +
-
-        `📮 Pincode: ${customerInfo.pincode}%0A%0A` +
-
-        `🛍️ Products:%0A${products}%0A%0A` +
-
-        `🚚 Delivery Charge: ₹${deliveryCharge}%0A` +
-
-        `💰 Total: ₹${finalTotal}`;
-
-      window.open(
-
-        `https://wa.me/919172607711?text=${message}`,
-
-        "_blank"
-      );
-
-    };
-
   // PLACE ORDER
   const placeOrder =
     async () => {
@@ -910,15 +863,6 @@ if (
           );
 
           setOrderPlaced(true);
-
-          // OPEN WHATSAPP
-          setTimeout(() => {
-
-            sendWhatsAppMessage(
-              orderId
-            );
-
-          }, 700);
         }
 
         // ONLINE PAYMENT
@@ -981,15 +925,6 @@ if (
                   );
 
                   setOrderPlaced(true);
-
-                  // OPEN WHATSAPP
-                  setTimeout(() => {
-
-                    sendWhatsAppMessage(
-                      orderId
-                    );
-
-                  }, 700);
 
                 } catch (error) {
 

@@ -5,6 +5,10 @@ import {
   FaShoppingCart,
   FaUsers,
   FaRupeeSign,
+  FaClock,
+  FaCheckCircle,
+  FaTruck,
+  FaTimesCircle,
 } from "react-icons/fa";
 
 import {
@@ -15,13 +19,17 @@ import {
 import {
   collection,
   onSnapshot,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
 
+import toast from "react-hot-toast";
+
 function AdminDashboard() {
 
-  // STATES
+  // DASHBOARD STATES
   const [productCount, setProductCount] =
     useState(0);
 
@@ -33,6 +41,9 @@ function AdminDashboard() {
 
   const [totalRevenue, setTotalRevenue] =
     useState(0);
+
+  const [orders, setOrders] =
+    useState([]);
 
   // FETCH REALTIME DATA
   useEffect(() => {
@@ -84,24 +95,52 @@ function AdminDashboard() {
 
         (snapshot) => {
 
-          const orders =
+          const fetchedOrders =
             snapshot.docs.map(
-              (doc) =>
-                doc.data()
+              (doc) => ({
+
+                id: doc.id,
+
+                ...doc.data(),
+
+              })
             );
 
+          // LATEST FIRST
+          fetchedOrders.sort(
+            (a, b) => {
+
+              const aTime =
+                a.createdAt?.seconds || 0;
+
+              const bTime =
+                b.createdAt?.seconds || 0;
+
+              return (
+                bTime - aTime
+              );
+
+            }
+          );
+
+          setOrders(
+            fetchedOrders
+          );
+
           setOrderCount(
-            orders.length
+            fetchedOrders.length
           );
 
           // TOTAL REVENUE
           let revenue = 0;
 
-          orders.forEach(
+          fetchedOrders.forEach(
             (order) => {
 
               revenue +=
-                order.finalTotal || 0;
+                Number(
+                  order.finalTotal
+                ) || 0;
 
             }
           );
@@ -124,6 +163,48 @@ function AdminDashboard() {
     };
 
   }, []);
+
+  // UPDATE ORDER STATUS
+  const updateOrderStatus =
+    async (
+      orderId,
+      newStatus
+    ) => {
+
+      try {
+
+        await updateDoc(
+
+          doc(
+            db,
+            "orders",
+            orderId
+          ),
+
+          {
+
+            status:
+              newStatus,
+
+          }
+
+        );
+
+        toast.success(
+          `Order marked as ${newStatus}`
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        toast.error(
+          "Failed to update order"
+        );
+
+      }
+
+    };
 
   // DASHBOARD STATS
   const stats = [
@@ -173,14 +254,14 @@ function AdminDashboard() {
 
         <p className="text-gray-600 mt-3 text-lg">
 
-          Quick overview of your grocery business.
+          Manage your grocery business in realtime.
 
         </p>
 
       </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-16">
 
         {stats.map(
           (item, index) => (
@@ -226,6 +307,336 @@ function AdminDashboard() {
             </motion.div>
 
           )
+        )}
+
+      </div>
+
+      {/* ORDERS SECTION */}
+      <div>
+
+        <div className="flex items-center gap-4 mb-10">
+
+          <FaShoppingCart className="text-4xl text-green-600" />
+
+          <h2 className="text-4xl font-extrabold text-gray-900">
+
+            Live Orders
+
+          </h2>
+
+        </div>
+
+        {orders.length === 0 ? (
+
+          <div className="bg-white rounded-3xl shadow-xl p-12 text-center">
+
+            <h2 className="text-3xl font-bold text-gray-700">
+
+              No Orders Yet
+
+            </h2>
+
+          </div>
+
+        ) : (
+
+          <div className="space-y-8">
+
+            {orders.map(
+              (order, index) => (
+
+                <motion.div
+                  key={order.id}
+                  initial={{
+                    opacity: 0,
+                    y: 40,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    delay:
+                      index * 0.05,
+                  }}
+                  className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100"
+                >
+
+                  {/* TOP */}
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+
+                    <div>
+
+                      <h2 className="text-3xl font-extrabold text-gray-900 mb-3">
+
+                        {order.customerInfo?.name}
+
+                      </h2>
+
+                      <p className="text-gray-600 text-lg">
+
+                        📞 {order.customerInfo?.phone}
+
+                      </p>
+
+                      <p className="text-gray-600 text-lg mt-2">
+
+                        📍 {order.customerInfo?.address}
+
+                      </p>
+
+                    </div>
+
+                    {/* STATUS */}
+                    <div className="flex flex-col items-start lg:items-end gap-3">
+
+                      <div className={`px-5 py-3 rounded-2xl font-bold text-white
+
+                      ${
+                        order.status === "Pending"
+
+                          ? "bg-yellow-500"
+
+                          : order.status === "Accepted"
+
+                          ? "bg-blue-500"
+
+                          : order.status === "Preparing"
+
+                          ? "bg-orange-500"
+
+                          : order.status === "Out for Delivery"
+
+                          ? "bg-purple-500"
+
+                          : order.status === "Delivered"
+
+                          ? "bg-green-600"
+
+                          : "bg-red-500"
+                      }`}>
+
+                        {order.status || "Pending"}
+
+                      </div>
+
+                      <p className="text-gray-500">
+
+                        {order.orderDate} • {order.orderTime}
+
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  {/* PRODUCTS */}
+                  <div className="mb-8">
+
+                    <h3 className="text-2xl font-bold text-gray-900 mb-5">
+
+                      Ordered Products
+
+                    </h3>
+
+                    <div className="space-y-4">
+
+                      {order.cartItems?.map(
+                        (
+                          item,
+                          idx
+                        ) => (
+
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between bg-gray-100 rounded-2xl px-6 py-4"
+                          >
+
+                            <div>
+
+                              <h4 className="text-xl font-bold text-gray-900">
+
+                                {item.name}
+
+                              </h4>
+
+                              <p className="text-gray-600">
+
+                                Quantity:
+                                {" "}
+                                {item.quantity}
+
+                              </p>
+
+                            </div>
+
+                            <h3 className="text-2xl font-extrabold text-green-700">
+
+                              ₹
+                              {item.price *
+                                item.quantity}
+
+                            </h3>
+
+                          </div>
+
+                        )
+                      )}
+
+                    </div>
+
+                  </div>
+
+                  {/* PAYMENT */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+                    <div className="bg-gray-100 rounded-2xl p-6">
+
+                      <h3 className="text-gray-500 mb-3">
+
+                        Payment Method
+
+                      </h3>
+
+                      <h2 className="text-2xl font-bold text-gray-900">
+
+                        {order.paymentMethod}
+
+                      </h2>
+
+                    </div>
+
+                    <div className="bg-gray-100 rounded-2xl p-6">
+
+                      <h3 className="text-gray-500 mb-3">
+
+                        Delivery Charge
+
+                      </h3>
+
+                      <h2 className="text-2xl font-bold text-gray-900">
+
+                        ₹{order.deliveryCharge}
+
+                      </h2>
+
+                    </div>
+
+                    <div className="bg-green-100 rounded-2xl p-6">
+
+                      <h3 className="text-green-700 mb-3">
+
+                        Final Total
+
+                      </h3>
+
+                      <h2 className="text-3xl font-extrabold text-green-700">
+
+                        ₹{order.finalTotal}
+
+                      </h2>
+
+                    </div>
+
+                  </div>
+
+                  {/* ACTION BUTTONS */}
+                  <div className="flex flex-wrap gap-4">
+
+                    {/* ACCEPT */}
+                    <button
+                      onClick={() =>
+                        updateOrderStatus(
+                          order.id,
+                          "Accepted"
+                        )
+                      }
+                      className="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                    >
+
+                      <FaCheckCircle />
+
+                      Accept
+
+                    </button>
+
+                    {/* PREPARING */}
+                    <button
+                      onClick={() =>
+                        updateOrderStatus(
+                          order.id,
+                          "Preparing"
+                        )
+                      }
+                      className="flex items-center gap-3 bg-orange-500 hover:bg-orange-600 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                    >
+
+                      <FaClock />
+
+                      Preparing
+
+                    </button>
+
+                    {/* OUT FOR DELIVERY */}
+                    <button
+                      onClick={() =>
+                        updateOrderStatus(
+                          order.id,
+                          "Out for Delivery"
+                        )
+                      }
+                      className="flex items-center gap-3 bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                    >
+
+                      <FaTruck />
+
+                      Out for Delivery
+
+                    </button>
+
+                    {/* DELIVERED */}
+                    <button
+                      onClick={() =>
+                        updateOrderStatus(
+                          order.id,
+                          "Delivered"
+                        )
+                      }
+                      className="flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                    >
+
+                      <FaCheckCircle />
+
+                      Delivered
+
+                    </button>
+
+                    {/* CANCEL */}
+                    <button
+                      onClick={() =>
+                        updateOrderStatus(
+                          order.id,
+                          "Cancelled"
+                        )
+                      }
+                      className="flex items-center gap-3 bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                    >
+
+                      <FaTimesCircle />
+
+                      Cancel
+
+                    </button>
+
+                  </div>
+
+                </motion.div>
+
+              )
+            )}
+
+          </div>
+
         )}
 
       </div>
