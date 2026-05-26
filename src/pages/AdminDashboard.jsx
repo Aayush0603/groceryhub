@@ -48,7 +48,7 @@ function AdminDashboard() {
     const [
   previousOrders,
   setPreviousOrders,
-] = useState([]);
+] = useState(null);
 
   // FETCH REALTIME DATA
   useEffect(() => {
@@ -128,15 +128,29 @@ function AdminDashboard() {
             }
           );
 
-          // NEW ORDER NOTIFICATION
-if (
-  previousOrders.length > 0 &&
-  fetchedOrders.length >
-    previousOrders.length
-) {
+        // CHECK FOR NEW ORDERS
+if (previousOrders) {
 
-  toast.success(
-    "🔔 New order received"
+  fetchedOrders.forEach(
+    (newOrder) => {
+
+      const oldOrder =
+        previousOrders.find(
+          (item) =>
+            item.id ===
+            newOrder.id
+        );
+
+      // NEW ORDER FOUND
+      if (!oldOrder) {
+
+        toast.success(
+          "🔔 New order received"
+        );
+
+      }
+
+    }
   );
 
 }
@@ -145,7 +159,6 @@ if (
 setPreviousOrders(
   fetchedOrders
 );
-
           setOrders(
             fetchedOrders
           );
