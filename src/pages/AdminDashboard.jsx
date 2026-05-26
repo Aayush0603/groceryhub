@@ -14,6 +14,7 @@ import {
 import {
   useEffect,
   useState,
+  useRef,
 } from "react";
 
 import {
@@ -45,10 +46,9 @@ function AdminDashboard() {
   const [orders, setOrders] =
     useState([]);
 
-    const [
-  previousOrders,
-  setPreviousOrders,
-] = useState(null);
+  // STORE PREVIOUS ORDER IDS
+  const previousOrderIds =
+  useRef([]);
 
   // FETCH REALTIME DATA
   useEffect(() => {
@@ -128,37 +128,38 @@ function AdminDashboard() {
             }
           );
 
-        // CHECK FOR NEW ORDERS
-if (previousOrders) {
+// CURRENT ORDER IDS
+const currentOrderIds =
+  fetchedOrders.map(
+    (order) => order.id
+  );
 
-  fetchedOrders.forEach(
-    (newOrder) => {
+// CHECK NEW ORDERS
+const newOrders =
+  currentOrderIds.filter(
+    (id) =>
 
-      const oldOrder =
-        previousOrders.find(
-          (item) =>
-            item.id ===
-            newOrder.id
-        );
+      !previousOrderIds.current.includes(
+        id
+      )
+  );
 
-      // NEW ORDER FOUND
-      if (!oldOrder) {
+// SHOW NOTIFICATION
+if (
+  previousOrderIds.current.length > 0 &&
+  newOrders.length > 0
+) {
 
-        toast.success(
-          "🔔 New order received"
-        );
-
-      }
-
-    }
+  toast.success(
+    "🔔 New order received"
   );
 
 }
 
-// SAVE PREVIOUS ORDERS
-setPreviousOrders(
-  fetchedOrders
-);
+// SAVE IDS
+previousOrderIds.current =
+  currentOrderIds;
+  
           setOrders(
             fetchedOrders
           );
