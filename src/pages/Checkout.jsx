@@ -603,16 +603,17 @@ const detectLocation = () => {
             currentUser.uid
           );
 
-        const alreadyExists =
-          savedAddresses.some(
-            (item) =>
+// CHECK DUPLICATE ADDRESS
+const alreadyExists =
+  savedAddresses.some(
+    (item) =>
 
-              item.address ===
-                customerInfo.address &&
+      item.address ===
+        customerInfo.address &&
 
-              item.pincode ===
-                customerInfo.pincode
-          );
+      item.pincode ===
+        customerInfo.pincode
+  );
 
 // EDIT EXISTING ADDRESS
 if (
@@ -713,7 +714,7 @@ if (
 
           }
         );
-        
+
       } catch (error) {
 
         console.error(error);
