@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 
 import {
   FaTrash,
-  FaWhatsapp,
 } from "react-icons/fa";
 
 import { CartContext } from "../context/CartContext";
@@ -238,8 +237,6 @@ function Cart() {
                 to="/checkout"
                 className="w-full flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white py-5 rounded-2xl text-xl font-bold shadow-2xl hover:scale-105 transition duration-300"
               >
-
-                <FaWhatsapp className="text-3xl" />
 
                 Proceed To Checkout
 

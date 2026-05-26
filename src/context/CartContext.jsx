@@ -169,10 +169,6 @@ function CartProvider({ children }) {
 
     setCartItems([]);
 
-    toast.error(
-      "Cart cleared"
-    );
-
   };
 
   // TOTAL ITEMS

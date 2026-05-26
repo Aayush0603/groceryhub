@@ -21,7 +21,6 @@ import {
 import toast from "react-hot-toast";
 
 import {
-  FaWhatsapp,
   FaArrowLeft,
   FaMapMarkerAlt,
   FaHome,
@@ -54,9 +53,9 @@ function Checkout() {
   } = useContext(CartContext);
 
   const {
-    currentUser,
-    fetchUserProfile,
-  } = useContext(AuthContext);
+  currentUser,
+} = useContext(AuthContext);
+
 
   // GOOGLE MAPS
   const { isLoaded } =
@@ -615,16 +614,6 @@ const detectLocation = () => {
                 customerInfo.pincode
           );
 
-        if (alreadyExists) {
-
-  toast.error(
-    "Address already saved"
-  );
-
-  return;
-
-}
-
 // EDIT EXISTING ADDRESS
 if (
   editingIndex !== null
@@ -724,11 +713,7 @@ if (
 
           }
         );
-
-        await fetchUserProfile(
-          currentUser.uid
-        );
-
+        
       } catch (error) {
 
         console.error(error);
@@ -736,6 +721,14 @@ if (
       }
 
     };
+
+  // CHECK DUPLICATE
+  if (alreadyExists) {
+
+  return;
+
+}
+
 
   // SAVE ORDER
   const saveOrder =
@@ -858,10 +851,6 @@ if (
             "grocery-cart"
           );
 
-          toast.success(
-            "Thank you for shopping with us ❤️"
-          );
-
           setOrderPlaced(true);
         }
 
@@ -918,10 +907,6 @@ if (
 
                   localStorage.removeItem(
                     "grocery-cart"
-                  );
-
-                  toast.success(
-                    "Thank you for shopping with us ❤️"
                   );
 
                   setOrderPlaced(true);
@@ -1802,8 +1787,6 @@ const handleMapClick = (
                 : "bg-green-600 hover:bg-green-700 text-white"
             }`}
           >
-
-            <FaWhatsapp />
 
             {loading
               ? "Processing..."
