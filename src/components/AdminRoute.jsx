@@ -59,6 +59,26 @@ function AdminRoute({
         const userSnap =
           await getDoc(userRef);
 
+          console.log(
+  "CURRENT USER:",
+  currentUser
+);
+
+console.log(
+  "UID:",
+  currentUser?.uid
+);
+
+console.log(
+  "DOC EXISTS:",
+  userSnap.exists()
+);
+
+console.log(
+  "USER DATA:",
+  userSnap.data()
+);
+
         if (
           userSnap.exists()
         ) {
