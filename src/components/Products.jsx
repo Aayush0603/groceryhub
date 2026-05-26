@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import {
   FaSearch,
   FaLeaf,
+  FaMicrophone,
 } from "react-icons/fa";
 
 function Products() {
@@ -33,6 +34,14 @@ function Products() {
   // SEARCH STATE
   const [searchTerm, setSearchTerm] =
     useState("");
+
+  // VOICE SEARCH STATE
+  const [isListening, setIsListening] =
+  useState(false);
+
+  // VOICE LANGUAGE
+  const [voiceLanguage, setVoiceLanguage] =
+  useState("en-IN");
 
   // FETCH PRODUCTS
   useEffect(() => {
@@ -83,6 +92,81 @@ function Products() {
     "Vegetables",
     "Snacks",
   ];
+
+  // VOICE SEARCH
+const startVoiceSearch = () => {
+
+  // CHECK SUPPORT
+  const SpeechRecognition =
+
+    window.SpeechRecognition ||
+
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+
+    alert(
+      "Voice search is not supported in this browser"
+    );
+
+    return;
+
+  }
+
+  // CREATE INSTANCE
+  const recognition =
+    new SpeechRecognition();
+
+  // LANGUAGE
+  recognition.lang =
+  voiceLanguage;
+
+  recognition.continuous =
+    false;
+
+  recognition.interimResults =
+    false;
+
+  // START LISTENING
+  setIsListening(true);
+
+  recognition.start();
+
+  // RESULT
+  recognition.onresult =
+    (event) => {
+
+      const transcript =
+        event.results[0][0]
+          .transcript;
+
+      setSearchTerm(
+        transcript
+      );
+
+      setIsListening(false);
+
+    };
+
+  // ERROR
+  recognition.onerror =
+    (event) => {
+
+      console.error(event);
+
+      setIsListening(false);
+
+    };
+
+  // END
+  recognition.onend =
+    () => {
+
+      setIsListening(false);
+
+    };
+
+};
 
   // FILTER PRODUCTS
   const filteredProducts = products.filter(
@@ -194,27 +278,84 @@ function Products() {
 
         </motion.div>
 
+
+        {/* LANGUAGE SELECTOR */}
+<div className="flex justify-center mb-6">
+
+  <select
+    value={voiceLanguage}
+    onChange={(e) =>
+      setVoiceLanguage(
+        e.target.value
+      )
+    }
+    className="bg-white border border-gray-200 rounded-2xl px-5 py-3 shadow-lg outline-none text-gray-700 font-semibold"
+  >
+
+    <option value="en-IN">
+      English
+    </option>
+
+    <option value="hi-IN">
+      हिंदी
+    </option>
+
+    <option value="mr-IN">
+      मराठी
+    </option>
+
+  </select>
+
+</div>
+
         {/* SEARCH BAR */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="relative max-w-2xl mx-auto mb-14"
-        >
+<motion.div
+  initial={{ opacity: 0 }}
+  whileInView={{ opacity: 1 }}
+  transition={{ duration: 0.8 }}
+  className="relative max-w-2xl mx-auto mb-14"
+>
 
-          <FaSearch className="absolute top-1/2 left-6 -translate-y-1/2 text-gray-400 text-xl" />
+  {/* SEARCH ICON */}
+  <FaSearch className="absolute top-1/2 left-6 -translate-y-1/2 text-gray-400 text-xl z-10" />
 
-          <input
-            type="text"
-            placeholder="Search fresh grocery products..."
-            value={searchTerm}
-            onChange={(e) =>
-              setSearchTerm(e.target.value)
-            }
-            className="w-full bg-white border border-gray-200 rounded-3xl shadow-xl py-5 pl-16 pr-6 text-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300"
-          />
+  {/* INPUT */}
+  <input
+    type="text"
+    placeholder="Search grocery products or use voice..."
+    value={searchTerm}
+    onChange={(e) =>
+      setSearchTerm(
+        e.target.value
+      )
+    }
+    className="w-full bg-white border border-gray-200 rounded-3xl shadow-xl py-5 pl-16 pr-20 text-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300"
+  />
 
-        </motion.div>
+  {/* MIC BUTTON */}
+  <button
+    onClick={
+      startVoiceSearch
+    }
+    className={`absolute top-1/2 right-4 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition duration-300
+
+    ${
+      isListening
+
+        ? "bg-red-500 text-white animate-pulse"
+
+        : "bg-green-600 hover:bg-green-700 hover:scale-110 text-white"
+    }`}
+  >
+
+    <div title="Tap and speak product name">
+
+  <FaMicrophone />
+
+</div>
+  </button>
+
+</motion.div>
 
         {/* CATEGORY BUTTONS */}
         <motion.div
