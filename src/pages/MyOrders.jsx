@@ -123,7 +123,7 @@ function MyOrders() {
               (newOrder) => {
 
                 const oldOrder =
-                  previousOrders.find(
+                    orders.find(
                     (item) =>
 
                       item.id ===
@@ -171,10 +171,7 @@ function MyOrders() {
     return () =>
       unsubscribe();
 
-  }, [
-    currentUser,
-    previousOrders,
-  ]);
+ }, [currentUser]);
 
   // DOWNLOAD PDF INVOICE
   const downloadInvoice =
@@ -297,55 +294,35 @@ function MyOrders() {
 
     };
 
-  // TRACKING STEPS
   const trackingSteps = [
 
-    {
-      title:
-        "Pending",
+  {
+    title: "Pending",
+    icon: <FaClock />,
+  },
 
-      icon:
-        <FaClock />,
+  {
+    title: "Accepted",
+    icon: <FaCheckCircle />,
+  },
 
-    },
+  {
+    title: "Preparing",
+    icon: <FaBoxOpen />,
+  },
 
-    {
-      title:
-        "Processing",
+  {
+    title: "Out for Delivery",
+    icon: <FaTruck />,
+  },
 
-      icon:
-        <FaBoxOpen />,
+  {
+    title: "Delivered",
+    icon: <FaHome />,
+  },
 
-    },
+];
 
-    {
-      title:
-        "Packed",
-
-      icon:
-        <FaCheckCircle />,
-
-    },
-
-    {
-      title:
-        "Out for Delivery",
-
-      icon:
-        <FaTruck />,
-
-    },
-
-    {
-      title:
-        "Delivered",
-
-      icon:
-        <FaHome />,
-
-    },
-
-  ];
 
   // STATUS COLORS
   const getStatusStyle =
@@ -484,6 +461,51 @@ function MyOrders() {
                   order.status
               );
 
+
+              // ESTIMATED DELIVERY TIME
+let estimatedTime =
+  "45 mins";
+
+if (
+  order.status ===
+  "Accepted"
+) {
+
+  estimatedTime =
+    "35 mins";
+
+}
+
+else if (
+  order.status ===
+  "Preparing"
+) {
+
+  estimatedTime =
+    "25 mins";
+
+}
+
+else if (
+  order.status ===
+  "Out for Delivery"
+) {
+
+  estimatedTime =
+    "10 mins";
+
+}
+
+else if (
+  order.status ===
+  "Delivered"
+) {
+
+  estimatedTime =
+    "Delivered Successfully";
+
+}
+
             return (
 
               <div
@@ -584,7 +606,7 @@ function MyOrders() {
                     <h3 className="font-bold text-orange-700 text-2xl">
 
                       {order.estimatedDelivery ||
-                        "45 mins"}
+                        estimatedTime}
 
                     </h3>
 

@@ -45,6 +45,11 @@ function AdminDashboard() {
   const [orders, setOrders] =
     useState([]);
 
+    const [
+  previousOrders,
+  setPreviousOrders,
+] = useState([]);
+
   // FETCH REALTIME DATA
   useEffect(() => {
 
@@ -122,6 +127,24 @@ function AdminDashboard() {
 
             }
           );
+
+          // NEW ORDER NOTIFICATION
+if (
+  previousOrders.length > 0 &&
+  fetchedOrders.length >
+    previousOrders.length
+) {
+
+  toast.success(
+    "🔔 New order received"
+  );
+
+}
+
+// SAVE PREVIOUS ORDERS
+setPreviousOrders(
+  fetchedOrders
+);
 
           setOrders(
             fetchedOrders
