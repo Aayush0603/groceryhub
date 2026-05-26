@@ -615,6 +615,13 @@ const alreadyExists =
         customerInfo.pincode
   );
 
+  // CHECK DUPLICATE
+if (alreadyExists) {
+
+  return;
+
+}
+
 // EDIT EXISTING ADDRESS
 if (
   editingIndex !== null
@@ -722,13 +729,6 @@ if (
       }
 
     };
-
-  // CHECK DUPLICATE
-  if (alreadyExists) {
-
-  return;
-
-}
 
 
   // SAVE ORDER
