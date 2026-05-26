@@ -2,6 +2,7 @@ import {
   useEffect,
   useState,
   useContext,
+  useRef,
 } from "react";
 
 import {
@@ -44,11 +45,9 @@ function MyOrders() {
   const [orders, setOrders] =
     useState([]);
 
-  // PREVIOUS ORDERS
-  const [
-    previousOrders,
-    setPreviousOrders,
-  ] = useState([]);
+  // STORE PREVIOUS ORDER STATUSES
+  const previousStatuses =
+  useRef({});
 
   // LOADING
   const [loading, setLoading] =
@@ -119,35 +118,34 @@ function MyOrders() {
               );
 
             // STATUS NOTIFICATIONS
-            sortedOrders.forEach(
-              (newOrder) => {
+sortedOrders.forEach(
+  (newOrder) => {
 
-                const oldOrder =
-                    orders.find(
-                    (item) =>
+    const oldStatus =
+      previousStatuses.current[
+        newOrder.id
+      ];
 
-                      item.id ===
-                      newOrder.id
-                  );
+    // STATUS CHANGED
+    if (
+      oldStatus &&
+      oldStatus !==
+        newOrder.status
+    ) {
 
-                if (
-                  oldOrder &&
-                  oldOrder.status !==
-                    newOrder.status
-                ) {
+      toast.success(
+        `Your order is now ${newOrder.status}`
+      );
 
-                  toast.success(
-                    `Your order is now ${newOrder.status}`
-                  );
+    }
 
-                }
+    // SAVE STATUS
+    previousStatuses.current[
+      newOrder.id
+    ] = newOrder.status;
 
-              }
-            );
-
-            setPreviousOrders(
-              sortedOrders
-            );
+  }
+);
 
             setOrders(
               sortedOrders
