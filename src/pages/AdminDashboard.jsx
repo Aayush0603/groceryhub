@@ -278,18 +278,18 @@ previousOrderIds.current =
 
   return (
 
-    <section className="min-h-screen bg-gray-100 p-6 lg:p-10">
+    <section className="min-h-screen bg-gray-50 p-4 lg:p-6">
 
       {/* HEADER */}
-      <div className="mb-12">
+      <div className="mb-6">
 
-        <h1 className="text-5xl font-extrabold text-gray-900">
+        <h1 className="text-3xl font-extrabold text-gray-900">
 
           Admin Dashboard 📊
 
         </h1>
 
-        <p className="text-gray-600 mt-3 text-lg">
+        <p className="text-gray-500 mt-1 text-sm">
 
           Manage your grocery business in realtime.
 
@@ -298,7 +298,7 @@ previousOrderIds.current =
       </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
 
         {stats.map(
           (item, index) => (
@@ -307,7 +307,7 @@ previousOrderIds.current =
               key={index}
               initial={{
                 opacity: 0,
-                y: 40,
+                y: 20,
               }}
               animate={{
                 opacity: 1,
@@ -315,31 +315,35 @@ previousOrderIds.current =
               }}
               transition={{
                 delay:
-                  index * 0.1,
+                  index * 0.05,
               }}
-              className="bg-white rounded-3xl shadow-xl p-8 hover:shadow-2xl transition duration-300"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-5 hover:shadow-md transition duration-300"
             >
 
-              {/* ICON */}
-              <div className={`w-16 h-16 rounded-2xl ${item.color} text-white flex items-center justify-center text-3xl mb-6`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  {/* TITLE */}
+                  <h2 className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">
 
-                {item.icon}
+                    {item.title}
 
+                  </h2>
+
+                  {/* VALUE */}
+                  <h1 className="text-3xl font-extrabold text-gray-900">
+
+                    {item.value}
+
+                  </h1>
+                </div>
+
+                {/* ICON */}
+                <div className={`w-12 h-12 rounded-xl ${item.color} text-white flex items-center justify-center text-2xl`}>
+
+                  {item.icon}
+
+                </div>
               </div>
-
-              {/* TITLE */}
-              <h2 className="text-gray-500 text-lg mb-3">
-
-                {item.title}
-
-              </h2>
-
-              {/* VALUE */}
-              <h1 className="text-5xl font-extrabold text-gray-900">
-
-                {item.value}
-
-              </h1>
 
             </motion.div>
 
@@ -351,11 +355,11 @@ previousOrderIds.current =
       {/* ORDERS SECTION */}
       <div>
 
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center gap-3 mb-6">
 
-          <FaShoppingCart className="text-4xl text-green-600" />
+          <FaShoppingCart className="text-2xl text-green-600" />
 
-          <h2 className="text-4xl font-extrabold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900">
 
             Live Orders
 
@@ -365,9 +369,9 @@ previousOrderIds.current =
 
         {orders.length === 0 ? (
 
-          <div className="bg-white rounded-3xl shadow-xl p-12 text-center">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
 
-            <h2 className="text-3xl font-bold text-gray-700">
+            <h2 className="text-xl font-bold text-gray-700">
 
               No Orders Yet
 
@@ -377,7 +381,7 @@ previousOrderIds.current =
 
         ) : (
 
-          <div className="space-y-8">
+          <div className="space-y-5">
 
             {orders.map(
               (order, index) => (
@@ -386,7 +390,7 @@ previousOrderIds.current =
                   key={order.id}
                   initial={{
                     opacity: 0,
-                    y: 40,
+                    y: 20,
                   }}
                   animate={{
                     opacity: 1,
@@ -394,40 +398,33 @@ previousOrderIds.current =
                   }}
                   transition={{
                     delay:
-                      index * 0.05,
+                      index * 0.03,
                   }}
-                  className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100"
+                  className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition duration-300"
                 >
 
                   {/* TOP */}
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5 pb-4 border-b border-gray-100">
 
                     <div>
 
-                      <h2 className="text-3xl font-extrabold text-gray-900 mb-3">
+                      <h2 className="text-xl font-bold text-gray-900 mb-1">
 
                         {order.customerInfo?.name}
 
                       </h2>
 
-                      <p className="text-gray-600 text-lg">
-
-                        📞 {order.customerInfo?.phone}
-
-                      </p>
-
-                      <p className="text-gray-600 text-lg mt-2">
-
-                        📍 {order.customerInfo?.address}
-
-                      </p>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-base text-gray-500">
+                        <span>📞 {order.customerInfo?.phone}</span>
+                        <span>📍 {order.customerInfo?.address}</span>
+                      </div>
 
                     </div>
 
                     {/* STATUS */}
-                    <div className="flex flex-col items-start lg:items-end gap-3">
+                    <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between gap-2">
 
-                      <div className={`px-5 py-3 rounded-2xl font-bold text-white
+                      <div className={`px-3.5 py-1.5 rounded-xl font-bold text-sm text-white
 
                       ${
                         order.status === "Pending"
@@ -457,7 +454,7 @@ previousOrderIds.current =
 
                       </div>
 
-                      <p className="text-gray-500">
+                      <p className="text-sm text-gray-400">
 
                         {order.orderDate} • {order.orderTime}
 
@@ -468,15 +465,15 @@ previousOrderIds.current =
                   </div>
 
                   {/* PRODUCTS */}
-                  <div className="mb-8">
+                  <div className="mb-5">
 
-                    <h3 className="text-2xl font-bold text-gray-900 mb-5">
+                    <h3 className="text-base font-bold text-gray-800 mb-3">
 
                       Ordered Products
 
                     </h3>
 
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
 
                       {order.cartItems?.map(
                         (
@@ -486,18 +483,18 @@ previousOrderIds.current =
 
                           <div
                             key={idx}
-                            className="flex items-center justify-between bg-gray-100 rounded-2xl px-6 py-4"
+                            className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-2 border border-gray-100/50"
                           >
 
                             <div>
 
-                              <h4 className="text-xl font-bold text-gray-900">
+                              <h4 className="text-base font-semibold text-gray-800">
 
                                 {item.name}
 
                               </h4>
 
-                              <p className="text-gray-600">
+                              <p className="text-sm text-gray-500">
 
                                 Quantity:
                                 {" "}
@@ -507,7 +504,7 @@ previousOrderIds.current =
 
                             </div>
 
-                            <h3 className="text-2xl font-extrabold text-green-700">
+                            <h3 className="text-base font-bold text-green-700">
 
                               ₹
                               {item.price *
@@ -525,17 +522,17 @@ previousOrderIds.current =
                   </div>
 
                   {/* PAYMENT */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
 
-                    <div className="bg-gray-100 rounded-2xl p-6">
+                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100/50">
 
-                      <h3 className="text-gray-500 mb-3">
+                      <h3 className="text-sm text-gray-400 mb-1">
 
                         Payment Method
 
                       </h3>
 
-                      <h2 className="text-2xl font-bold text-gray-900">
+                      <h2 className="text-base font-bold text-gray-800">
 
                         {order.paymentMethod}
 
@@ -543,15 +540,15 @@ previousOrderIds.current =
 
                     </div>
 
-                    <div className="bg-gray-100 rounded-2xl p-6">
+                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-100/50">
 
-                      <h3 className="text-gray-500 mb-3">
+                      <h3 className="text-sm text-gray-400 mb-1">
 
                         Delivery Charge
 
                       </h3>
 
-                      <h2 className="text-2xl font-bold text-gray-900">
+                      <h2 className="text-base font-bold text-gray-800">
 
                         ₹{order.deliveryCharge}
 
@@ -559,15 +556,15 @@ previousOrderIds.current =
 
                     </div>
 
-                    <div className="bg-green-100 rounded-2xl p-6">
+                    <div className="bg-green-50 rounded-xl p-3 border border-green-100/50">
 
-                      <h3 className="text-green-700 mb-3">
+                      <h3 className="text-sm text-green-700 mb-1">
 
                         Final Total
 
                       </h3>
 
-                      <h2 className="text-3xl font-extrabold text-green-700">
+                      <h2 className="text-xl font-extrabold text-green-700">
 
                         ₹{order.finalTotal}
 
@@ -578,7 +575,7 @@ previousOrderIds.current =
                   </div>
 
                   {/* ACTION BUTTONS */}
-                  <div className="flex flex-wrap gap-4">
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
 
                     {/* ACCEPT */}
                     <button
@@ -588,10 +585,10 @@ previousOrderIds.current =
                           "Accepted"
                         )
                       }
-                      className="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition duration-300"
                     >
 
-                      <FaCheckCircle />
+                      <FaCheckCircle className="text-[12px]" />
 
                       Accept
 
@@ -605,10 +602,10 @@ previousOrderIds.current =
                           "Preparing"
                         )
                       }
-                      className="flex items-center gap-3 bg-orange-500 hover:bg-orange-600 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                      className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition duration-300"
                     >
 
-                      <FaClock />
+                      <FaClock className="text-[12px]" />
 
                       Preparing
 
@@ -622,10 +619,10 @@ previousOrderIds.current =
                           "Out for Delivery"
                         )
                       }
-                      className="flex items-center gap-3 bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                      className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition duration-300"
                     >
 
-                      <FaTruck />
+                      <FaTruck className="text-[12px]" />
 
                       Out for Delivery
 
@@ -639,10 +636,10 @@ previousOrderIds.current =
                           "Delivered"
                         )
                       }
-                      className="flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition duration-300"
                     >
 
-                      <FaCheckCircle />
+                      <FaCheckCircle className="text-[12px]" />
 
                       Delivered
 
@@ -656,10 +653,10 @@ previousOrderIds.current =
                           "Cancelled"
                         )
                       }
-                      className="flex items-center gap-3 bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-2xl font-bold transition duration-300"
+                      className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition duration-300"
                     >
 
-                      <FaTimesCircle />
+                      <FaTimesCircle className="text-[12px]" />
 
                       Cancel
 

@@ -4,6 +4,7 @@ import {
   useContext,
   useRef,
 } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   collection,
@@ -413,383 +414,220 @@ sortedOrders.forEach(
   }
 
   return (
-
-    <section className="min-h-screen bg-gray-100 py-28 px-6">
-
-      <div className="max-w-7xl mx-auto">
-
+    <section className="min-h-screen bg-gradient-to-br from-green-50/40 via-white to-gray-50 pt-32 pb-16 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
+      <div className="max-w-6xl mx-auto">
+        
         {/* HEADER */}
-        <div className="mb-14">
-
-          <h1 className="text-5xl font-extrabold text-gray-900">
-
-            My Orders 📦
-
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-10 text-center md:text-left"
+        >
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight flex items-center justify-center md:justify-start gap-4">
+            My Orders <FaShoppingBag className="text-green-600" />
           </h1>
+          <p className="text-gray-500 mt-3 text-lg">Track, manage, and view your recent purchases.</p>
+        </motion.div>
 
-        </div>
+        {/* EMPTY STATE */}
+        <AnimatePresence mode="wait">
+          {orders.length === 0 && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl shadow-xl border border-gray-100 p-16 md:p-24 text-center max-w-2xl mx-auto"
+            >
+              <div className="w-24 h-24 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <FaBoxOpen className="text-5xl" />
+              </div>
+              <h2 className="text-3xl font-extrabold text-gray-900 mb-4">No Orders Found</h2>
+              <p className="text-gray-500 text-lg">Looks like you haven't placed any orders yet.</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* EMPTY */}
-        {orders.length === 0 && (
-
-          <div className="bg-white rounded-3xl shadow-xl p-20 text-center">
-
-            <FaShoppingBag className="text-7xl text-gray-300 mx-auto mb-8" />
-
-            <h2 className="text-4xl font-bold text-gray-800">
-
-              No Orders Found
-
-            </h2>
-
-          </div>
-
-        )}
-
-        {/* ORDERS */}
-        <div className="space-y-10">
-
-          {orders.map((order) => {
-
-            const currentStep =
-              trackingSteps.findIndex(
-                (step) =>
-
-                  step.title ===
-                  order.status
+        {/* ORDERS LIST */}
+        <div className="space-y-8">
+          <AnimatePresence>
+            {orders.map((order, index) => {
+              const currentStep = trackingSteps.findIndex(
+                (step) => step.title === order.status
               );
 
+              let estimatedTime = "45 mins";
+              if (order.status === "Accepted") estimatedTime = "35 mins";
+              else if (order.status === "Preparing") estimatedTime = "25 mins";
+              else if (order.status === "Out for Delivery") estimatedTime = "10 mins";
+              else if (order.status === "Delivered") estimatedTime = "Delivered Successfully";
 
-              // ESTIMATED DELIVERY TIME
-let estimatedTime =
-  "45 mins";
-
-if (
-  order.status ===
-  "Accepted"
-) {
-
-  estimatedTime =
-    "35 mins";
-
-}
-
-else if (
-  order.status ===
-  "Preparing"
-) {
-
-  estimatedTime =
-    "25 mins";
-
-}
-
-else if (
-  order.status ===
-  "Out for Delivery"
-) {
-
-  estimatedTime =
-    "10 mins";
-
-}
-
-else if (
-  order.status ===
-  "Delivered"
-) {
-
-  estimatedTime =
-    "Delivered Successfully";
-
-}
-
-            return (
-
-              <div
-                key={order.id}
-                className="bg-white rounded-3xl shadow-xl overflow-hidden"
-              >
-
-                {/* TOP */}
-                <div className="bg-green-600 text-white px-8 py-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
-
-                  <div>
-
-                    <h2 className="text-2xl font-bold">
-
-                      Order ID
-
-                    </h2>
-
-                    <p className="mt-2 break-all">
-
-                      {order.id}
-
-                    </p>
-
-                  </div>
-
-                  <div
-                    className={`px-6 py-3 rounded-2xl font-bold text-lg ${getStatusStyle(order.status)}`}
-                  >
-
-                    {order.status}
-
-                  </div>
-
-                </div>
-
-                {/* CONTENT */}
-                <div className="p-8">
-
-                  {/* DATE & TIME */}
-                  <div className="bg-blue-50 rounded-2xl p-5 mb-8 flex flex-col lg:flex-row justify-between gap-5">
-
-                    <div className="flex items-center gap-3">
-
-                      <FaCalendarAlt className="text-blue-600 text-2xl" />
-
-                      <div>
-
-                        <p className="text-gray-500 text-sm">
-
-                          Order Date
-
-                        </p>
-
-                        <h3 className="font-bold text-xl text-blue-700">
-
-                          {order.orderDate || "N/A"}
-
-                        </h3>
-
-                      </div>
-
+              return (
+                <motion.div
+                  key={order.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ delay: index * 0.1, duration: 0.4 }}
+                  className="bg-white rounded-3xl shadow-xl hover:shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 group"
+                >
+                  {/* TOP HEADER BAR */}
+                  <div className="bg-gradient-to-r from-green-600 to-emerald-700 text-white px-6 py-5 md:px-8 md:py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                      <p className="text-green-100 text-sm font-semibold uppercase tracking-wider mb-1">Order ID</p>
+                      <p className="text-lg md:text-xl font-bold font-mono break-all leading-tight">{order.id}</p>
                     </div>
-
-                    <div className="flex items-center gap-3">
-
-                      <FaClock className="text-green-600 text-2xl" />
-
-                      <div>
-
-                        <p className="text-gray-500 text-sm">
-
-                          Order Time
-
-                        </p>
-
-                        <h3 className="font-bold text-xl text-green-700">
-
-                          {order.orderTime || "N/A"}
-
-                        </h3>
-
-                      </div>
-
+                    <div className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base border ${getStatusStyle(order.status).replace('bg-', 'bg-white/90 text-').replace('text-', 'text-').split(' ')[0]} shadow-sm shrink-0 backdrop-blur-sm`}>
+                      {order.status}
                     </div>
-
                   </div>
 
-                  {/* ETA */}
-                  <div className="bg-orange-50 px-5 py-4 rounded-2xl mb-8">
-
-                    <p className="text-sm text-gray-500">
-
-                      Estimated Delivery
-
-                    </p>
-
-                    <h3 className="font-bold text-orange-700 text-2xl">
-
-                      {order.estimatedDelivery ||
-                        estimatedTime}
-
-                    </h3>
-
-                  </div>
-
-                  {/* TRACKING */}
-                  {order.status !==
-                    "Cancelled" && (
-
-                    <div className="mb-10">
-
-                      <h2 className="text-3xl font-bold text-gray-900 mb-10">
-
-                        Live Order Tracking
-
-                      </h2>
-
-                      <div className="flex flex-wrap justify-between gap-6">
-
-                        {trackingSteps.map(
-                          (
-                            step,
-                            index
-                          ) => (
-
-                            <div
-                              key={
-                                step.title
-                              }
-                              className="flex flex-col items-center flex-1 min-w-[120px]"
-                            >
-
-                              <div
-                                className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl
-                                ${
-                                  index <=
-                                  currentStep
-                                    ? "bg-green-600 text-white"
-                                    : "bg-gray-200 text-gray-500"
-                                }`}
-                              >
-
-                                {step.icon}
-
-                              </div>
-
-                              <p className="mt-4 font-bold text-center">
-
-                                {
-                                  step.title
-                                }
-
-                              </p>
-
-                            </div>
-
-                          )
-                        )}
-
-                      </div>
-
-                    </div>
-
-                  )}
-
-                  {/* PRODUCTS */}
-                  <div className="space-y-5">
-
-                    {order.cartItems?.map(
-                      (item) => (
-
-                        <div
-                          key={item.id}
-                          className="bg-gray-50 rounded-2xl p-6 flex justify-between"
-                        >
-
-                          <div>
-
-                            <h3 className="text-2xl font-bold">
-
-                              {item.name}
-
-                            </h3>
-
-                            <p className="text-gray-500 mt-2">
-
-                              Quantity:
-                              {" "}
-                              {item.quantity}
-
-                            </p>
-
-                          </div>
-
-                          <div className="text-3xl font-extrabold text-green-700">
-
-                            ₹
-                            {item.price *
-                              item.quantity}
-
-                          </div>
-
+                  <div className="p-6 md:p-8">
+                    {/* INFO GRID: DATE/TIME & ETA */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                      {/* Date */}
+                      <div className="bg-blue-50/50 border border-blue-100/50 rounded-2xl p-5 flex items-center gap-4 hover:bg-blue-50 transition-colors">
+                        <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                          <FaCalendarAlt className="text-xl" />
                         </div>
+                        <div>
+                          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Order Date</p>
+                          <h3 className="font-extrabold text-lg text-gray-900">{order.orderDate || "N/A"}</h3>
+                        </div>
+                      </div>
+                      
+                      {/* Time */}
+                      <div className="bg-indigo-50/50 border border-indigo-100/50 rounded-2xl p-5 flex items-center gap-4 hover:bg-indigo-50 transition-colors">
+                        <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                          <FaClock className="text-xl" />
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Order Time</p>
+                          <h3 className="font-extrabold text-lg text-gray-900">{order.orderTime || "N/A"}</h3>
+                        </div>
+                      </div>
 
-                      )
+                      {/* ETA */}
+                      <div className="bg-orange-50/50 border border-orange-100/50 rounded-2xl p-5 flex items-center gap-4 md:col-span-2 lg:col-span-1 hover:bg-orange-50 transition-colors">
+                        <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                          <FaTruck className="text-xl" />
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Estimated Delivery</p>
+                          <h3 className="font-extrabold text-lg text-orange-700">{order.estimatedDelivery || estimatedTime}</h3>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* LIVE TRACKING TIMELINE */}
+                    {order.status !== "Cancelled" && (
+                      <div className="mb-10 bg-gray-50/50 border border-gray-100 rounded-3xl p-6 md:p-8">
+                        <h2 className="text-xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+                          Live Tracking
+                        </h2>
+                        
+                        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-4">
+                          {/* Progress Line (Desktop) */}
+                          <div className="hidden md:block absolute top-6 left-10 right-10 h-1.5 bg-gray-200 rounded-full z-0 overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(currentStep / (trackingSteps.length - 1)) * 100}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className="h-full bg-green-500 rounded-full"
+                            />
+                          </div>
+
+                          {/* Progress Line (Mobile) */}
+                          <div className="md:hidden absolute left-6 top-8 bottom-8 w-1.5 bg-gray-200 rounded-full z-0 overflow-hidden">
+                             <motion.div 
+                              initial={{ height: 0 }}
+                              animate={{ height: `${(currentStep / (trackingSteps.length - 1)) * 100}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className="w-full bg-green-500 rounded-full"
+                            />
+                          </div>
+
+                          {trackingSteps.map((step, stepIdx) => (
+                            <div key={step.title} className="relative z-10 flex md:flex-col items-center gap-4 md:gap-3 w-full md:w-auto md:flex-1">
+                              <motion.div
+                                whileHover={{ scale: 1.1 }}
+                                className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-xl shadow-sm transition-colors duration-300 shrink-0 border-4 border-white
+                                ${stepIdx <= currentStep ? "bg-green-600 text-white" : "bg-gray-100 text-gray-400"}`}
+                              >
+                                {step.icon}
+                              </motion.div>
+                              <p className={`font-bold text-sm md:text-base md:text-center ${stepIdx <= currentStep ? "text-gray-900" : "text-gray-400"}`}>
+                                {step.title}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
 
-                  </div>
+                    {/* PRODUCT LIST */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Order Items</h3>
+                      {order.cartItems?.map((item) => (
+                        <div key={item.id} className="bg-white border border-gray-100 hover:border-green-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all hover:shadow-md">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 border border-gray-100">
+                               {item.image ? (
+                                 <img src={item.image} alt={item.name} className="w-10 h-10 object-cover" />
+                               ) : (
+                                 <FaShoppingBag className="text-gray-300 text-xl" />
+                               )}
+                            </div>
+                            <div>
+                              <h4 className="text-lg font-bold text-gray-900 line-clamp-1">{item.name}</h4>
+                              <p className="text-gray-500 text-sm font-medium mt-0.5">Qty: {item.quantity} × ₹{item.price}</p>
+                            </div>
+                          </div>
+                          <div className="text-xl font-black text-green-700 bg-green-50 px-4 py-2 rounded-xl shrink-0 w-full sm:w-auto text-right sm:text-left">
+                            ₹{item.price * item.quantity}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
 
-                  {/* TOTAL */}
-                  <div className="mt-10 border-t border-gray-200 pt-8 flex justify-between items-center">
+                    {/* FOOTER / TOTAL / BUTTONS */}
+                    <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col lg:flex-row justify-between items-center gap-6 lg:gap-8">
+                      <div className="text-center lg:text-left w-full lg:w-auto">
+                        <p className="text-gray-500 font-bold uppercase tracking-wider text-sm mb-1">Final Total</p>
+                        <h2 className="text-4xl lg:text-5xl font-black text-green-700 tracking-tight">₹{order.finalTotal}</h2>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => downloadInvoice(order)}
+                          className="flex-1 sm:flex-none bg-gray-900 hover:bg-gray-800 text-white px-8 py-3.5 rounded-2xl text-base font-bold flex items-center justify-center gap-3 shadow-lg transition-colors"
+                        >
+                          <FaFileInvoice className="text-lg" /> Download Invoice
+                        </motion.button>
 
-                    <h2 className="text-3xl font-bold text-gray-900">
-
-                      Final Total
-
-                    </h2>
-
-                    <h2 className="text-5xl font-extrabold text-green-700">
-
-                      ₹{order.finalTotal}
-
-                    </h2>
-
-                  </div>
-
-                  {/* BUTTONS */}
-                  <div className="mt-8 flex flex-col lg:flex-row gap-5">
-
-                    {/* INVOICE */}
-                    <button
-                      onClick={() =>
-                        downloadInvoice(
-                          order
-                        )
-                      }
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl text-xl font-bold flex items-center justify-center gap-3 transition duration-300"
-                    >
-
-                      <FaFileInvoice />
-
-                      Download Invoice
-
-                    </button>
-
-                    {/* CANCEL */}
-                    {(order.status ===
-                      "Pending" ||
-
-                      order.status ===
-                        "Processing") && (
-
-                      <button
-                        onClick={() =>
-                          cancelOrder(
-                            order.id
-                          )
-                        }
-                        className="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl text-xl font-bold transition duration-300"
-                      >
-
-                        Cancel Order
-
-                      </button>
-
-                    )}
+                        {(order.status === "Pending" || order.status === "Processing") && (
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => cancelOrder(order.id)}
+                            className="flex-1 sm:flex-none bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-8 py-3.5 rounded-2xl text-base font-bold transition-colors"
+                          >
+                            Cancel Order
+                          </motion.button>
+                        )}
+                      </div>
+                    </div>
 
                   </div>
-
-                </div>
-
-              </div>
-
-            );
-
-          })}
-
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
-
       </div>
-
     </section>
-
   );
-
 }
 
 export default MyOrders;

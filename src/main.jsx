@@ -6,6 +6,8 @@ import App from "./App";
 
 import "./index.css";
 
+import "./i18n/config";
+
 import CartProvider from "./context/CartContext";
 
 import AuthProvider from "./context/AuthContext";

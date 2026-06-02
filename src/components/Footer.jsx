@@ -10,8 +10,10 @@ import { motion } from "framer-motion";
 import { HashLink } from "react-router-hash-link";
 
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 function Footer() {
+  const { t } = useTranslation();
 
   // SCROLL TO TOP
   const scrollToTop = () => {
@@ -25,7 +27,7 @@ function Footer() {
 
   return (
 
-    <footer className="bg-gradient-to-br from-green-900 via-green-950 to-black text-white pt-20 pb-10 relative overflow-hidden">
+    <footer className="bg-gradient-to-br from-green-900 via-green-950 to-black text-white pt-12 pb-8 relative overflow-hidden">
 
       {/* BACKGROUND GLOW */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-green-600 opacity-20 blur-3xl rounded-full"></div>
@@ -33,7 +35,7 @@ function Footer() {
       <div className="relative max-w-7xl mx-auto px-6">
 
         {/* TOP GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-14 pb-16 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
 
           {/* BRAND */}
           <motion.div
@@ -64,10 +66,7 @@ function Footer() {
 
             <p className="text-gray-300 leading-8">
 
-              Fresh groceries delivered
-              directly to your doorstep
-              with quality products and
-              affordable pricing.
+              {t("footer.description", "Fresh groceries delivered directly to your doorstep with quality products and affordable pricing.")}
 
             </p>
 
@@ -90,7 +89,7 @@ function Footer() {
 
             <h2 className="text-2xl font-bold mb-6">
 
-              Quick Links
+              {t("footer.quickLinks", "Quick Links")}
 
             </h2>
 
@@ -104,7 +103,7 @@ function Footer() {
                   className="hover:text-green-400 transition duration-300"
                 >
 
-                  Home
+                  {t("nav.home", "Home")}
 
                 </Link>
 
@@ -119,7 +118,7 @@ function Footer() {
                   className="hover:text-green-400 transition duration-300"
                 >
 
-                  Products
+                  {t("nav.products", "Products")}
 
                 </HashLink>
 
@@ -134,7 +133,7 @@ function Footer() {
                   className="hover:text-green-400 transition duration-300"
                 >
 
-                  Contact
+                  {t("nav.contact", "Contact")}
 
                 </HashLink>
 
@@ -148,7 +147,7 @@ function Footer() {
                   className="hover:text-green-400 transition duration-300"
                 >
 
-                  Cart
+                  {t("nav.cart", "Cart")}
 
                 </Link>
 
@@ -175,7 +174,7 @@ function Footer() {
 
             <h2 className="text-2xl font-bold mb-6">
 
-              Contact Info
+              {t("footer.contactInfo", "Contact Info")}
 
             </h2>
 
@@ -183,7 +182,7 @@ function Footer() {
 
               <p>
 
-                📍 Pune, Maharashtra
+                📍 {t("contact.locationValue", "Pune, Maharashtra, India")}
 
               </p>
 
@@ -201,7 +200,7 @@ function Footer() {
 
               <p>
 
-                🕒 8 AM - 10 PM
+                🕒 {t("contact.time", "8 AM - 10 PM")}
 
               </p>
 
@@ -226,15 +225,13 @@ function Footer() {
 
             <h2 className="text-2xl font-bold mb-6">
 
-              Follow Us
+              {t("footer.followUs", "Follow Us")}
 
             </h2>
 
             <p className="text-gray-300 leading-7 mb-6">
 
-              Stay connected with us
-              on social media for latest
-              offers and grocery updates.
+              {t("footer.followDescription", "Stay connected with us on social media for latest offers and grocery updates.")}
 
             </p>
 
@@ -279,8 +276,7 @@ function Footer() {
 
           <p className="text-gray-400 text-center">
 
-            © 2026 GroceryHub.
-            All rights reserved.
+            {t("footer.rights", "© 2026 GroceryHub. All rights reserved.")}
 
           </p>
 

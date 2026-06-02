@@ -2,6 +2,7 @@ import {
   useState,
   useEffect,
 } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import {
   collection,
@@ -54,6 +55,10 @@ function AdminProducts() {
 
   // EDIT MODE
   const [editMode, setEditMode] =
+    useState(false);
+
+  // SHOW ADD FORM
+  const [showAddForm, setShowAddForm] =
     useState(false);
 
   // CURRENT PRODUCT ID
@@ -156,6 +161,7 @@ function AdminProducts() {
       );
 
       fetchProducts();
+      setShowAddForm(false);
 
       // RESET
       setProductData({
@@ -227,6 +233,7 @@ function AdminProducts() {
   const editProduct = (product) => {
 
     setEditMode(true);
+    setShowAddForm(true);
 
     setCurrentProductId(product.id);
 
@@ -294,6 +301,7 @@ function AdminProducts() {
       );
 
       setEditMode(false);
+      setShowAddForm(false);
 
       setCurrentProductId(null);
 
@@ -328,20 +336,20 @@ function AdminProducts() {
 
   return (
 
-    <section className="min-h-screen bg-gray-100 p-6 lg:p-10">
+    <section className="bg-gray-50 px-4 lg:px-6 pb-4 lg:pb-6">
 
-      {/* HEADER */}
-      <div className="flex flex-col xl:flex-row justify-between gap-6 mb-10">
+      {/* HEADER SECTION (STATIC) */}
+      <div className="sticky top-[72px] lg:top-0 z-20 bg-gray-50 pt-4 lg:pt-6 pb-4 mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 border-b border-gray-200/50">
 
         <div>
 
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900">
+          <h1 className="text-3xl font-extrabold text-gray-900">
 
             Products Management 📦
 
           </h1>
 
-          <p className="text-gray-600 mt-3 text-lg">
+          <p className="text-gray-500 mt-1 text-sm">
 
             Add, update, and manage store inventory.
 
@@ -349,156 +357,219 @@ function AdminProducts() {
 
         </div>
 
-        {/* TOTAL PRODUCTS */}
-        <div className="bg-white rounded-3xl shadow-lg px-8 py-6 flex items-center gap-5 w-full xl:w-fit">
+        {/* RIGHT HEADER ACTIONS */}
+        <div className="flex flex-col sm:flex-row items-stretch gap-4 w-full xl:w-fit">
 
-          <div className="w-16 h-16 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center text-3xl">
-
-            <FaBoxOpen />
-
-          </div>
-
-          <div>
-
-            <h2 className="text-4xl font-extrabold text-gray-900">
-
-              {products.length}
-
-            </h2>
-
-            <p className="text-gray-500">
-
-              Total Products
-
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* ADD PRODUCT */}
-      <div className="bg-white rounded-3xl shadow-lg p-8 mb-12">
-
-        <div className="flex items-center gap-4 mb-8">
-
-          <div className="w-14 h-14 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center text-2xl">
-
-            <FaPlus />
-
-          </div>
-
-          <h2 className="text-3xl font-bold text-gray-900">
-
-            {editMode
-              ? "Edit Product"
-              : "Add Product"}
-
-          </h2>
-
-        </div>
-
-        <form
-          onSubmit={
-            editMode
-              ? updateProduct
-              : addProduct
-          }
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-        >
-
-          <input
-            type="text"
-            name="name"
-            placeholder="Product Name"
-            value={productData.name}
-            onChange={handleChange}
-            required
-            className="border border-gray-200 rounded-2xl p-4 outline-none"
-          />
-
-          <input
-            type="number"
-            name="price"
-            placeholder="Price"
-            value={productData.price}
-            onChange={handleChange}
-            required
-            className="border border-gray-200 rounded-2xl p-4 outline-none"
-          />
-
-          <input
-            type="text"
-            name="image"
-            placeholder="Image URL"
-            value={productData.image}
-            onChange={handleChange}
-            required
-            className="border border-gray-200 rounded-2xl p-4 outline-none md:col-span-2"
-          />
-
-          <input
-            type="text"
-            name="category"
-            placeholder="Category"
-            value={productData.category}
-            onChange={handleChange}
-            required
-            className="border border-gray-200 rounded-2xl p-4 outline-none"
-          />
-
-          <input
-            type="number"
-            name="stock"
-            placeholder="Stock Quantity"
-            value={productData.stock}
-            onChange={handleChange}
-            required
-            className="border border-gray-200 rounded-2xl p-4 outline-none"
-          />
-
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={productData.description}
-            onChange={handleChange}
-            rows="4"
-            required
-            className="border border-gray-200 rounded-2xl p-4 outline-none md:col-span-2 resize-none"
-          />
-
+          {/* ADD PRODUCT BUTTON */}
           <button
-            type="submit"
-            disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl text-lg font-bold transition duration-300 md:col-span-2"
+            onClick={() => {
+              setEditMode(false);
+              setProductData({
+                name: "",
+                price: "",
+                image: "",
+                category: "",
+                description: "",
+                stock: "",
+              });
+              setShowAddForm(!showAddForm);
+            }}
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-extrabold text-xl px-8 rounded-2xl shadow-sm transition duration-300 flex items-center justify-center gap-3"
           >
-
-            {loading
-              ? "Processing..."
-              : editMode
-              ? "Update Product"
-              : "Add Product"}
-
+            <FaPlus className="text-2xl" />
+            {showAddForm && !editMode ? "Close Form" : "Add Product"}
           </button>
 
-        </form>
+          {/* TOTAL PRODUCTS */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-5 w-full sm:w-auto">
+
+            <div className="w-14 h-14 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-3xl">
+
+              <FaBoxOpen />
+
+            </div>
+
+            <div>
+
+              <h2 className="text-4xl font-extrabold text-gray-900 leading-none">
+
+                {products.length}
+
+              </h2>
+
+              <p className="text-gray-500 text-sm mt-1 uppercase tracking-wider font-semibold">
+
+                Total Products
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
-      {/* MANAGE PRODUCTS */}
-      <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
+      {/* ANIMATED ADD PRODUCT MODAL */}
+      <AnimatePresence>
+        {showAddForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              {/* MODAL HEADER */}
+              <div className="bg-gradient-to-r from-green-600 to-green-500 p-6 sm:p-8 flex justify-between items-start sm:items-center text-white shrink-0">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold">
+                    {editMode ? "Edit Product" : "Add New Product"}
+                  </h2>
+                  <p className="text-green-100 mt-1 text-sm sm:text-base">
+                    {editMode ? "Update the details of your inventory item." : "Fill in the details to expand your inventory."}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAddForm(false)}
+                  className="bg-white/20 hover:bg-white/30 px-4 py-2 sm:p-3 rounded-2xl transition backdrop-blur-md mt-2 sm:mt-0"
+                >
+                  <span className="font-bold text-white text-xs tracking-wider">ESC</span>
+                </button>
+              </div>
 
-        <h2 className="text-4xl font-extrabold text-gray-900">
+              {/* MODAL BODY */}
+              <div className="p-6 overflow-y-auto">
+                <form
+                  onSubmit={editMode ? updateProduct : addProduct}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                >
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-base font-bold text-gray-700 ml-1">Product Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="e.g. Organic Bananas"
+                      value={productData.name}
+                      onChange={handleChange}
+                      required
+                      className="border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:border-green-500 focus:ring-4 focus:ring-green-50 transition text-lg"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-base font-bold text-gray-700 ml-1">Price (₹)</label>
+                    <input
+                      type="number"
+                      name="price"
+                      placeholder="e.g. 150"
+                      value={productData.price}
+                      onChange={handleChange}
+                      required
+                      className="border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:border-green-500 focus:ring-4 focus:ring-green-50 transition text-lg"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label className="text-base font-bold text-gray-700 ml-1">Image URL</label>
+                    <input
+                      type="text"
+                      name="image"
+                      placeholder="https://example.com/image.png"
+                      value={productData.image}
+                      onChange={handleChange}
+                      required
+                      className="border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:border-green-500 focus:ring-4 focus:ring-green-50 transition text-lg"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-base font-bold text-gray-700 ml-1">Category</label>
+                    <input
+                      type="text"
+                      name="category"
+                      placeholder="e.g. Fruits"
+                      value={productData.category}
+                      onChange={handleChange}
+                      required
+                      className="border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:border-green-500 focus:ring-4 focus:ring-green-50 transition text-lg"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-base font-bold text-gray-700 ml-1">Stock Quantity</label>
+                    <input
+                      type="number"
+                      name="stock"
+                      placeholder="e.g. 50"
+                      value={productData.stock}
+                      onChange={handleChange}
+                      required
+                      className="border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:border-green-500 focus:ring-4 focus:ring-green-50 transition text-lg"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label className="text-base font-bold text-gray-700 ml-1">Description</label>
+                    <textarea
+                      name="description"
+                      placeholder="Briefly describe the product..."
+                      value={productData.description}
+                      onChange={handleChange}
+                      rows="2"
+                      required
+                      className="border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:border-green-500 focus:ring-4 focus:ring-green-50 transition text-lg resize-none"
+                    />
+                  </div>
+
+                  <div className="flex flex-col-reverse sm:flex-row justify-center gap-4 mt-2 md:col-span-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddForm(false)}
+                      className="w-full sm:w-auto px-8 py-3 rounded-xl text-gray-600 font-bold bg-gray-100 hover:bg-gray-200 transition text-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-green-200 transition duration-300 text-lg"
+                    >
+                      {loading
+                        ? "Saving..."
+                        : editMode
+                        ? "Save Changes"
+                        : "Publish Product"}
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MANAGE PRODUCTS */}
+      <div className="relative flex flex-col md:flex-row justify-center items-center gap-4 mb-8">
+
+        <h2 className="text-2xl font-bold text-gray-900 md:absolute md:left-0">
 
           Manage Products
 
         </h2>
 
         {/* SEARCH */}
-        <div className="relative w-full lg:w-96">
+        <div className="relative w-full md:w-[400px]">
 
-          <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
 
           <input
             type="text"
@@ -507,7 +578,7 @@ function AdminProducts() {
             onChange={(e) =>
               setSearchTerm(e.target.value)
             }
-            className="border border-gray-200 rounded-2xl pl-14 pr-5 py-4 w-full outline-none bg-white shadow-sm"
+            className="border border-gray-200 rounded-xl pl-10 pr-4 py-3 w-full outline-none text-base bg-white shadow-sm focus:border-green-500 transition"
           />
 
         </div>
@@ -515,34 +586,34 @@ function AdminProducts() {
       </div>
 
       {/* PRODUCTS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
 
         {filteredProducts.map((product) => (
 
           <div
             key={product.id}
-            className="bg-white rounded-3xl overflow-hidden shadow-lg"
+            className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition hover:shadow-md flex flex-col"
           >
 
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-64 object-cover"
+              className="w-full h-40 object-cover"
             />
 
-            <div className="p-6">
+            <div className="p-4 flex flex-col flex-grow">
 
-              <div className="flex justify-between items-start gap-4">
+              <div className="flex justify-between items-start gap-2">
 
                 <div>
 
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-base font-bold text-gray-900 leading-tight">
 
                     {product.name}
 
                   </h2>
 
-                  <p className="text-green-600 mt-2 font-semibold">
+                  <p className="text-[10px] text-green-600 mt-1 uppercase tracking-wider font-semibold">
 
                     {product.category}
 
@@ -550,7 +621,7 @@ function AdminProducts() {
 
                 </div>
 
-                <h3 className="text-2xl font-extrabold text-green-700 whitespace-nowrap">
+                <h3 className="text-base font-extrabold text-green-700 whitespace-nowrap">
 
                   ₹{product.price}
 
@@ -559,11 +630,11 @@ function AdminProducts() {
               </div>
 
               {/* STOCK STATUS */}
-              <div className="mt-5">
+              <div className="mt-3">
 
                 {product.stock === 0 ? (
 
-                  <span className="bg-red-100 text-red-700 px-4 py-2 rounded-xl font-bold">
+                  <span className="bg-red-50 text-red-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-red-100">
 
                     Out of Stock
 
@@ -571,21 +642,17 @@ function AdminProducts() {
 
                 ) : product.stock <= 5 ? (
 
-                  <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl font-bold">
+                  <span className="bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-yellow-100">
 
-                    Low Stock:
-                    {" "}
-                    {product.stock}
+                    Low Stock: {product.stock}
 
                   </span>
 
                 ) : (
 
-                  <span className="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold">
+                  <span className="bg-green-50 text-green-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-green-100">
 
-                    In Stock:
-                    {" "}
-                    {product.stock}
+                    In Stock: {product.stock}
 
                   </span>
 
@@ -593,19 +660,19 @@ function AdminProducts() {
 
               </div>
 
-              <p className="text-gray-600 mt-6 leading-7">
+              <p className="text-xs text-gray-500 mt-3 line-clamp-2 leading-relaxed flex-grow">
 
                 {product.description}
 
               </p>
 
-              <div className="flex gap-4 mt-8">
+              <div className="flex gap-2 mt-auto pt-4">
 
                 <button
                   onClick={() =>
                     editProduct(product)
                   }
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-3"
+                  className="flex-1 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition duration-300 border border-blue-100 hover:border-blue-600"
                 >
 
                   <FaEdit />
@@ -618,7 +685,7 @@ function AdminProducts() {
                   onClick={() =>
                     deleteProduct(product.id)
                   }
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-3"
+                  className="flex-1 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition duration-300 border border-red-100 hover:border-red-500"
                 >
 
                   <FaTrash />

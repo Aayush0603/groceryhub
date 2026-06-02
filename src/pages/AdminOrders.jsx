@@ -314,7 +314,7 @@ function AdminOrders() {
 
         <div>
 
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900">
+          <h1 className="text-3xl font-extrabold text-gray-900">
 
             Orders Management 📦
 
@@ -328,65 +328,78 @@ function AdminOrders() {
 
         </div>
 
-        {/* DATE FILTER */}
-        <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col gap-4">
+        {/* HEADER CONTROLS */}
+        <div className="flex flex-col sm:flex-row items-stretch gap-6 w-full xl:w-auto">
 
-          <label className="font-bold text-gray-700">
+          {/* TOTAL ORDERS */}
+          <div className="bg-white rounded-2xl shadow-lg p-5 flex items-center justify-between gap-6 min-w-[220px] flex-1 sm:flex-none">
 
-            Filter By Date
+            <div>
 
-          </label>
+              <h2 className="text-gray-500 text-xs font-bold uppercase tracking-wider">
 
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) =>
-              setSelectedDate(
-                e.target.value
-              )
-            }
-            className="border border-gray-300 rounded-xl px-4 py-3 outline-none"
-          />
+                Total Orders
 
-          {selectedDate && (
+              </h2>
 
-            <button
-              onClick={() =>
-                setSelectedDate("")
-              }
-              className="bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl font-bold transition duration-300"
-            >
+              <h1 className="text-4xl font-extrabold text-gray-900 mt-2">
 
-              Clear Filter
+                {totalOrders}
 
-            </button>
+              </h1>
 
-          )}
+            </div>
+
+            <div className="p-3.5 bg-green-50 rounded-xl">
+
+              <FaShoppingBag className="text-3xl text-green-600" />
+
+            </div>
+
+          </div>
+
+          {/* DATE FILTER */}
+          <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col justify-center gap-3 flex-1 sm:flex-none min-w-[240px]">
+
+            <div className="flex flex-col gap-1.5">
+
+              <label className="font-bold text-xs uppercase tracking-wider text-gray-500">
+
+                Filter By Date
+
+              </label>
+
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) =>
+                  setSelectedDate(
+                    e.target.value
+                  )
+                }
+                className="border border-gray-200 rounded-xl px-4 py-2 text-sm outline-none font-semibold text-gray-700 bg-gray-50 focus:bg-white focus:border-gray-300 transition"
+              />
+
+            </div>
+
+            {selectedDate && (
+
+              <button
+                onClick={() =>
+                  setSelectedDate("")
+                }
+                className="bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl text-sm font-bold transition duration-300"
+              >
+
+                Clear Filter
+
+              </button>
+
+            )}
+
+          </div>
 
         </div>
-
-      </div>
-
-      {/* TOTAL ORDERS */}
-      <div className="bg-white rounded-3xl shadow-xl p-8 mb-10 flex justify-between items-center">
-
-        <div>
-
-          <h2 className="text-gray-500 text-xl">
-
-            Total Orders
-
-          </h2>
-
-          <h1 className="text-5xl font-extrabold text-gray-900 mt-3">
-
-            {totalOrders}
-
-          </h1>
-
-        </div>
-
-        <FaShoppingBag className="text-6xl text-green-600" />
 
       </div>
 
@@ -454,28 +467,28 @@ function AdminOrders() {
       )}
 
       {/* ORDERS */}
-      <div className="space-y-10">
+      <div className="space-y-6">
 
         {filteredOrders.map(
           (order) => (
 
             <div
               key={order.id}
-              className="bg-white rounded-3xl shadow-xl overflow-hidden"
+              className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100"
             >
 
               {/* TOP */}
-              <div className="bg-gray-900 text-white px-8 py-5 flex flex-col lg:flex-row justify-between gap-5">
+              <div className="bg-gray-900 text-white px-5 py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
 
                 <div>
 
-                  <h2 className="text-2xl font-bold">
+                  <h2 className="text-xs uppercase tracking-wider text-gray-400 font-bold">
 
                     Order ID
 
                   </h2>
 
-                  <p className="text-gray-300 mt-1 break-all">
+                  <p className="text-base font-semibold text-gray-100 break-all sm:break-normal">
 
                     {order.id}
 
@@ -484,10 +497,10 @@ function AdminOrders() {
                 </div>
 
                 {/* STATUS */}
-                <div className="flex flex-col lg:items-end gap-4">
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
 
                   <div
-                    className={`px-6 py-3 rounded-2xl font-bold text-lg ${getStatusStyle(order.status)}`}
+                    className={`px-3.5 py-1.5 rounded-xl font-bold text-sm ${getStatusStyle(order.status)}`}
                   >
 
                     {order.status}
@@ -504,40 +517,40 @@ function AdminOrders() {
                         e.target.value
                       )
                     }
-                    className="bg-white border border-gray-200 rounded-2xl px-5 py-3 outline-none text-gray-800 font-semibold"
+                    className="bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-3.5 py-2 outline-none text-white text-sm font-semibold cursor-pointer transition"
                   >
 
-                    <option>
+                    <option className="text-gray-800">
 
                       Pending
 
                     </option>
 
-                    <option>
+                    <option className="text-gray-800">
 
                       Processing
 
                     </option>
 
-                    <option>
+                    <option className="text-gray-800">
 
                       Packed
 
                     </option>
 
-                    <option>
+                    <option className="text-gray-800">
 
                       Out for Delivery
 
                     </option>
 
-                    <option>
+                    <option className="text-gray-800">
 
                       Delivered
 
                     </option>
 
-                    <option>
+                    <option className="text-gray-800">
 
                       Cancelled
 
@@ -550,25 +563,25 @@ function AdminOrders() {
               </div>
 
               {/* CONTENT */}
-              <div className="p-8">
+              <div className="p-5">
 
                 {/* DATE TIME ETA */}
-                <div className="flex flex-wrap gap-6 mb-8">
+                <div className="flex flex-wrap gap-3 mb-5">
 
                   {/* DATE */}
-                  <div className="bg-green-50 rounded-2xl px-6 py-4 flex items-center gap-4">
+                  <div className="bg-green-50 rounded-xl px-4 py-2 flex items-center gap-3 border border-green-100/30">
 
-                    <FaCalendarAlt className="text-green-700 text-2xl" />
+                    <FaCalendarAlt className="text-green-700 text-lg" />
 
                     <div>
 
-                      <p className="text-gray-500">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider">
 
                         Order Date
 
                       </p>
 
-                      <h3 className="font-bold text-lg">
+                      <h3 className="font-bold text-base text-gray-800">
 
                         {order.orderDate}
 
@@ -579,19 +592,19 @@ function AdminOrders() {
                   </div>
 
                   {/* TIME */}
-                  <div className="bg-blue-50 rounded-2xl px-6 py-4 flex items-center gap-4">
+                  <div className="bg-blue-50 rounded-xl px-4 py-2 flex items-center gap-3 border border-blue-100/30">
 
-                    <FaClock className="text-blue-700 text-2xl" />
+                    <FaClock className="text-blue-700 text-lg" />
 
                     <div>
 
-                      <p className="text-gray-500">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider">
 
                         Order Time
 
                       </p>
 
-                      <h3 className="font-bold text-lg">
+                      <h3 className="font-bold text-base text-gray-800">
 
                         {order.orderTime}
 
@@ -602,19 +615,19 @@ function AdminOrders() {
                   </div>
 
                   {/* ETA */}
-                  <div className="bg-orange-50 rounded-2xl px-6 py-4 flex items-center gap-4">
+                  <div className="bg-orange-50 rounded-xl px-4 py-2 flex items-center gap-3 border border-orange-100/30">
 
-                    <FaTruck className="text-orange-700 text-2xl" />
+                    <FaTruck className="text-orange-700 text-lg" />
 
                     <div>
 
-                      <p className="text-gray-500">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider">
 
                         Estimated Delivery
 
                       </p>
 
-                      <h3 className="font-bold text-lg text-orange-700">
+                      <h3 className="font-bold text-base text-orange-700">
 
                         {order.estimatedDelivery ||
                           "45 mins"}
@@ -628,11 +641,11 @@ function AdminOrders() {
                 </div>
 
                 {/* CUSTOMER */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
 
-                  <div className="bg-gray-50 rounded-2xl p-5">
+                  <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100/50">
 
-                    <div className="flex items-center gap-3 text-gray-500 mb-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-wider mb-1.5">
 
                       <FaUser />
 
@@ -640,7 +653,7 @@ function AdminOrders() {
 
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900">
+                    <h3 className="text-base font-semibold text-gray-800">
 
                       {order.customerInfo?.name}
 
@@ -648,9 +661,9 @@ function AdminOrders() {
 
                   </div>
 
-                  <div className="bg-gray-50 rounded-2xl p-5">
+                  <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100/50">
 
-                    <div className="flex items-center gap-3 text-gray-500 mb-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-wider mb-1.5">
 
                       <FaPhoneAlt />
 
@@ -658,7 +671,7 @@ function AdminOrders() {
 
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900">
+                    <h3 className="text-base font-semibold text-gray-800">
 
                       {order.customerInfo?.phone}
 
@@ -666,9 +679,9 @@ function AdminOrders() {
 
                   </div>
 
-                  <div className="bg-gray-50 rounded-2xl p-5 md:col-span-2">
+                  <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100/50 md:col-span-2">
 
-                    <div className="flex items-center gap-3 text-gray-500 mb-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-wider mb-1.5">
 
                       <FaMapMarkerAlt />
 
@@ -676,7 +689,7 @@ function AdminOrders() {
 
                     </div>
 
-                    <h3 className="text-lg font-bold text-gray-900 leading-8">
+                    <h3 className="text-sm font-semibold text-gray-800 leading-relaxed">
 
                       {order.customerInfo?.address},{" "}
                       {order.customerInfo?.city} -{" "}
@@ -691,31 +704,31 @@ function AdminOrders() {
                 {/* PRODUCTS */}
                 <div>
 
-                  <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
 
                     Ordered Products
 
                   </h2>
 
-                  <div className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
 
                     {order.cartItems?.map(
                       (item) => (
 
                         <div
                           key={item.id}
-                          className="bg-gray-50 rounded-2xl p-6 flex flex-col lg:flex-row justify-between gap-5"
+                          className="bg-gray-50 rounded-xl p-3 flex justify-between items-center gap-4 border border-gray-100/50"
                         >
 
                           <div>
 
-                            <h3 className="text-2xl font-bold text-gray-900">
+                            <h3 className="text-base font-semibold text-gray-800">
 
                               {item.name}
 
                             </h3>
 
-                            <p className="text-gray-500 mt-2 text-lg">
+                            <p className="text-sm text-gray-500 mt-0.5">
 
                               Quantity:
                               {" "}
@@ -725,9 +738,9 @@ function AdminOrders() {
 
                           </div>
 
-                          <div className="flex items-center gap-3 text-green-700 font-extrabold text-3xl">
+                          <div className="flex items-center gap-1.5 text-green-700 font-bold text-base">
 
-                            <FaMoneyBillWave />
+                            <FaMoneyBillWave className="text-sm" />
 
                             ₹
                             {item.price *
@@ -745,15 +758,15 @@ function AdminOrders() {
                 </div>
 
                 {/* TOTAL */}
-                <div className="mt-10 border-t border-gray-200 pt-8 flex justify-between items-center">
+                <div className="mt-5 border-t border-gray-100 pt-4 flex justify-between items-center">
 
-                  <h2 className="text-3xl font-bold text-gray-900">
+                  <h2 className="text-base font-bold text-gray-800">
 
                     Final Total
 
                   </h2>
 
-                  <h2 className="text-5xl font-extrabold text-green-700">
+                  <h2 className="text-3xl font-extrabold text-green-700">
 
                     ₹{order.finalTotal}
 

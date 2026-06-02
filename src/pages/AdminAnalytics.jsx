@@ -310,20 +310,20 @@ function AdminAnalytics() {
 
   return (
 
-    <section className="min-h-screen bg-gray-100 p-6 lg:p-10">
+    <section className="min-h-screen bg-gray-50 p-4 lg:p-6">
 
       {/* HEADER */}
-      <div className="flex flex-col lg:flex-row justify-between gap-6 mb-12">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
 
         <div>
 
-          <h1 className="text-5xl font-extrabold text-gray-900">
+          <h1 className="text-3xl font-extrabold text-gray-900">
 
             Advanced Analytics 📈
 
           </h1>
 
-          <p className="text-gray-600 mt-3 text-lg">
+          <p className="text-gray-500 mt-1 text-sm">
 
             Business intelligence and sales insights.
 
@@ -332,9 +332,9 @@ function AdminAnalytics() {
         </div>
 
         {/* DATE FILTER */}
-        <div className="bg-white rounded-3xl shadow-xl p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-4">
 
-          <p className="font-bold text-gray-700 mb-3">
+          <p className="text-sm font-bold text-gray-700">
 
             Filter By Date
 
@@ -348,7 +348,7 @@ function AdminAnalytics() {
                 e.target.value
               )
             }
-            className="border border-gray-300 rounded-2xl px-5 py-3 outline-none"
+            className="border border-gray-200 rounded-xl px-4 py-2 outline-none text-sm text-gray-800 focus:border-blue-500 transition"
           />
 
         </div>
@@ -356,100 +356,112 @@ function AdminAnalytics() {
       </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
         {/* REVENUE */}
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-5 hover:shadow-md transition duration-300">
 
-          <div className="w-16 h-16 rounded-2xl bg-green-500 text-white flex items-center justify-center text-3xl mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">
 
-            <FaRupeeSign />
+                Revenue
 
+              </h2>
+
+              <h1 className="text-3xl font-extrabold text-gray-900">
+
+                ₹{dailyRevenue}
+
+              </h1>
+            </div>
+
+            <div className="w-12 h-12 rounded-xl bg-green-500 text-white flex items-center justify-center text-2xl shadow-sm shadow-green-500/20">
+
+              <FaRupeeSign />
+
+            </div>
           </div>
-
-          <h2 className="text-gray-500 text-lg mb-3">
-
-            Revenue
-
-          </h2>
-
-          <h1 className="text-5xl font-extrabold text-green-700">
-
-            ₹{dailyRevenue}
-
-          </h1>
 
         </div>
 
         {/* ORDERS */}
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-5 hover:shadow-md transition duration-300">
 
-          <div className="w-16 h-16 rounded-2xl bg-blue-500 text-white flex items-center justify-center text-3xl mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">
 
-            <FaShoppingCart />
+                Orders
 
+              </h2>
+
+              <h1 className="text-3xl font-extrabold text-gray-900">
+
+                {dailyOrders}
+
+              </h1>
+            </div>
+
+            <div className="w-12 h-12 rounded-xl bg-blue-500 text-white flex items-center justify-center text-2xl shadow-sm shadow-blue-500/20">
+
+              <FaShoppingCart />
+
+            </div>
           </div>
-
-          <h2 className="text-gray-500 text-lg mb-3">
-
-            Orders
-
-          </h2>
-
-          <h1 className="text-5xl font-extrabold text-blue-700">
-
-            {dailyOrders}
-
-          </h1>
 
         </div>
 
         {/* PRODUCTS */}
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-5 hover:shadow-md transition duration-300">
 
-          <div className="w-16 h-16 rounded-2xl bg-orange-500 text-white flex items-center justify-center text-3xl mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">
 
-            <FaBoxOpen />
+                Products Sold
 
+              </h2>
+
+              <h1 className="text-3xl font-extrabold text-gray-900">
+
+                {dailyProducts.reduce(
+                  (
+                    total,
+                    item
+                  ) =>
+
+                    total +
+                    item.quantity,
+
+                  0
+                )}
+
+              </h1>
+            </div>
+
+            <div className="w-12 h-12 rounded-xl bg-orange-500 text-white flex items-center justify-center text-2xl shadow-sm shadow-orange-500/20">
+
+              <FaBoxOpen />
+
+            </div>
           </div>
-
-          <h2 className="text-gray-500 text-lg mb-3">
-
-            Products Sold
-
-          </h2>
-
-          <h1 className="text-5xl font-extrabold text-orange-700">
-
-            {dailyProducts.reduce(
-              (
-                total,
-                item
-              ) =>
-
-                total +
-                item.quantity,
-
-              0
-            )}
-
-          </h1>
 
         </div>
 
       </div>
 
       {/* CHARTS */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 mt-14">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
         {/* MONTHLY REVENUE */}
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
 
-          <div className="flex items-center gap-4 mb-10">
+          <div className="flex items-center gap-3 mb-6">
 
-            <FaChartLine className="text-4xl text-green-600" />
+            <FaChartLine className="text-xl text-green-600" />
 
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-gray-900">
 
               Monthly Revenue
 
@@ -457,7 +469,7 @@ function AdminAnalytics() {
 
           </div>
 
-          <div className="w-full h-[400px]">
+          <div className="w-full h-[300px]">
 
             <ResponsiveContainer
               width="100%"
@@ -470,22 +482,24 @@ function AdminAnalytics() {
                 }
               >
 
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
 
-                <XAxis dataKey="month" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} dy={10} />
 
-                <YAxis />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} dx={-10} />
 
-                <Tooltip />
+                <Tooltip cursor={{fill: '#f9fafb'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
 
                 <Bar
                   dataKey="revenue"
+                  fill="#3b82f6"
                   radius={[
-                    10,
-                    10,
-                    0,
-                    0,
+                    6,
+                    6,
+                    6,
+                    6,
                   ]}
+                  barSize={40}
                 />
 
               </BarChart>
@@ -497,15 +511,15 @@ function AdminAnalytics() {
         </div>
 
         {/* STATUS ANALYTICS */}
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-10">
+          <h2 className="text-lg font-bold text-gray-900 mb-6">
 
             Order Status Analytics
 
           </h2>
 
-          <div className="w-full h-[400px]">
+          <div className="w-full h-[300px]">
 
             <ResponsiveContainer
               width="100%"
@@ -520,8 +534,12 @@ function AdminAnalytics() {
                   }
                   dataKey="value"
                   nameKey="name"
-                  outerRadius={140}
-                  label
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  stroke="none"
                 >
 
                   {statusAnalytics.map(
@@ -545,9 +563,9 @@ function AdminAnalytics() {
 
                 </Pie>
 
-                <Tooltip />
+                <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
 
-                <Legend />
+                <Legend iconType="circle" wrapperStyle={{fontSize: '12px', color: '#6b7280'}} />
 
               </PieChart>
 
@@ -560,9 +578,9 @@ function AdminAnalytics() {
       </div>
 
       {/* DAILY PRODUCT SALES */}
-      <div className="bg-white rounded-3xl shadow-xl p-8 mt-14">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-6">
 
-        <h2 className="text-4xl font-extrabold text-gray-900 mb-10">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">
 
           Product Sales Analytics
 
@@ -571,9 +589,9 @@ function AdminAnalytics() {
         {dailyProducts.length ===
           0 && (
 
-          <div className="text-center py-20">
+          <div className="text-center py-10">
 
-            <h3 className="text-3xl font-bold text-gray-400">
+            <h3 className="text-lg font-semibold text-gray-400">
 
               No Product Sales Found
 
@@ -583,7 +601,7 @@ function AdminAnalytics() {
 
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 
           {dailyProducts.map(
             (
@@ -593,28 +611,32 @@ function AdminAnalytics() {
 
               <div
                 key={index}
-                className="bg-gray-50 rounded-3xl p-6"
+                className="bg-gray-50 border border-gray-100/50 rounded-xl p-4 flex items-center justify-between hover:shadow-sm transition"
               >
 
-                <h3 className="text-2xl font-bold text-gray-900">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-800">
 
-                  {product.name}
+                    {product.name}
 
-                </h3>
+                  </h3>
 
-                <p className="text-gray-500 mt-3">
+                  <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-semibold">
 
-                  Quantity Sold
+                    Quantity Sold
 
-                </p>
+                  </p>
+                </div>
 
-                <h2 className="text-5xl font-extrabold text-green-700 mt-5">
+                <div className="bg-white border border-green-100 shadow-sm w-12 h-12 flex items-center justify-center rounded-xl">
+                  <h2 className="text-xl font-extrabold text-green-600">
 
-                  {
-                    product.quantity
-                  }
+                    {
+                      product.quantity
+                    }
 
-                </h2>
+                  </h2>
+                </div>
 
               </div>
 

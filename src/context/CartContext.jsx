@@ -23,9 +23,26 @@ function CartProvider({ children }) {
             "grocery-cart"
           );
 
-        return savedCart
-          ? JSON.parse(savedCart)
-          : [];
+        let items = savedCart ? JSON.parse(savedCart) : [];
+
+        // Auto-fix / sync stale image URLs for generated products
+        const targetImages = {
+          "milk 500 ml": "/images/milk_500ml.png",
+          "sunflower oil": "/images/sunflower_oil.png",
+          "mustard oil": "/images/mustard_oil.png",
+          "milk 1l": "/images/milk_1l.png"
+        };
+
+        return items.map(item => {
+          const lowerName = item.name.trim().toLowerCase();
+          if (targetImages[lowerName]) {
+            return {
+              ...item,
+              image: targetImages[lowerName]
+            };
+          }
+          return item;
+        });
 
       } catch (error) {
 

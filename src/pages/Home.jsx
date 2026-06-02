@@ -10,7 +10,7 @@ function Home() {
 
   return (
 
-    <main className="pt-24 overflow-hidden">
+    <main className="pt-16 md:pt-20 overflow-hidden">
 
       {/* HERO SECTION */}
       <Hero />

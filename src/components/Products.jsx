@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import {
   collection,
   getDocs,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
@@ -16,8 +18,10 @@ import {
   FaLeaf,
   FaMicrophone,
 } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 function Products() {
+  const { t, i18n } = useTranslation();
 
   // PRODUCTS STATE
   const [products, setProducts] =
@@ -39,41 +43,47 @@ function Products() {
   const [isListening, setIsListening] =
   useState(false);
 
-  // VOICE LANGUAGE
-  const [voiceLanguage, setVoiceLanguage] =
-  useState("en-IN");
-
   // FETCH PRODUCTS
   useEffect(() => {
 
     const fetchProducts = async () => {
 
       try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        let fetchedProducts = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-        const querySnapshot =
-          await getDocs(
-            collection(db, "products")
-          );
+        // AUTO-UPDATE MISSING IMAGES IN FIRESTORE & IN MEMORY
+        const targetImages = {
+          "milk 500 ml": "/images/milk_500ml.png",
+          "sunflower oil": "/images/sunflower_oil.png",
+          "mustard oil": "/images/mustard_oil.png",
+          "milk 1l": "/images/milk_1l.png"
+        };
 
-        const fetchedProducts =
-          querySnapshot.docs.map((doc) => ({
-
-            id: doc.id,
-
-            ...doc.data(),
-
-          }));
+        fetchedProducts = await Promise.all(fetchedProducts.map(async (item) => {
+          const lowerName = item.name.trim().toLowerCase();
+          if (targetImages[lowerName]) {
+            const expectedUrl = targetImages[lowerName];
+            if (!item.image || item.image.includes("placeholder") || item.image !== expectedUrl) {
+              console.log(`Auto-updating ${item.name} image URL to ${expectedUrl}`);
+              await updateDoc(doc(db, "products", item.id), {
+                image: expectedUrl
+              });
+              return { ...item, image: expectedUrl };
+            }
+          }
+          return item;
+        }));
 
         setProducts(fetchedProducts);
 
       } catch (error) {
-
         console.error(error);
-
       } finally {
-
         setLoading(false);
-
       }
 
     };
@@ -118,8 +128,7 @@ const startVoiceSearch = () => {
     new SpeechRecognition();
 
   // LANGUAGE
-  recognition.lang =
-  voiceLanguage;
+  recognition.lang = i18n.language === "hi" ? "hi-IN" : i18n.language === "mr" ? "mr-IN" : "en-IN";
 
   recognition.continuous =
     false;
@@ -198,7 +207,7 @@ const startVoiceSearch = () => {
 
       <div className="min-h-screen flex items-center justify-center text-3xl font-bold text-green-600">
 
-        Loading Products...
+        {t("productsSection.loading", "Loading Products...")}
 
       </div>
 
@@ -210,7 +219,7 @@ const startVoiceSearch = () => {
 
     <section
       id="products"
-      className="py-28 bg-gradient-to-br from-white via-green-50 to-green-100 transition duration-500 overflow-hidden"
+      className="py-12 bg-gradient-to-br from-white via-green-50 to-green-100 transition duration-500 overflow-hidden"
     >
 
       <div className="max-w-7xl mx-auto px-6">
@@ -220,12 +229,12 @@ const startVoiceSearch = () => {
           initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-3 bg-green-100 text-green-700 px-5 py-2 rounded-full font-semibold shadow-sm mb-6"
+          className="inline-flex items-center gap-3 bg-green-100 text-green-700 px-5 py-2 rounded-full font-semibold shadow-sm mb-4"
         >
 
           <FaLeaf />
 
-          Fresh Grocery Collection
+          {t("productsSection.badge", "Fresh Grocery Collection")}
 
         </motion.div>
 
@@ -234,33 +243,30 @@ const startVoiceSearch = () => {
           initial={{ opacity: 0, y: -40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-14"
+          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8"
         >
 
           <div>
 
             <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">
 
-              Explore Our
+              {t("productsSection.explore", "Explore Our")}
               <span className="text-green-600">
-                {" "}Fresh Products
+                {t("productsSection.freshProducts", " Fresh Products")}
               </span>
 
             </h1>
 
-            <p className="mt-5 text-lg text-gray-600 max-w-2xl leading-8">
+            <p className="mt-3 text-lg text-gray-600 max-w-2xl leading-8">
 
-              Browse fresh vegetables,
-              fruits, dairy, grains,
-              snacks, and everyday essentials
-              delivered directly to your doorstep.
+              {t("productsSection.description", "Browse fresh vegetables, fruits, dairy, grains, snacks, and everyday essentials delivered directly to your doorstep.")}
 
             </p>
 
           </div>
 
           {/* PRODUCT COUNT */}
-          <div className="bg-white backdrop-blur-xl rounded-3xl shadow-xl px-8 py-6 border border-gray-100">
+          <div className="bg-white backdrop-blur-xl rounded-3xl shadow-xl px-8 py-6 border border-gray-100 text-center flex flex-col items-center justify-center">
 
             <h2 className="text-5xl font-extrabold text-green-700">
 
@@ -270,7 +276,7 @@ const startVoiceSearch = () => {
 
             <p className="text-gray-600 mt-2">
 
-              Products Available
+              {t("productsSection.productsAvailable", "Products Available")}
 
             </p>
 
@@ -278,42 +284,12 @@ const startVoiceSearch = () => {
 
         </motion.div>
 
-
-        {/* LANGUAGE SELECTOR */}
-<div className="flex justify-center mb-6">
-
-  <select
-    value={voiceLanguage}
-    onChange={(e) =>
-      setVoiceLanguage(
-        e.target.value
-      )
-    }
-    className="bg-white border border-gray-200 rounded-2xl px-5 py-3 shadow-lg outline-none text-gray-700 font-semibold"
-  >
-
-    <option value="en-IN">
-      English
-    </option>
-
-    <option value="hi-IN">
-      हिंदी
-    </option>
-
-    <option value="mr-IN">
-      मराठी
-    </option>
-
-  </select>
-
-</div>
-
         {/* SEARCH BAR */}
 <motion.div
   initial={{ opacity: 0 }}
   whileInView={{ opacity: 1 }}
   transition={{ duration: 0.8 }}
-  className="relative max-w-2xl mx-auto mb-14"
+  className="relative max-w-2xl mx-auto mb-8"
 >
 
   {/* SEARCH ICON */}
@@ -322,7 +298,7 @@ const startVoiceSearch = () => {
   {/* INPUT */}
   <input
     type="text"
-    placeholder="Search grocery products or use voice..."
+    placeholder={t("productsSection.searchPlaceholder", "Search grocery products or use voice...")}
     value={searchTerm}
     onChange={(e) =>
       setSearchTerm(
@@ -362,7 +338,7 @@ const startVoiceSearch = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="flex flex-wrap justify-center gap-5 mb-16"
+          className="flex flex-wrap justify-center gap-5 mb-12"
         >
 
           {categories.map((category) => (
@@ -380,7 +356,7 @@ const startVoiceSearch = () => {
               }`}
             >
 
-              {category}
+              {category === "All" ? t("productsSection.all", "All") : t(`products.categories.${category.toLowerCase()}`, category)}
 
             </button>
 
@@ -393,7 +369,7 @@ const startVoiceSearch = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.9 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-6"
         >
 
           {filteredProducts.map((product) => (

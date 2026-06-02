@@ -29,8 +29,6 @@ import { Toaster } from "react-hot-toast";
 
 import Navbar from "./components/Navbar";
 
-import WhatsAppButton from "./components/WhatsAppButton";
-
 import Loader from "./components/Loader";
 
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -44,8 +42,6 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 
 import Login from "./pages/Login";
-
-import Signup from "./pages/Signup";
 
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -71,8 +67,6 @@ function CustomerLayout() {
     <>
 
       <Navbar />
-
-      <WhatsAppButton />
 
       <Outlet />
 
@@ -493,10 +487,10 @@ function AppLayout() {
           element={<Login />}
         />
 
-        {/* SIGNUP */}
+        {/* SIGNUP ROUTE MAPS TO LOGIN */}
         <Route
           path="/signup"
-          element={<Signup />}
+          element={<Login />}
         />
 
         {/* ADMIN ROUTES */}
