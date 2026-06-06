@@ -243,125 +243,82 @@ const startVoiceSearch = () => {
           initial={{ opacity: 0, y: -40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8"
+          className="text-center max-w-3xl mx-auto mb-8"
         >
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">
+            {t("productsSection.explore", "Explore Our")}
+            <span className="text-green-600">
+              {t("productsSection.freshProducts", " Fresh Products")}
+            </span>
+          </h1>
 
-          <div>
-
-            <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">
-
-              {t("productsSection.explore", "Explore Our")}
-              <span className="text-green-600">
-                {t("productsSection.freshProducts", " Fresh Products")}
-              </span>
-
-            </h1>
-
-            <p className="mt-3 text-lg text-gray-600 max-w-2xl leading-8">
-
-              {t("productsSection.description", "Browse fresh vegetables, fruits, dairy, grains, snacks, and everyday essentials delivered directly to your doorstep.")}
-
-            </p>
-
-          </div>
-
-          {/* PRODUCT COUNT */}
-          <div className="bg-white backdrop-blur-xl rounded-3xl shadow-xl px-8 py-6 border border-gray-100 text-center flex flex-col items-center justify-center">
-
-            <h2 className="text-5xl font-extrabold text-green-700">
-
-              {filteredProducts.length}
-
-            </h2>
-
-            <p className="text-gray-600 mt-2">
-
-              {t("productsSection.productsAvailable", "Products Available")}
-
-            </p>
-
-          </div>
-
+          <p className="mt-3 text-sm sm:text-lg text-gray-600 leading-relaxed sm:leading-8">
+            {t("productsSection.description", "Browse fresh vegetables, fruits, dairy, grains, snacks, and everyday essentials delivered directly to your doorstep.")}
+          </p>
         </motion.div>
 
         {/* SEARCH BAR */}
-<motion.div
-  initial={{ opacity: 0 }}
-  whileInView={{ opacity: 1 }}
-  transition={{ duration: 0.8 }}
-  className="relative max-w-2xl mx-auto mb-8"
->
-
-  {/* SEARCH ICON */}
-  <FaSearch className="absolute top-1/2 left-6 -translate-y-1/2 text-gray-400 text-xl z-10" />
-
-  {/* INPUT */}
-  <input
-    type="text"
-    placeholder={t("productsSection.searchPlaceholder", "Search grocery products or use voice...")}
-    value={searchTerm}
-    onChange={(e) =>
-      setSearchTerm(
-        e.target.value
-      )
-    }
-    className="w-full bg-white border border-gray-200 rounded-3xl shadow-xl py-5 pl-16 pr-20 text-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300"
-  />
-
-  {/* MIC BUTTON */}
-  <button
-    onClick={
-      startVoiceSearch
-    }
-    className={`absolute top-1/2 right-4 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition duration-300
-
-    ${
-      isListening
-
-        ? "bg-red-500 text-white animate-pulse"
-
-        : "bg-green-600 hover:bg-green-700 hover:scale-110 text-white"
-    }`}
-  >
-
-    <div title="Tap and speak product name">
-
-  <FaMicrophone />
-
-</div>
-  </button>
-
-</motion.div>
-
-        {/* CATEGORY BUTTONS */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="flex flex-wrap justify-center gap-5 mb-12"
+          className="relative max-w-2xl mx-auto mb-8 px-1"
         >
+          {/* SEARCH ICON */}
+          <FaSearch className="absolute top-1/2 left-6 -translate-y-1/2 text-gray-400 text-base sm:text-xl z-10" />
 
+          {/* INPUT */}
+          <input
+            type="text"
+            placeholder={t("productsSection.searchPlaceholder", "Search grocery products or use voice...")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white border border-gray-200 rounded-full shadow-lg py-3.5 sm:py-5 pl-12 sm:pl-16 pr-16 sm:pr-20 text-sm sm:text-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300"
+          />
+
+          {/* MIC BUTTON */}
+          <button
+            onClick={startVoiceSearch}
+            className={`absolute top-1/2 right-3 sm:right-4 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-md transition duration-300
+            ${
+              isListening
+                ? "bg-red-500 text-white animate-pulse"
+                : "bg-green-600 hover:bg-green-700 hover:scale-105 text-white"
+            }`}
+          >
+            <div title="Tap and speak product name" className="text-xs sm:text-base">
+              <FaMicrophone />
+            </div>
+          </button>
+        </motion.div>
+
+        {/* CATEGORY FILTER BAR */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="flex overflow-x-auto gap-2.5 sm:gap-4 pb-4 mb-8 -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth items-center justify-start md:justify-center border-b border-gray-100/50"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          <style>{`
+            .no-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
           {categories.map((category) => (
-
             <button
               key={category}
-              onClick={() =>
-                setSelectedCategory(category)
-              }
-              className={`px-7 py-3 rounded-2xl text-lg font-semibold shadow-lg transition duration-300
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full text-xs sm:text-base font-semibold shadow-sm transition-all duration-300 border shrink-0
               ${
                 selectedCategory === category
-                  ? "bg-green-600 text-white scale-105"
-                  : "bg-white text-gray-700 hover:bg-green-100"
+                  ? "bg-green-600 text-white border-green-600 shadow-green-200/50 hover:bg-green-700"
+                  : "bg-white text-gray-600 hover:bg-green-50 border-gray-100 hover:border-green-200"
               }`}
             >
-
               {category === "All" ? t("productsSection.all", "All") : t(`products.categories.${category.toLowerCase()}`, category)}
-
             </button>
-
           ))}
-
         </motion.div>
 
         {/* PRODUCTS GRID */}
@@ -369,7 +326,7 @@ const startVoiceSearch = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.9 }}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-6"
+          className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-2 sm:gap-6"
         >
 
           {filteredProducts.map((product) => (

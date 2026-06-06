@@ -141,37 +141,11 @@ function Checkout() {
   let deliveryCharge = 0;
 
   if (distance) {
-
-    const numericDistance =
-      Number(distance);
-
-    if (
-      numericDistance <= 5
-    ) {
-
-      deliveryCharge =
-        totalPrice >= 500
-          ? 0
-          : 20;
-
-    }
-
-    else if (
-      numericDistance <= 10
-    ) {
-
-      deliveryCharge = 40;
-
-    }
-
-    else if (
-      numericDistance <= 15
-    ) {
-
-      deliveryCharge = 60;
-
-    }
-
+    const numericDistance = Number(distance);
+    
+    // Temporarily making delivery completely free as requested.
+    // We can add delivery fee logic later if wanted.
+    deliveryCharge = 0;
   }
 
   // FINAL TOTAL

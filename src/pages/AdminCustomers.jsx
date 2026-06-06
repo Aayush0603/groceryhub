@@ -333,29 +333,29 @@ function AdminCustomers() {
       {filteredCustomers.length ===
         0 && (
 
-        <div className="bg-white border border-gray-100 rounded-3xl p-16 text-center shadow-sm">
+          <div className="bg-white border border-gray-100 rounded-3xl p-16 text-center shadow-sm">
 
-          <FaUsers className="text-6xl text-gray-300 mx-auto mb-4" />
+            <FaUsers className="text-6xl text-gray-300 mx-auto mb-4" />
 
-          <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-2xl font-bold text-gray-800">
 
-            No Customers Found
+              No Customers Found
 
-          </h2>
+            </h2>
 
-          <p className="text-gray-400 mt-2 text-sm">
+            <p className="text-gray-400 mt-2 text-sm">
 
-            Try adjusting your search criteria or query.
+              Try adjusting your search criteria or query.
 
-          </p>
+            </p>
 
-        </div>
+          </div>
 
-      )}
+        )}
 
       {/* CUSTOMERS GRID */}
-      <motion.div 
-        layout 
+      <motion.div
+        layout
         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
       >
 

@@ -105,7 +105,7 @@ function Login() {
         return;
       }
 
-      login(userData);
+      await login(userData);
       toast.success(t("auth.loginSuccess") || "Login Successful");
 
       if (userData.role === "admin") {
@@ -189,7 +189,7 @@ function Login() {
         role: "customer",
       };
 
-      login(userData);
+      await login(userData);
       toast.success(t("auth.signupSuccess") || "Account Created Successfully");
       navigate("/");
     } catch (error) {
