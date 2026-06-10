@@ -414,19 +414,19 @@ sortedOrders.forEach(
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-green-50/40 via-white to-gray-50 pt-32 pb-16 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
+    <section className="min-h-screen bg-gradient-to-br from-green-50/40 via-white to-gray-50 pt-24 md:pt-28 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
       <div className="max-w-6xl mx-auto">
         
         {/* HEADER */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10 text-center md:text-left"
+          className="mb-6 text-center md:text-left"
         >
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight flex items-center justify-center md:justify-start gap-4">
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight flex items-center justify-center md:justify-start gap-3">
             My Orders <FaShoppingBag className="text-green-600" />
           </h1>
-          <p className="text-gray-500 mt-3 text-lg">Track, manage, and view your recent purchases.</p>
+          <p className="text-gray-500 mt-1.5 text-base">Track, manage, and view your recent purchases.</p>
         </motion.div>
 
         {/* EMPTY STATE */}
@@ -448,7 +448,7 @@ sortedOrders.forEach(
         </AnimatePresence>
 
         {/* ORDERS LIST */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           <AnimatePresence>
             {orders.map((order, index) => {
               const currentStep = trackingSteps.findIndex(
@@ -468,66 +468,66 @@ sortedOrders.forEach(
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -50 }}
                   transition={{ delay: index * 0.1, duration: 0.4 }}
-                  className="bg-white rounded-3xl shadow-xl hover:shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 group"
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 group"
                 >
                   {/* TOP HEADER BAR */}
-                  <div className="bg-gradient-to-r from-green-600 to-emerald-700 text-white px-6 py-5 md:px-8 md:py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="bg-gradient-to-r from-green-600 to-emerald-700 text-white px-5 py-4 md:px-6 md:py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <div>
-                      <p className="text-green-100 text-sm font-semibold uppercase tracking-wider mb-1">Order ID</p>
-                      <p className="text-lg md:text-xl font-bold font-mono break-all leading-tight">{order.id}</p>
+                      <p className="text-green-100 text-xs font-semibold uppercase tracking-wider mb-0.5">Order ID</p>
+                      <p className="text-base md:text-lg font-bold font-mono break-all leading-tight">#{order.id}</p>
                     </div>
-                    <div className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base border ${getStatusStyle(order.status).replace('bg-', 'bg-white/90 text-').replace('text-', 'text-').split(' ')[0]} shadow-sm shrink-0 backdrop-blur-sm`}>
+                    <div className={`px-4 py-1.5 rounded-full font-bold text-xs md:text-sm border ${getStatusStyle(order.status).replace('bg-', 'bg-white/90 text-').replace('text-', 'text-').split(' ')[0]} shadow-sm shrink-0 backdrop-blur-sm`}>
                       {order.status}
                     </div>
                   </div>
 
-                  <div className="p-6 md:p-8">
+                  <div className="p-4 sm:p-5 md:p-6">
                     {/* INFO GRID: DATE/TIME & ETA */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                       {/* Date */}
-                      <div className="bg-blue-50/50 border border-blue-100/50 rounded-2xl p-5 flex items-center gap-4 hover:bg-blue-50 transition-colors">
-                        <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                      <div className="bg-blue-50/30 border border-blue-100/30 rounded-xl p-3 sm:p-4 flex items-center gap-3 hover:bg-blue-50/50 transition-colors">
+                        <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                           <FaCalendarAlt className="text-xl" />
                         </div>
                         <div>
-                          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Order Date</p>
-                          <h3 className="font-extrabold text-lg text-gray-900">{order.orderDate || "N/A"}</h3>
+                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">Order Date</p>
+                          <h3 className="font-bold text-base sm:text-lg text-gray-800">{order.orderDate || "N/A"}</h3>
                         </div>
                       </div>
                       
                       {/* Time */}
-                      <div className="bg-indigo-50/50 border border-indigo-100/50 rounded-2xl p-5 flex items-center gap-4 hover:bg-indigo-50 transition-colors">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                      <div className="bg-indigo-50/30 border border-indigo-100/30 rounded-xl p-3 sm:p-4 flex items-center gap-3 hover:bg-indigo-50/50 transition-colors">
+                        <div className="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                           <FaClock className="text-xl" />
                         </div>
                         <div>
-                          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Order Time</p>
-                          <h3 className="font-extrabold text-lg text-gray-900">{order.orderTime || "N/A"}</h3>
+                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">Order Time</p>
+                          <h3 className="font-bold text-base sm:text-lg text-gray-800">{order.orderTime || "N/A"}</h3>
                         </div>
                       </div>
 
                       {/* ETA */}
-                      <div className="bg-orange-50/50 border border-orange-100/50 rounded-2xl p-5 flex items-center gap-4 md:col-span-2 lg:col-span-1 hover:bg-orange-50 transition-colors">
-                        <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                      <div className="bg-orange-50/30 border border-orange-100/30 rounded-xl p-3 sm:p-4 flex items-center gap-3 md:col-span-2 lg:col-span-1 hover:bg-orange-50/50 transition-colors">
+                        <div className="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
                           <FaTruck className="text-xl" />
                         </div>
                         <div>
-                          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Estimated Delivery</p>
-                          <h3 className="font-extrabold text-lg text-orange-700">{order.estimatedDelivery || estimatedTime}</h3>
+                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">Estimated Delivery</p>
+                          <h3 className="font-bold text-base sm:text-lg text-orange-700">{order.estimatedDelivery || estimatedTime}</h3>
                         </div>
                       </div>
                     </div>
 
                     {/* LIVE TRACKING TIMELINE */}
                     {order.status !== "Cancelled" && (
-                      <div className="mb-10 bg-gray-50/50 border border-gray-100 rounded-3xl p-6 md:p-8">
-                        <h2 className="text-xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+                      <div className="mb-6 bg-gray-50/50 border border-gray-100 rounded-2xl p-4 sm:p-5 md:p-6">
+                        <h2 className="text-xl font-extrabold text-gray-900 mb-6 flex items-center gap-2">
                           Live Tracking
                         </h2>
                         
-                        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-4">
+                        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-5 md:gap-3">
                           {/* Progress Line (Desktop) */}
-                          <div className="hidden md:block absolute top-6 left-10 right-10 h-1.5 bg-gray-200 rounded-full z-0 overflow-hidden">
+                          <div className="hidden md:block absolute top-5 left-8 right-8 h-1 bg-gray-200 rounded-full z-0 overflow-hidden">
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${(currentStep / (trackingSteps.length - 1)) * 100}%` }}
@@ -537,25 +537,25 @@ sortedOrders.forEach(
                           </div>
 
                           {/* Progress Line (Mobile) */}
-                          <div className="md:hidden absolute left-6 top-8 bottom-8 w-1.5 bg-gray-200 rounded-full z-0 overflow-hidden">
+                          <div className="md:hidden absolute left-5 top-6 bottom-6 w-1 bg-gray-200 rounded-full z-0 overflow-hidden">
                              <motion.div 
-                              initial={{ height: 0 }}
-                              animate={{ height: `${(currentStep / (trackingSteps.length - 1)) * 100}%` }}
-                              transition={{ duration: 1, ease: "easeOut" }}
-                              className="w-full bg-green-500 rounded-full"
-                            />
+                               initial={{ height: 0 }}
+                               animate={{ height: `${(currentStep / (trackingSteps.length - 1)) * 100}%` }}
+                               transition={{ duration: 1, ease: "easeOut" }}
+                               className="w-full bg-green-500 rounded-full"
+                             />
                           </div>
 
                           {trackingSteps.map((step, stepIdx) => (
-                            <div key={step.title} className="relative z-10 flex md:flex-col items-center gap-4 md:gap-3 w-full md:w-auto md:flex-1">
+                            <div key={step.title} className="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 w-full md:w-auto md:flex-1">
                               <motion.div
-                                whileHover={{ scale: 1.1 }}
-                                className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-xl shadow-sm transition-colors duration-300 shrink-0 border-4 border-white
+                                whileHover={{ scale: 1.05 }}
+                                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-xl shadow-sm transition-colors duration-300 shrink-0 border-2 border-white
                                 ${stepIdx <= currentStep ? "bg-green-600 text-white" : "bg-gray-100 text-gray-400"}`}
                               >
                                 {step.icon}
                               </motion.div>
-                              <p className={`font-bold text-sm md:text-base md:text-center ${stepIdx <= currentStep ? "text-gray-900" : "text-gray-400"}`}>
+                              <p className={`font-bold text-sm md:text-base md:text-center ${stepIdx <= currentStep ? "text-gray-800" : "text-gray-400"}`}>
                                 {step.title}
                               </p>
                             </div>
@@ -565,45 +565,69 @@ sortedOrders.forEach(
                     )}
 
                     {/* PRODUCT LIST */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">Order Items</h3>
-                      {order.cartItems?.map((item) => (
-                        <div key={item.id} className="bg-white border border-gray-100 hover:border-green-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all hover:shadow-md">
-                          <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 border border-gray-100">
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-bold text-gray-500 mb-1">Order Items</h3>
+                      <div className="space-y-2 sm:space-y-3">
+                        {order.cartItems?.map((item) => (
+                          <div key={item.id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md p-2.5 sm:p-3 flex flex-row items-center gap-3 sm:gap-4 transition-all duration-300 relative">
+                            {/* PRODUCT IMAGE */}
+                            <div className="relative w-12 h-12 sm:w-16 sm:h-16 overflow-hidden rounded-xl border border-gray-100 bg-green-50/20 flex items-center justify-center shrink-0">
                                {item.image ? (
-                                 <img src={item.image} alt={item.name} className="w-10 h-10 object-cover" />
+                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                ) : (
-                                 <FaShoppingBag className="text-gray-300 text-xl" />
+                                 <div className="text-green-600"><FaShoppingBag className="w-5 h-5" /></div>
                                )}
                             </div>
-                            <div>
-                              <h4 className="text-lg font-bold text-gray-900 line-clamp-1">{item.name}</h4>
-                              <p className="text-gray-500 text-sm font-medium mt-0.5">Qty: {item.quantity} × ₹{item.price}</p>
+                            {/* PRODUCT DETAILS */}
+                            <div className="flex-1 min-w-0 flex flex-row items-center justify-between gap-2 h-12 sm:h-16">
+                              {/* Name & Details */}
+                              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="w-2.5 h-2.5 border border-green-600 flex items-center justify-center p-[1px] rounded-sm shrink-0 bg-white">
+                                    <span className="w-1 h-1 bg-green-600 rounded-full"></span>
+                                  </span>
+                                  <h4 className="text-base sm:text-lg font-bold text-gray-900 truncate">
+                                    {item.name}
+                                  </h4>
+                                </div>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {item.category && (
+                                    <span className="text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 rounded-md bg-green-50 text-green-700 border border-green-100">
+                                      {item.category}
+                                    </span>
+                                  )}
+                                  <span className="text-sm sm:text-base text-gray-500 font-medium">
+                                    ₹{item.price} × {item.quantity}
+                                  </span>
+                                </div>
+                              </div>
+                              {/* Total price */}
+                              <div className="text-right shrink-0">
+                                <p className="text-lg sm:text-xl font-extrabold text-green-700">
+                                  ₹{item.price * item.quantity}
+                                </p>
+                              </div>
                             </div>
                           </div>
-                          <div className="text-xl font-black text-green-700 bg-green-50 px-4 py-2 rounded-xl shrink-0 w-full sm:w-auto text-right sm:text-left">
-                            ₹{item.price * item.quantity}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
 
                     {/* FOOTER / TOTAL / BUTTONS */}
-                    <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col lg:flex-row justify-between items-center gap-6 lg:gap-8">
-                      <div className="text-center lg:text-left w-full lg:w-auto">
-                        <p className="text-gray-500 font-bold uppercase tracking-wider text-sm mb-1">Final Total</p>
-                        <h2 className="text-4xl lg:text-5xl font-black text-green-700 tracking-tight">₹{order.finalTotal}</h2>
+                    <div className="mt-5 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                      <div className="text-center sm:text-left w-full sm:w-auto">
+                        <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">Final Total</p>
+                        <h2 className="text-2xl sm:text-3xl font-black text-green-700 tracking-tight">₹{order.finalTotal}</h2>
                       </div>
                       
-                      <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => downloadInvoice(order)}
-                          className="flex-1 sm:flex-none bg-gray-900 hover:bg-gray-800 text-white px-8 py-3.5 rounded-2xl text-base font-bold flex items-center justify-center gap-3 shadow-lg transition-colors"
+                          className="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md transition-colors cursor-pointer"
                         >
-                          <FaFileInvoice className="text-lg" /> Download Invoice
+                          <FaFileInvoice className="text-base" /> Download Invoice
                         </motion.button>
 
                         {(order.status === "Pending" || order.status === "Processing") && (
@@ -611,7 +635,7 @@ sortedOrders.forEach(
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => cancelOrder(order.id)}
-                            className="flex-1 sm:flex-none bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-8 py-3.5 rounded-2xl text-base font-bold transition-colors"
+                            className="w-full sm:w-auto bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-5 py-2 rounded-xl text-sm font-bold transition-colors cursor-pointer"
                           >
                             Cancel Order
                           </motion.button>

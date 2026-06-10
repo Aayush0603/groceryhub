@@ -38,12 +38,12 @@ function LanguageSwitcher() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center text-gray-700 bg-gray-50 border border-gray-200/80 rounded-full px-5 py-3 transition duration-300 hover:bg-gray-100 hover:border-gray-300 shadow-md font-bold text-[17px] gap-2.5 select-none active:scale-95"
+        className="flex items-center justify-center text-gray-700 bg-gray-50 border border-gray-200/80 rounded-xl md:rounded-full p-2.5 md:px-5 md:py-3 transition duration-300 hover:bg-gray-100 hover:border-gray-300 shadow-md font-bold text-[17px] gap-2.5 select-none active:scale-95"
       >
-        <FaLanguage className="text-green-600 text-xl" />
-        <span className="min-w-[50px] text-left">{currentLanguageLabel}</span>
+        <FaLanguage className="text-green-600 text-2xl md:text-xl" />
+        <span className="hidden md:block min-w-[50px] text-left">{currentLanguageLabel}</span>
         <FaChevronDown
-          className={`text-gray-400 text-xs transition-transform duration-300 ${
+          className={`hidden md:block text-gray-400 text-xs transition-transform duration-300 ${
             isOpen ? "rotate-180" : ""
           }`}
         />

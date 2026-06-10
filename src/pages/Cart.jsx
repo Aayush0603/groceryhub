@@ -34,7 +34,7 @@ function Cart() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col border-b border-gray-100 pb-4 mb-4 gap-1"
+          className="flex flex-col border-b border-gray-100 pb-2.5 mb-2.5 gap-0.5"
         >
           <div className="flex flex-row items-center justify-between">
             <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2 md:gap-3">
@@ -45,17 +45,36 @@ function Cart() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={clearCart}
-                className="flex items-center justify-center gap-1.5 md:gap-2 text-xs md:text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100/80 px-3 md:px-5 py-1.5 md:py-2.5 rounded-full transition-all duration-300 shadow-sm border border-red-100 shrink-0"
+                className="flex items-center justify-center gap-2 text-sm md:text-[16px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100/80 px-4 md:px-6 py-2.5 md:py-3 rounded-full transition-all duration-300 shadow-sm border border-red-100 shrink-0 cursor-pointer"
               >
-                <FaTrash className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                <FaTrash className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 {t("cart.clearCart") || "Clear Cart"}
               </motion.button>
             )}
           </div>
-          <p className="text-gray-500 text-sm md:text-lg mt-1">
+          <p className="text-gray-500 text-sm md:text-lg mt-0.5">
             {t("cart.reviewItems") || "Review your selected items and checkout"}
           </p>
         </motion.div>
+
+        {/* TRUST BADGES SECTION (SYMBOLIC ONLY - CENTER ALIGNED) */}
+        {cartItems.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-wrap items-center justify-center gap-3 mb-4 px-1"
+          >
+            <div className="flex items-center justify-center text-emerald-700 bg-emerald-50/50 p-2.5 rounded-full border border-emerald-100/80 shadow-sm hover:scale-105 transition duration-200" title={t("cart.badgeFresh") || "100% Fresh"}>
+              <FaLeaf className="w-4 h-4" />
+            </div>
+            <div className="flex items-center justify-center text-emerald-700 bg-emerald-50/50 p-2.5 rounded-full border border-emerald-100/80 shadow-sm hover:scale-105 transition duration-200" title={t("cart.badgeSafe") || "Safe & Hygienic"}>
+              <FaShieldAlt className="w-4 h-4" />
+            </div>
+            <div className="flex items-center justify-center text-emerald-700 bg-emerald-50/50 p-2.5 rounded-full border border-emerald-100/80 shadow-sm hover:scale-105 transition duration-200" title={t("cart.badgeSecure") || "Secure Checkout"}>
+              <FaLock className="w-4 h-4" />
+            </div>
+          </motion.div>
+        )}
 
         {/* MAIN BODY */}
         <AnimatePresence mode="wait">
@@ -263,60 +282,6 @@ function Cart() {
                     </motion.button>
                   </Link>
                 </motion.div>
-
-                {/* TRUST BADGES SECTION */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="bg-white/50 rounded-3xl border border-gray-100 shadow-md p-6 grid grid-cols-1 gap-4"
-                >
-                  {/* Badge 1: Fresh */}
-                  <div className="flex items-start gap-4 p-3 bg-emerald-50/40 rounded-2xl border border-emerald-100/30">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                      <FaLeaf className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-extrabold text-gray-800">
-                        {t("cart.badgeFresh") || "100% Fresh & Organic"}
-                      </h4>
-                      <p className="text-[11px] text-gray-500 font-medium">
-                        {t("cart.badgeFreshDesc") || "Handpicked organic products"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Badge 2: Safe */}
-                  <div className="flex items-start gap-4 p-3 bg-emerald-50/40 rounded-2xl border border-emerald-100/30">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                      <FaShieldAlt className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-extrabold text-gray-800">
-                        {t("cart.badgeSafe") || "Safe & Hygienic"}
-                      </h4>
-                      <p className="text-[11px] text-gray-500 font-medium">
-                        {t("cart.badgeSafeDesc") || "Contactless home delivery"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Badge 3: Secure */}
-                  <div className="flex items-start gap-4 p-3 bg-emerald-50/40 rounded-2xl border border-emerald-100/30">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                      <FaLock className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-extrabold text-gray-800">
-                        {t("cart.badgeSecure") || "Secure Checkout"}
-                      </h4>
-                      <p className="text-[11px] text-gray-500 font-medium">
-                        {t("cart.badgeSecureDesc") || "Razorpay & Encrypted payments"}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-
               </div>
             </div>
           )}

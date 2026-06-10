@@ -19,11 +19,15 @@ import {
 } from "react-router-dom";
 
 import toast from "react-hot-toast";
+import confetti from "canvas-confetti";
 
 import {
   FaArrowLeft,
   FaMapMarkerAlt,
   FaHome,
+  FaCheckCircle,
+  FaShoppingBag,
+  FaReceipt,
 } from "react-icons/fa";
 
 import {
@@ -90,6 +94,11 @@ function Checkout() {
     setOrderPlaced,
   ] = useState(false);
 
+  const [
+    placedOrderId,
+    setPlacedOrderId,
+  ] = useState("");
+
   // STATES
   const [loading, setLoading] =
     useState(false);
@@ -141,8 +150,6 @@ function Checkout() {
   let deliveryCharge = 0;
 
   if (distance) {
-    const numericDistance = Number(distance);
-    
     // Temporarily making delivery completely free as requested.
     // We can add delivery fee logic later if wanted.
     deliveryCharge = 0;
@@ -561,6 +568,36 @@ function Checkout() {
 
   }, [currentUser]);
 
+  // CONFETTI EFFECT
+  useEffect(() => {
+    if (orderPlaced) {
+      // Fire confetti from just below the navbar
+      confetti({
+        particleCount: 200,
+        spread: 90,
+        origin: { y: 0.15 },
+      });
+
+      // Side bursts for a premium feel
+      const timer = setTimeout(() => {
+        confetti({
+          particleCount: 90,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0, y: 0.2 },
+        });
+        confetti({
+          particleCount: 90,
+          angle: 120,
+          spread: 60,
+          origin: { x: 1, y: 0.2 },
+        });
+      }, 250);
+
+      return () => clearTimeout(timer);
+    }
+  }, [orderPlaced]);
+
   // SAVE ADDRESS
   const saveCustomerAddress =
     async () => {
@@ -793,9 +830,7 @@ function Checkout() {
       if (
         !customerInfo.name ||
         !customerInfo.phone ||
-        !customerInfo.address ||
-        !customerInfo.city ||
-        !customerInfo.pincode
+        !customerInfo.address
       ) {
 
         toast.error(
@@ -818,6 +853,8 @@ function Checkout() {
 
           const orderId =
             await saveOrder();
+
+          setPlacedOrderId(orderId);
 
           // CLEAR CART
           clearCart();
@@ -876,6 +913,8 @@ function Checkout() {
 
                   const orderId =
                     await saveOrder();
+
+                  setPlacedOrderId(orderId);
 
                   // CLEAR CART
                   clearCart();
@@ -948,36 +987,86 @@ function Checkout() {
 
     return (
 
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-white px-6 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50/60 via-white to-emerald-50/40 px-4 py-8 md:py-24 relative overflow-hidden">
 
-        <div className="bg-white shadow-2xl rounded-3xl p-12 max-w-2xl">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="bg-white/95 backdrop-blur-md shadow-2xl border border-green-100 rounded-3xl p-6 sm:p-10 md:p-12 max-w-xl w-full text-center relative overflow-hidden"
+        >
 
-          <h1 className="text-6xl mb-6">
-            🎉
-          </h1>
+          {/* Decorative Background Blobs */}
+          <div className="absolute -top-12 -right-12 w-36 h-36 bg-green-100/40 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-emerald-100/40 rounded-full blur-2xl pointer-events-none" />
 
-          <h2 className="text-5xl font-extrabold text-green-700 mb-6">
+          {/* Success Checkmark Circle */}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
+            className="w-20 h-20 md:w-24 md:h-24 bg-green-50 rounded-full flex items-center justify-center text-green-600 mx-auto mb-6 border border-green-100 shadow-inner"
+          >
+            <FaCheckCircle className="w-10 h-10 md:w-12 md:h-12 animate-pulse" />
+          </motion.div>
 
-            Order Placed Successfully
-
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
+            Order Confirmed!
           </h2>
 
-          <p className="text-2xl text-gray-600 mb-10">
-
-            Thank you for shopping with us ❤️
-
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+            Thank you for shopping with us ❤️ <br />
+            Your fresh grocery items will be on their way shortly.
           </p>
 
-          <Link
-            to="/"
-            className="bg-green-600 hover:bg-green-700 text-white px-10 py-5 rounded-2xl text-2xl font-bold transition duration-300"
-          >
+          {/* Order Details box */}
+          {placedOrderId && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-gray-50/80 rounded-2xl p-4 mb-8 border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100/50 rounded-xl flex items-center justify-center text-green-600 shrink-0">
+                  <FaReceipt className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Order Reference</p>
+                  <p className="text-sm font-bold text-gray-800 break-all select-all">#{placedOrderId}</p>
+                </div>
+              </div>
+              <span className="text-[11px] font-extrabold bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200 uppercase tracking-wide">
+                Preparing
+              </span>
+            </motion.div>
+          )}
 
-            Continue Shopping
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch justify-center w-full">
+            <Link to="/" className="w-full sm:w-auto flex-1">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3.5 px-6 rounded-xl md:rounded-2xl text-base md:text-lg font-bold shadow-lg shadow-green-600/20 hover:shadow-green-700/30 transition-all duration-300 cursor-pointer"
+              >
+                <FaShoppingBag className="w-4 h-4 shrink-0" />
+                Continue Shopping
+              </motion.button>
+            </Link>
 
-          </Link>
+            <Link to="/my-orders" className="w-full sm:w-auto flex-1">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 hover:text-gray-900 py-3.5 px-6 rounded-xl md:rounded-2xl text-base md:text-lg font-bold transition-all duration-300 cursor-pointer"
+              >
+                Track My Order
+              </motion.button>
+            </Link>
+          </div>
 
-        </div>
+        </motion.div>
 
       </div>
 
@@ -993,22 +1082,41 @@ function Checkout() {
 
     return (
 
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50/50 via-white to-emerald-50/30 px-4 py-8 text-center">
 
-        <h1 className="text-5xl font-extrabold text-gray-900 mb-6">
-
-          Your Cart is Empty 🛒
-
-        </h1>
-
-        <Link
-          to="/"
-          className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl text-xl font-bold transition duration-300"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white/80 backdrop-blur-md rounded-3xl border border-gray-100 shadow-2xl p-8 md:p-12 text-center max-w-md w-full flex flex-col items-center"
         >
 
-          Continue Shopping
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-6 border border-green-100 shadow-inner"
+          >
+            <FaShoppingBag className="w-8 h-8" />
+          </motion.div>
 
-        </Link>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
+            Your Cart is Empty
+          </h2>
+
+          <p className="text-gray-500 text-sm sm:text-base mb-6 max-w-sm">
+            Add fresh grocery products to your cart to proceed with checkout.
+          </p>
+
+          <Link to="/" className="w-full">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-base font-bold shadow-lg shadow-green-600/20 transition-all duration-300"
+            >
+              Start Shopping
+            </motion.button>
+          </Link>
+
+        </motion.div>
 
       </div>
 
@@ -1130,7 +1238,7 @@ function Checkout() {
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 pt-32 pb-16 px-6">
+    <section className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 pt-24 md:pt-28 pb-16 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
         {/* LEFT */}
         <motion.div
@@ -1150,51 +1258,9 @@ function Checkout() {
             </h1>
           </div>
 
-          {/* SAVED ADDRESSES */}
-          {savedAddresses.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xl font-bold mb-4 text-gray-800">
-                Saved Addresses
-              </h2>
-              <div className="space-y-3">
-                {savedAddresses.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setCustomerInfo({
-                        ...customerInfo,
-                        address: item.address,
-                        city: item.city,
-                        pincode: item.pincode,
-                        landmark: item.landmark,
-                      });
-                      const location = { lat: item.lat, lng: item.lng };
-                      setMapCenter(location);
-                      checkSavedLocation(location);
-                    }}
-                    className="w-full text-left bg-gray-50/50 hover:bg-green-50 border border-gray-100 hover:border-green-200 rounded-2xl p-4 transition duration-300 group"
-                  >
-                    <div className="flex items-center gap-3 mb-1">
-                      <FaHome className="text-green-600 group-hover:scale-110 transition-transform" />
-                      <h3 className="font-bold text-lg text-gray-900">{item.type}</h3>
-                    </div>
-                    <p className="text-gray-600 text-base leading-relaxed">{item.address}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* LOCATION BUTTON */}
-          <button
-            onClick={detectLocation}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl text-lg font-bold mb-6 transition duration-300 shadow-md shadow-blue-600/20"
-          >
-            Use Current Location
-          </button>
-
-          {/* FORM */}
+          {/* FORM FIELDS */}
           <div className="space-y-4">
+            {/* NAME FIELD */}
             <input
               type="text"
               name="name"
@@ -1203,6 +1269,8 @@ function Checkout() {
               onChange={handleChange}
               className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
             />
+
+            {/* PHONE NO. */}
             <input
               type="text"
               name="phone"
@@ -1211,6 +1279,8 @@ function Checkout() {
               onChange={handleChange}
               className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
             />
+
+            {/* ADDRESS FIELD */}
             <input
               type="text"
               name="address"
@@ -1219,6 +1289,33 @@ function Checkout() {
               onChange={handleChange}
               className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
             />
+
+            {/* ADDRESS TYPE SELECT (ADDRESS TAG) */}
+            <div>
+              <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Address Tag</label>
+              <select
+                value={addressType}
+                onChange={(e) => setAddressType(e.target.value)}
+                className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors appearance-none"
+              >
+                <option value="Home">Home</option>
+                <option value="Work">Work</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {/* TICKBOX TO SAVE ADDRESS FOR FUTURE */}
+            <div className="py-1">
+              <label className="flex items-center gap-3 text-base font-bold text-gray-700 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={saveAddress}
+                  onChange={() => setSaveAddress(!saveAddress)}
+                  className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+                />
+                Save this address for future
+              </label>
+            </div>
 
             {/* MAP */}
             <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-inner">
@@ -1260,59 +1357,79 @@ function Checkout() {
                 </GoogleMap>
               )}
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input
-                type="text"
-                name="landmark"
-                placeholder="Landmark"
-                value={customerInfo.landmark}
-                onChange={handleChange}
-                className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
-              />
-              <input
-                type="text"
-                name="city"
-                placeholder="City"
-                value={customerInfo.city}
-                onChange={handleChange}
-                className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
-              />
-            </div>
-
-            <input
-              type="text"
-              name="pincode"
-              placeholder="Pincode"
-              value={customerInfo.pincode}
-              onChange={handleChange}
-              className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
-            />
           </div>
 
-          {/* ADDRESS TYPE */}
-          <select
-            value={addressType}
-            onChange={(e) => setAddressType(e.target.value)}
-            className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors mt-4 appearance-none"
+          {/* USE CURRENT LOCATION BUTTON */}
+          <button
+            type="button"
+            onClick={detectLocation}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl text-lg font-bold mt-4 mb-6 transition duration-300 shadow-md shadow-blue-600/20 cursor-pointer"
           >
-            <option value="Home">Home</option>
-            <option value="Work">Work</option>
-            <option value="Other">Other</option>
-          </select>
+            Use Current Location
+          </button>
 
-          {/* SAVE ADDRESS */}
-          <div className="mt-5">
-            <label className="flex items-center gap-3 text-base font-bold text-gray-700 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={saveAddress}
-                onChange={() => setSaveAddress(!saveAddress)}
-                className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
-              />
-              Save this address for future
-            </label>
-          </div>
+          {/* SAVED ADDRESSES SECTION */}
+          {savedAddresses.length > 0 && (
+            <div className="border-t border-gray-100 pt-6 mb-3">
+              <h2 className="text-xl font-bold mb-4 text-gray-800">
+                Saved Addresses
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {savedAddresses.map((item, index) => {
+                  const isSelected = customerInfo.address === item.address;
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        setCustomerInfo({
+                          ...customerInfo,
+                          address: item.address,
+                          city: item.city,
+                          pincode: item.pincode,
+                          landmark: item.landmark,
+                        });
+                        const location = { lat: item.lat, lng: item.lng };
+                        setMapCenter(location);
+                        checkSavedLocation(location);
+                      }}
+                      className={`w-full text-left rounded-2xl p-4 transition-all duration-300 group cursor-pointer border-2 relative flex items-start gap-3.5 shadow-sm hover:shadow-md
+                        ${isSelected
+                          ? "border-green-500 bg-green-50/30 text-green-800"
+                          : "border-gray-100 bg-white hover:bg-gray-50/50 text-gray-700"}`}
+                    >
+                      {/* Icon Block */}
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300
+                        ${isSelected
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-50 text-gray-400 group-hover:bg-green-50 group-hover:text-green-600"}`}
+                      >
+                        <FaHome className="w-4 h-4" />
+                      </div>
+
+                      {/* Text details */}
+                      <div className="flex-1 min-w-0 pr-5">
+                        <h3 className="font-extrabold text-base text-gray-900 mb-0.5 leading-tight">
+                          {item.type}
+                        </h3>
+                        <p className="text-gray-500 text-xs leading-relaxed break-words font-semibold line-clamp-2">
+                          {item.address}
+                        </p>
+                      </div>
+
+                      {/* Tick badge on selected card */}
+                      {isSelected && (
+                        <div className="absolute top-4 right-4 text-green-600">
+                          <FaCheckCircle className="w-4.5 h-4.5" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
 
           {/* DELIVERY STATUS */}
           {distance && (
@@ -1363,7 +1480,7 @@ function Checkout() {
           </div>
 
           {/* PAYMENT */}
-          <div className="mb-8 bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
+          <div className="mb-3.5 bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
             <h3 className="text-base font-bold text-gray-500 uppercase tracking-wider mb-4">Payment Method</h3>
             <div className="space-y-3">
               <button
@@ -1397,7 +1514,7 @@ function Checkout() {
               <span>Delivery Charge</span>
               <span>{deliveryCharge === 0 ? <span className="text-green-600">Free</span> : `₹${deliveryCharge}`}</span>
             </div>
-            
+
             <div className="border-t-2 border-dashed border-gray-200 mt-4 pt-4 flex justify-between items-center">
               <h1 className="text-2xl font-black text-gray-900">Total</h1>
               <h1 className="text-4xl font-black text-green-700">₹{finalTotal}</h1>

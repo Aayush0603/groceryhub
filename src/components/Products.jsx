@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 
 import {
   collection,
@@ -11,17 +11,21 @@ import { db } from "../firebase/firebase";
 
 import ProductCard from "./ProductCard";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   FaSearch,
   FaLeaf,
   FaMicrophone,
+  FaArrowRight,
 } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { CartContext } from "../context/CartContext";
 
 function Products() {
   const { t, i18n } = useTranslation();
+  const { totalItems } = useContext(CartContext);
 
   // PRODUCTS STATE
   const [products, setProducts] =
@@ -339,6 +343,36 @@ const startVoiceSearch = () => {
           ))}
 
         </motion.div>
+
+        {/* GO TO CART POPUP */}
+        <AnimatePresence>
+          {totalItems > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.9 }}
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
+            >
+              <Link to="/cart">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-3 bg-green-600 text-white px-6 py-3.5 rounded-full font-extrabold shadow-[0_0_20px_rgba(34,197,94,0.6)] border-2 border-green-400 hover:bg-green-500 hover:shadow-[0_0_30px_rgba(34,197,94,0.8)] transition-all duration-300 group"
+                >
+                  <span className="text-sm sm:text-base">{t("productsSection.goToCart", "Go to Cart")}</span>
+                  <span className="bg-white text-green-600 px-2 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-sm shadow-inner">{totalItems}</span>
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                    className="text-white group-hover:text-green-100"
+                  >
+                    <FaArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </motion.div>
+                </motion.button>
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
 
