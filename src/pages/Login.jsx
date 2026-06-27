@@ -332,7 +332,7 @@ function Login() {
                   {t("auth.createAccount") || "Create Account 🛒"}
                 </h1>
                 <p className="text-gray-500 text-base">
-                  {t("auth.signupDesc") || "Join GroceryHub and start ordering groceries."}
+                  {t("auth.signupDesc") || "Join GandhiBazaar and start ordering groceries."}
                 </p>
               </div>
 

@@ -37,6 +37,8 @@ import AdminRoute from "./components/AdminRoute";
 
 import Home from "./pages/Home";
 
+import ProductsPage from "./pages/ProductsPage";
+
 import Cart from "./pages/Cart";
 
 import Checkout from "./pages/Checkout";
@@ -165,7 +167,7 @@ function AdminLayout() {
 
           <h1 className="text-4xl font-extrabold text-green-400 leading-tight">
 
-            GroceryHub
+            GandhiBazaar
 
           </h1>
 
@@ -433,6 +435,11 @@ function AppLayout() {
           <Route
             index
             element={<Home />}
+          />
+
+          <Route
+            path="products"
+            element={<ProductsPage />}
           />
 
           <Route

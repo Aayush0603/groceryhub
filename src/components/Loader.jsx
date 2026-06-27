@@ -44,7 +44,7 @@ function Loader() {
         className="mt-8 text-4xl font-extrabold text-gray-900"
       >
 
-        GroceryHub
+        GandhiBazaar
 
       </motion.h2>
 

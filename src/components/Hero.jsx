@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HashLink } from "react-router-hash-link";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 function Hero() {
@@ -88,13 +89,12 @@ function Hero() {
           {/* BUTTONS */}
           <div className="mt-6 flex flex-wrap gap-5">
             {/* SHOP NOW */}
-            <HashLink
-              smooth
-              to="/#products"
+            <Link
+              to="/products"
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl text-lg font-semibold shadow-xl hover:scale-105 transition duration-300"
             >
               {t("hero.shopNow", "Shop Now")}
-            </HashLink>
+            </Link>
 
             {/* CONTACT BUTTON */}
             <HashLink

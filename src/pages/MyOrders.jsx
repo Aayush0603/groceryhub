@@ -183,7 +183,7 @@ sortedOrders.forEach(
       docPDF.setFontSize(22);
 
       docPDF.text(
-        "GroceryHub Invoice",
+        "GandhiBazaar Invoice",
         20,
         20
       );

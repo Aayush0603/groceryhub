@@ -56,11 +56,11 @@ function Footer() {
 
               <span className="text-green-400">
 
-                Grocery
+                Gandhi
 
               </span>
 
-              Hub
+              Bazaar
 
             </h1>
 
@@ -112,15 +112,14 @@ function Footer() {
               {/* PRODUCTS */}
               <li>
 
-                <HashLink
-                  smooth
-                  to="/#products"
+                <Link
+                  to="/products"
                   className="hover:text-green-400 transition duration-300"
                 >
 
                   {t("nav.products", "Products")}
 
-                </HashLink>
+                </Link>
 
               </li>
 
@@ -276,7 +275,7 @@ function Footer() {
 
           <p className="text-gray-400 text-center">
 
-            {t("footer.rights", "© 2026 GroceryHub. All rights reserved.")}
+            {t("footer.rights", "© 2026 GandhiBazaar. All rights reserved.")}
 
           </p>
 

@@ -80,7 +80,7 @@ function Navbar() {
   // Navigation Items with Icons for mobile
   const navItems = [
     { label: t("nav.home") || "Home", to: "/", type: "link", icon: FaHome },
-    { label: t("nav.products") || "Products", to: "/#products", type: "hash", icon: FaBox },
+    { label: t("nav.products") || "Products", to: "/products", type: "link", icon: FaBox },
     { label: t("nav.contact") || "Contact", to: "/#contact", type: "hash", icon: FaPhone },
     ...(currentUser ? [
       { label: t("nav.myOrders") || "My Orders", to: "/my-orders", type: "link", icon: FaHistory },
@@ -111,7 +111,7 @@ function Navbar() {
               <FaLeaf className="w-5 h-5" />
             </div>
             <span className="text-xl lg:text-2xl font-black tracking-tight text-gray-900 group-hover:text-green-600 transition-colors duration-300">
-              <span className="text-green-600">Grocery</span>Hub
+              <span className="text-green-600">Gandhi</span>Bazaar
             </span>
           </Link>
 

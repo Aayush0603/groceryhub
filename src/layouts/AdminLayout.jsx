@@ -36,7 +36,7 @@ function AdminLayout() {
 
           <h1 className="text-5xl font-extrabold text-green-400 tracking-tight">
 
-            GroceryHub
+            GandhiBazaar
 
           </h1>
 
@@ -160,7 +160,7 @@ function AdminLayout() {
 
             <h2 className="text-xl font-bold text-white">
 
-              GroceryHub CMS
+              GandhiBazaar CMS
 
             </h2>
 

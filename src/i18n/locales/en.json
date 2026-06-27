@@ -80,7 +80,7 @@
     "contactInfo": "Contact Info",
     "followUs": "Follow Us",
     "followDescription": "Stay connected with us on social media for latest offers and grocery updates.",
-    "rights": "© 2026 GroceryHub. All rights reserved."
+    "rights": "© 2026 GandhiBazaar. All rights reserved."
   },
   "auth": {
     "fillAllFields": "Please fill all fields",
@@ -107,7 +107,7 @@
     "enterPassword": "Enter password",
     "loggingIn": "Logging In...",
     "createAccount": "Create Account 🛒",
-    "signupDesc": "Join GroceryHub and start ordering groceries.",
+    "signupDesc": "Join GandhiBazaar and start ordering groceries.",
     "fullName": "Full Name *",
     "enterName": "Enter your name",
     "mobileNumber": "Mobile Number *",

@@ -1,6 +1,6 @@
 import Hero from "../components/Hero";
 
-import Products from "../components/Products";
+import PromoBanners from "../components/PromoBanners";
 
 import Contact from "../components/Contact";
 
@@ -15,8 +15,8 @@ function Home() {
       {/* HERO SECTION */}
       <Hero />
 
-      {/* PRODUCTS SECTION */}
-      <Products />
+      {/* PROMO BANNERS SECTION */}
+      <PromoBanners />
 
       {/* CONTACT SECTION */}
       <Contact />

@@ -898,7 +898,7 @@ function Checkout() {
               order.currency,
 
             name:
-              "GroceryHub",
+              "GandhiBazaar",
 
             description:
               "Order Payment",
