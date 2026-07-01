@@ -46,9 +46,12 @@ import { CartContext } from "../context/CartContext";
 
 import { AuthContext } from "../context/AuthContext";
 
+import { useTranslation } from "react-i18next";
+
 const libraries = ["places"];
 
 function Checkout() {
+  const { t } = useTranslation();
 
   const {
     cartItems,
@@ -83,7 +86,7 @@ function Checkout() {
   };
 
   // DELIVERY RADIUS
-  const deliveryRadius = 15;
+  const deliveryRadius = 7;
 
   // MAP CENTER
   const [mapCenter, setMapCenter] =
@@ -150,9 +153,10 @@ function Checkout() {
   let deliveryCharge = 0;
 
   if (distance) {
-    // Temporarily making delivery completely free as requested.
-    // We can add delivery fee logic later if wanted.
-    deliveryCharge = 0;
+    const distNum = parseFloat(distance);
+    if (distNum > 3) {
+      deliveryCharge = Math.round((distNum - 3) * 15);
+    }
   }
 
   // FINAL TOTAL
@@ -607,6 +611,10 @@ function Checkout() {
         if (!saveAddress)
           return;
 
+        // SKIP FOR GUESTS
+        if (!currentUser)
+          return;
+
         const userRef =
           doc(
             db,
@@ -757,7 +765,10 @@ function Checkout() {
           {
 
             userId:
-              currentUser.uid,
+              currentUser ? currentUser.uid : null,
+
+            customerPhone:
+              customerInfo.phone,
 
             customerInfo,
 
@@ -814,6 +825,19 @@ function Checkout() {
   // PLACE ORDER
   const placeOrder =
     async () => {
+
+      if (
+        !customerLocation ||
+        distance === null
+      ) {
+
+        toast.error(
+          "Please pin your location on the map or detect your current location"
+        );
+
+        return;
+
+      }
 
       if (
         !deliveryAvailable
@@ -987,13 +1011,13 @@ function Checkout() {
 
     return (
 
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50/60 via-white to-emerald-50/40 px-4 py-8 md:py-24 relative overflow-hidden">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-green-50/60 via-white to-emerald-50/40 px-4 pt-28 pb-12 md:pt-36 md:pb-24 relative overflow-hidden">
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="bg-white/95 backdrop-blur-md shadow-2xl border border-green-100 rounded-3xl p-6 sm:p-10 md:p-12 max-w-xl w-full text-center relative overflow-hidden"
+          className="bg-white/95 backdrop-blur-md shadow-2xl border border-green-100 rounded-3xl p-4 sm:p-5 md:p-6 max-w-xl w-full text-center relative overflow-hidden"
         >
 
           {/* Decorative Background Blobs */}
@@ -1005,18 +1029,18 @@ function Checkout() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
-            className="w-20 h-20 md:w-24 md:h-24 bg-green-50 rounded-full flex items-center justify-center text-green-600 mx-auto mb-6 border border-green-100 shadow-inner"
+            className="w-12 h-12 md:w-16 md:h-16 bg-green-50 rounded-full flex items-center justify-center text-green-600 mx-auto mb-3 border border-green-100 shadow-inner"
           >
-            <FaCheckCircle className="w-10 h-10 md:w-12 md:h-12 animate-pulse" />
+            <FaCheckCircle className="w-6 h-6 md:w-8 md:h-8 animate-pulse" />
           </motion.div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
-            Order Confirmed!
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-1">
+            {t("checkout.orderConfirmed")}
           </h2>
 
-          <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
-            Thank you for shopping with us ❤️ <br />
-            Your fresh grocery items will be on their way shortly.
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-2 max-w-md mx-auto leading-relaxed">
+            {t("checkout.thankYou")} <br />
+            {t("checkout.groceryOnWay")}
           </p>
 
           {/* Order Details box */}
@@ -1025,19 +1049,19 @@ function Checkout() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-gray-50/80 rounded-2xl p-4 mb-8 border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-left"
+              className="bg-gray-50/80 rounded-2xl p-3 sm:p-4 mb-2 border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-left"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-green-100/50 rounded-xl flex items-center justify-center text-green-600 shrink-0">
                   <FaReceipt className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Order Reference</p>
+                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-0.5">{t("checkout.orderReference")}</p>
                   <p className="text-sm font-bold text-gray-800 break-all select-all">#{placedOrderId}</p>
                 </div>
               </div>
-              <span className="text-[11px] font-extrabold bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200 uppercase tracking-wide">
-                Preparing
+              <span className="text-xs font-extrabold bg-green-100 text-green-700 px-4 py-1.5 rounded-full border border-green-200 uppercase tracking-wide">
+                {t("checkout.preparing")}
               </span>
             </motion.div>
           )}
@@ -1048,25 +1072,66 @@ function Checkout() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3.5 px-6 rounded-xl md:rounded-2xl text-base md:text-lg font-bold shadow-lg shadow-green-600/20 hover:shadow-green-700/30 transition-all duration-300 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2.5 px-5 rounded-xl md:rounded-2xl text-lg font-bold shadow-lg shadow-green-600/20 hover:shadow-green-700/30 transition-all duration-300 cursor-pointer"
               >
                 <FaShoppingBag className="w-4 h-4 shrink-0" />
-                Continue Shopping
+                {t("checkout.continueShopping")}
               </motion.button>
             </Link>
 
-            <Link to="/my-orders" className="w-full sm:w-auto flex-1">
+            <Link to={currentUser ? "/my-orders" : "/login"} className="w-full sm:w-auto flex-1">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 hover:text-gray-900 py-3.5 px-6 rounded-xl md:rounded-2xl text-base md:text-lg font-bold transition-all duration-300 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 hover:text-gray-900 py-2.5 px-5 rounded-xl md:rounded-2xl text-lg font-bold transition-all duration-300 cursor-pointer"
               >
-                Track My Order
+                {currentUser ? t("checkout.trackMyOrder") : t("checkout.loginToTrack")}
               </motion.button>
             </Link>
           </div>
 
         </motion.div>
+
+        {/* GUEST SIGNUP PROMPT */}
+        {!currentUser && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="bg-white/95 backdrop-blur-md shadow-xl border border-gray-100 rounded-3xl p-8 sm:p-10 max-w-xl w-full text-center relative overflow-hidden"
+          >
+            <div className="absolute -top-8 -left-8 w-24 h-24 bg-blue-50/40 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-green-50/40 rounded-full blur-2xl pointer-events-none" />
+
+            <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">
+              {t("checkout.createAccountToTrack")}
+            </h3>
+            <p className="text-sm sm:text-base text-gray-500 mb-5 max-w-sm mx-auto">
+              {t("checkout.signupPrompt")}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch justify-center w-full">
+              <Link to="/signup" className="w-full sm:w-auto flex-1">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white py-3.5 px-6 rounded-xl md:rounded-2xl text-base font-bold shadow-lg shadow-gray-900/20 transition-all duration-300 cursor-pointer"
+                >
+                  {t("nav.signup")}
+                </motion.button>
+              </Link>
+              <Link to="/login" className="w-full sm:w-auto flex-1">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 hover:text-gray-900 py-3.5 px-6 rounded-xl md:rounded-2xl text-base font-bold transition-all duration-300 cursor-pointer"
+                >
+                  {t("checkout.alreadyAccount")}
+                </motion.button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
 
       </div>
 
@@ -1099,11 +1164,11 @@ function Checkout() {
           </motion.div>
 
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
-            Your Cart is Empty
+            {t("cart.emptyCartTitle")}
           </h2>
 
           <p className="text-gray-500 text-sm sm:text-base mb-6 max-w-sm">
-            Add fresh grocery products to your cart to proceed with checkout.
+            {t("cart.emptyCartDesc")}
           </p>
 
           <Link to="/" className="w-full">
@@ -1112,7 +1177,7 @@ function Checkout() {
               whileTap={{ scale: 0.98 }}
               className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-base font-bold shadow-lg shadow-green-600/20 transition-all duration-300"
             >
-              Start Shopping
+              {t("checkout.continueShopping")}
             </motion.button>
           </Link>
 
@@ -1254,7 +1319,7 @@ function Checkout() {
               <FaArrowLeft />
             </Link>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
-              Checkout
+              {t("checkout.pageTitle")}
             </h1>
           </div>
 
@@ -1264,7 +1329,7 @@ function Checkout() {
             <input
               type="text"
               name="name"
-              placeholder="Full Name"
+              placeholder={t("checkout.name")}
               value={customerInfo.name}
               onChange={handleChange}
               className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
@@ -1274,7 +1339,7 @@ function Checkout() {
             <input
               type="text"
               name="phone"
-              placeholder="Mobile Number"
+              placeholder={t("checkout.phone")}
               value={customerInfo.phone}
               onChange={handleChange}
               className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
@@ -1284,37 +1349,54 @@ function Checkout() {
             <input
               type="text"
               name="address"
-              placeholder="Enter Delivery Address"
+              placeholder={t("checkout.deliveryAddress")}
               value={customerInfo.address}
               onChange={handleChange}
               className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors"
             />
 
-            {/* ADDRESS TYPE SELECT (ADDRESS TAG) */}
-            <div>
-              <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Address Tag</label>
-              <select
-                value={addressType}
-                onChange={(e) => setAddressType(e.target.value)}
-                className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors appearance-none"
-              >
-                <option value="Home">Home</option>
-                <option value="Work">Work</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+            {/* ADDRESS TYPE SELECT (ADDRESS TAG) — ONLY FOR LOGGED IN USERS */}
+            {currentUser && (
+              <div>
+                <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Address Tag</label>
+                <select
+                  value={addressType}
+                  onChange={(e) => setAddressType(e.target.value)}
+                  className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors appearance-none"
+                >
+                  <option value="Home">{t("profile.home") || "Home"}</option>
+                  <option value="Work">{t("profile.work") || "Work"}</option>
+                  <option value="Other">{t("profile.other") || "Other"}</option>
+                </select>
+              </div>
+            )}
 
-            {/* TICKBOX TO SAVE ADDRESS FOR FUTURE */}
+            {/* TICKBOX TO SAVE ADDRESS FOR FUTURE — ONLY FOR LOGGED IN USERS */}
+            {currentUser && (
+              <div className="py-1">
+                <label className="flex items-center gap-3 text-base font-bold text-gray-700 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={saveAddress}
+                    onChange={() => setSaveAddress(!saveAddress)}
+                    className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+                  />
+                  {t("checkout.saveAddress")}
+                </label>
+              </div>
+            )}
+
+            {/* DELIVERY NOTES / COMMENTS */}
             <div className="py-1">
-              <label className="flex items-center gap-3 text-base font-bold text-gray-700 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={saveAddress}
-                  onChange={() => setSaveAddress(!saveAddress)}
-                  className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
-                />
-                Save this address for future
-              </label>
+              <label className="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">{t("checkout.deliveryNotes")}</label>
+              <textarea
+                name="notes"
+                placeholder={t("checkout.anyInstructions")}
+                value={customerInfo.notes}
+                onChange={handleChange}
+                className="w-full border border-gray-200 bg-gray-50 focus:bg-white rounded-xl p-4 text-base font-medium outline-none focus:border-green-500 transition-colors resize-none"
+                rows={3}
+              />
             </div>
 
             {/* MAP */}
@@ -1334,7 +1416,7 @@ function Checkout() {
                       setMapCenter(location);
                       setCustomerLocation(location);
                       checkSavedLocation(location);
-                      setCustomerInfo((prev) => ({ ...prev, address: "Fetching address..." }));
+                      setCustomerInfo((prev) => ({ ...prev, address: t("checkout.locating") }));
 
                       const geocoder = new window.google.maps.Geocoder();
                       geocoder.geocode({ location }, (results, status) => {
@@ -1363,16 +1445,16 @@ function Checkout() {
           <button
             type="button"
             onClick={detectLocation}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl text-lg font-bold mt-4 mb-6 transition duration-300 shadow-md shadow-blue-600/20 cursor-pointer"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl text-lg font-bold mt-4 transition duration-300 shadow-md shadow-blue-600/20 cursor-pointer"
           >
-            Use Current Location
+            {t("checkout.useCurrentLocation")}
           </button>
 
           {/* SAVED ADDRESSES SECTION */}
           {savedAddresses.length > 0 && (
-            <div className="border-t border-gray-100 pt-6 mb-3">
+            <div className="border-t border-gray-100 pt-6 mt-6">
               <h2 className="text-xl font-bold mb-4 text-gray-800">
-                Saved Addresses
+                {t("profile.savedAddresses") || "Saved Addresses"}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {savedAddresses.map((item, index) => {
@@ -1410,7 +1492,7 @@ function Checkout() {
                       {/* Text details */}
                       <div className="flex-1 min-w-0 pr-5">
                         <h3 className="font-extrabold text-base text-gray-900 mb-0.5 leading-tight">
-                          {item.type}
+                          {t(`profile.${item.type.toLowerCase()}`) || item.type}
                         </h3>
                         <p className="text-gray-500 text-xs leading-relaxed break-words font-semibold line-clamp-2">
                           {item.address}
@@ -1454,7 +1536,7 @@ function Checkout() {
           className="bg-white rounded-3xl shadow-xl p-6 md:p-8 h-fit border border-gray-100"
         >
           <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-6 border-b border-gray-100 pb-4">
-            Order Summary
+            {t("checkout.orderSummary")}
           </h2>
 
           {/* ITEMS */}
@@ -1470,7 +1552,7 @@ function Checkout() {
                     </div>
                   )}
                   <div>
-                    <h3 className="font-bold text-base text-gray-900 group-hover:text-green-600 transition-colors line-clamp-1">{item.name}</h3>
+                    <h3 className="font-bold text-base text-gray-900 group-hover:text-green-600 transition-colors line-clamp-1">{t(item.i18nKeyName) || item.name}</h3>
                     <p className="text-gray-500 text-sm font-medium">Qty: {item.quantity}</p>
                   </div>
                 </div>
@@ -1481,7 +1563,7 @@ function Checkout() {
 
           {/* PAYMENT */}
           <div className="mb-3.5 bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
-            <h3 className="text-base font-bold text-gray-500 uppercase tracking-wider mb-4">Payment Method</h3>
+            <h3 className="text-base font-bold text-gray-500 uppercase tracking-wider mb-4">{t("checkout.paymentMethod")}</h3>
             <div className="space-y-3">
               <button
                 onClick={() => setPaymentMethod("Cash on Delivery")}
@@ -1507,30 +1589,27 @@ function Checkout() {
           {/* TOTAL */}
           <div className="space-y-3">
             <div className="flex justify-between text-base md:text-lg font-bold text-gray-600">
-              <span>Subtotal</span>
+              <span>{t("checkout.subtotal")}</span>
               <span>₹{totalPrice}</span>
             </div>
             <div className="flex justify-between text-base md:text-lg font-bold text-gray-600">
-              <span>Delivery Charge</span>
-              <span>{deliveryCharge === 0 ? <span className="text-green-600">Free</span> : `₹${deliveryCharge}`}</span>
+              <span>{t("checkout.deliveryFee")}</span>
+              <span>{deliveryCharge === 0 ? <span className="text-green-600">{t("checkout.free")}</span> : `₹${deliveryCharge}`}</span>
             </div>
 
             <div className="border-t-2 border-dashed border-gray-200 mt-4 pt-4 flex justify-between items-center">
-              <h1 className="text-2xl font-black text-gray-900">Total</h1>
+              <h1 className="text-2xl font-black text-gray-900">{t("checkout.totalAmount")}</h1>
               <h1 className="text-4xl font-black text-green-700">₹{finalTotal}</h1>
             </div>
           </div>
 
-          {/* BUTTON */}
+          {/* PLACE ORDER */}
           <button
             onClick={placeOrder}
-            disabled={loading || !deliveryAvailable}
-            className={`w-full mt-8 py-4 rounded-xl text-lg font-bold transition-all duration-300 flex items-center justify-center gap-3 shadow-xl
-              ${loading || !deliveryAvailable
-                ? "bg-gray-200 cursor-not-allowed text-gray-400 shadow-none"
-                : "bg-gray-900 hover:bg-black text-white shadow-gray-900/20 hover:shadow-gray-900/30 hover:-translate-y-0.5"}`}
+            disabled={loading}
+            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-4 rounded-xl text-xl font-black mt-8 shadow-xl shadow-green-600/20 hover:shadow-green-700/30 transition-all duration-300 transform active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
           >
-            {loading ? "Processing Securely..." : paymentMethod === "Online Payment" ? "Proceed to Pay securely" : "Place Order Now"}
+            {loading ? t("checkout.placingOrder") : t("checkout.placeOrder")}
           </button>
         </motion.div>
       </div>

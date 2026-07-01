@@ -34,11 +34,12 @@ function AdminLayout() {
         {/* LOGO */}
         <div className="mb-14">
 
-          <h1 className="text-5xl font-extrabold text-green-400 tracking-tight">
-
-            GandhiBazaar
-
-          </h1>
+          <div className="flex items-center gap-3">
+            <img src="/images/logo.jpeg" alt="Gandhi Trading Co." className="h-12 w-12 rounded-full shadow-md" />
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">
+              GandhiBazaar
+            </h1>
+          </div>
 
           <p className="text-gray-400 mt-3">
 

@@ -7,12 +7,13 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { CartContext } from "../context/CartContext";
+import { FavoritesContext } from "../context/FavoritesContext";
 import { useTranslation } from "react-i18next";
 
 function ProductCard({ product }) {
   const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
   const {
     cartItems,
     addToCart,
@@ -47,7 +48,22 @@ function ProductCard({ product }) {
   const originalPrice = product.price ? Math.round(Number(product.price) * 1.1) : 0;
   const discount = "10% OFF on MRP";
   const weight = "200 g"; // Placeholder
-  const reviewsCount = "4,281"; // Placeholder
+
+  // Generate consistent pseudo-random values based on product ID string
+  const hashCode = (str) => {
+    let hash = 0;
+    if (str) {
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash = hash & hash;
+      }
+    }
+    return Math.abs(hash);
+  };
+  
+  const hash = hashCode(product.id || "default");
+  const rating = (3.5 + (hash % 16) / 10).toFixed(1);
+  const reviewsCount = 50 + (hash % 151);
 
   return (
     <motion.div
@@ -57,10 +73,10 @@ function ProductCard({ product }) {
     >
       {/* WISHLIST HEART ICON */}
       <button 
-        onClick={() => setIsFavorite(!isFavorite)}
+        onClick={() => toggleFavorite(product)}
         className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/70 backdrop-blur-sm shadow-sm hover:bg-gray-100 transition"
       >
-        {isFavorite ? <FaHeart className="text-red-500 text-sm" /> : <FaRegHeart className="text-gray-400 text-sm" />}
+        {isFavorite(product.id) ? <FaHeart className="text-red-500 text-sm" /> : <FaRegHeart className="text-gray-400 text-sm" />}
       </button>
 
       {/* IMAGE CONTAINER */}
@@ -164,10 +180,11 @@ function ProductCard({ product }) {
           
           {/* RATING */}
           <div className="flex items-center gap-1 mb-1">
-            <div className="flex items-center text-yellow-400 text-[11px]">
-              <FaStar /><FaStar /><FaStar /><FaStar /><FaStar className="text-yellow-400" />
+            <div className="flex items-center bg-green-50 px-1 py-0.5 rounded-[3px] border border-green-100 gap-0.5">
+              <span className="text-[10px] font-black text-green-700 leading-none">{rating}</span>
+              <FaStar className="text-[9px] text-yellow-500" />
             </div>
-            <span className="text-[11px] text-gray-500 font-medium">{reviewsCount}</span>
+            <span className="text-[10px] text-gray-500 font-medium">({reviewsCount})</span>
           </div>
 
           {/* DELIVERY TIME */}

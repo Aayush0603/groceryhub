@@ -12,6 +12,8 @@ import CartProvider from "./context/CartContext";
 
 import AuthProvider from "./context/AuthContext";
 
+import { FavoritesProvider } from "./context/FavoritesContext";
+
 ReactDOM.createRoot(
   document.getElementById("root")
 ).render(
@@ -20,11 +22,13 @@ ReactDOM.createRoot(
 
     <AuthProvider>
 
-      <CartProvider>
+      <FavoritesProvider>
+        <CartProvider>
 
-        <App />
+          <App />
 
-    </CartProvider>
+        </CartProvider>
+      </FavoritesProvider>
 
   </AuthProvider>
 

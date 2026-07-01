@@ -52,7 +52,7 @@ function Hero() {
 
   return (
     <section className="min-h-[70vh] bg-gradient-to-br from-green-50 via-white to-green-100 flex items-center overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center">
         {/* LEFT CONTENT */}
         <motion.div
           initial={{
@@ -106,33 +106,11 @@ function Hero() {
             </HashLink>
           </div>
 
-          {/* STATS */}
-          <div className="mt-8 flex flex-wrap gap-8">
-            <div>
-              <h2 className="text-4xl font-extrabold text-green-700">500+</h2>
-              <p className="text-gray-600 mt-2">
-                {t("hero.products", "Products")}
-              </p>
-            </div>
 
-            <div>
-              <h2 className="text-4xl font-extrabold text-green-700">1000+</h2>
-              <p className="text-gray-600 mt-2">
-                {t("hero.happyCustomers", "Happy Customers")}
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-4xl font-extrabold text-green-700">24/7</h2>
-              <p className="text-gray-600 mt-2">
-                {t("hero.support", "Support")}
-              </p>
-            </div>
-          </div>
         </motion.div>
 
         {/* RIGHT IMAGE GALLERY */}
-        <div className="relative flex items-center justify-center w-full min-h-[400px] md:min-h-[500px] lg:min-h-[580px] px-6">
+        <div className="relative flex items-center justify-center w-full min-h-[300px] sm:min-h-[400px] md:min-h-[500px] lg:min-h-[580px] px-6">
           {/* GLOW EFFECT */}
           <div className="absolute -top-10 -left-10 w-80 h-80 bg-green-300 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
 

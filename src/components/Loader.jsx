@@ -22,14 +22,10 @@ function Loader() {
         transition={{
           duration: 1,
         }}
-        className="relative w-28 h-28 rounded-full bg-green-600 flex items-center justify-center shadow-2xl"
+        className="relative w-28 h-28 rounded-full flex items-center justify-center shadow-2xl bg-white"
       >
 
-        <h1 className="text-white text-5xl font-extrabold">
-
-          G
-
-        </h1>
+        <img src="/images/logo.jpeg" alt="Gandhi Trading Co." className="w-full h-full rounded-full object-cover" />
 
       </motion.div>
 

@@ -59,6 +59,8 @@ import MyOrders from "./pages/MyOrders";
 
 import Profile from "./pages/Profile";
 
+import Favorites from "./pages/Favorites";
+
 import { CartContext } from "./context/CartContext";
 
 // CUSTOMER LAYOUT
@@ -165,11 +167,12 @@ function AdminLayout() {
         {/* LOGO */}
         <div className="mb-12">
 
-          <h1 className="text-4xl font-extrabold text-green-400 leading-tight">
-
-            GandhiBazaar
-
-          </h1>
+          <div className="flex items-center gap-3">
+            <img src="/images/logo.jpeg" alt="Gandhi Trading Co." className="h-10 w-10 rounded-full shadow-md" />
+            <h1 className="text-3xl font-extrabold text-white leading-tight">
+              GandhiBazaar
+            </h1>
+          </div>
 
           <p className="text-gray-400 text-lg mt-2">
 
@@ -448,16 +451,13 @@ function AppLayout() {
           />
 
           <Route
+            path="favorites"
+            element={<Favorites />}
+          />
+
+          <Route
             path="checkout"
-            element={
-
-              <ProtectedRoute>
-
-                <Checkout />
-
-              </ProtectedRoute>
-
-            }
+            element={<Checkout />}
           />
 
           <Route

@@ -15,13 +15,14 @@ i18n
       hi: { translation: hiTranslations },
       mr: { translation: mrTranslations },
     },
-    fallbackLng: 'en',
+    fallbackLng: 'mr',
     interpolation: {
       escapeValue: false, // react already safes from xss
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'groceryhub_lng',
     }
   });
 

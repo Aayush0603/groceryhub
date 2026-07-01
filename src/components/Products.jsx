@@ -7,6 +7,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import ProductCard from "./ProductCard";
+import AdsCarousel from "./AdsCarousel";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaSearch,
@@ -14,15 +15,18 @@ import {
   FaMicrophone,
   FaArrowRight,
   FaArrowLeft,
-  FaShareAlt
+  FaShareAlt,
+  FaHeart
 } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
+import { FavoritesContext } from "../context/FavoritesContext";
 
 function Products() {
   const { t, i18n } = useTranslation();
   const { totalItems } = useContext(CartContext);
+  const { favoriteItems } = useContext(FavoritesContext);
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,15 +87,15 @@ function Products() {
   ];
 
   const GROCERY_CATEGORIES = [
-    { name: "Vegetables", label: "Vegetables", image: "https://images.unsplash.com/photo-1597362925123-77861d3fbac7?w=300&q=80", color: "bg-emerald-50" },
-    { name: "Fruits", label: "Fruits", image: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=300&q=80", color: "bg-orange-50" },
-    { name: "Grains", label: "Atta, Rice & Dal", image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&q=80", color: "bg-amber-50" },
-    { name: "Oil", label: "Oil & Ghee", image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=300&q=80", color: "bg-yellow-50" },
-    { name: "Dairy", label: "Dairy & Eggs", image: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=300&q=80", color: "bg-blue-50" },
+    { name: "Vegetables", label: t("products.categories.vegetables", "Vegetables"), image: "https://images.unsplash.com/photo-1597362925123-77861d3fbac7?w=300&q=80", color: "bg-emerald-50" },
+    { name: "Fruits", label: t("products.categories.fruits", "Fruits"), image: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=300&q=80", color: "bg-orange-50" },
+    { name: "Grains", label: t("products.categories.attaRiceDal", "Atta, Rice & Dal"), image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&q=80", color: "bg-amber-50" },
+    { name: "Oil", label: t("products.categories.oilGhee", "Oil & Ghee"), image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=300&q=80", color: "bg-yellow-50" },
+    { name: "Dairy", label: t("products.categories.dairyEggs", "Dairy & Eggs"), image: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=300&q=80", color: "bg-blue-50" },
   ];
 
   const SNACKS_CATEGORIES = [
-    { name: "Snacks", label: "Chips & Namkeen", image: "https://images.unsplash.com/photo-1599490659213-e2b9527bd08c?w=300&q=80", color: "bg-red-50" },
+    { name: "Snacks", label: t("products.categories.chipsNamkeen", "Chips & Namkeen"), image: "https://images.unsplash.com/photo-1599490659213-e2b9527bd08c?w=300&q=80", color: "bg-red-50" },
   ];
   
   const SIDEBAR_CATEGORIES = [...GROCERY_CATEGORIES, ...SNACKS_CATEGORIES];
@@ -198,7 +202,7 @@ function Products() {
             {/* GROCERY & KITCHEN */}
             {(topFilter === "All" || GROCERY_CATEGORIES.some(c => c.name === topFilter)) && (
               <div className="mb-6 mt-4">
-                <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-3 px-1">Grocery & Kitchen</h2>
+                <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-3 px-1">{t("productsSection.groceryKitchen", "Grocery & Kitchen")}</h2>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-6">
                   {GROCERY_CATEGORIES.filter(c => topFilter === "All" || c.name === topFilter).map((cat, idx) => (
                     <motion.div 
@@ -208,9 +212,9 @@ function Products() {
                       onClick={() => { setSelectedCategory(cat.name); setSearchTerm(""); }}
                       className={`rounded-2xl cursor-pointer overflow-hidden flex flex-col h-full ${cat.color} border border-black/5 hover:shadow-md transition-all`}
                     >
-                      <div className="w-full aspect-[4/3] p-2 pb-0 flex items-center justify-center">
-                      <img src={cat.image} alt={cat.label} className="w-full h-full object-contain rounded-xl mix-blend-multiply" />
-                    </div>
+                      <div className="w-full aspect-[4/3] relative overflow-hidden">
+                        <img src={cat.image} alt={cat.label} className="absolute inset-0 w-full h-full object-cover rounded-t-2xl" />
+                      </div>
                     <div className="p-2 sm:p-3 text-center bg-white/40 backdrop-blur-sm mt-auto border-t border-black/5">
                       <h3 className="text-[11px] sm:text-sm font-bold text-gray-800 leading-tight">
                         {cat.label}
@@ -222,10 +226,15 @@ function Products() {
             </div>
             )}
 
+            {/* ADS CAROUSEL */}
+            {topFilter === "All" && (
+              <AdsCarousel />
+            )}
+
             {/* SNACKS & DRINKS */}
             {(topFilter === "All" || SNACKS_CATEGORIES.some(c => c.name === topFilter)) && (
               <div className="mb-6">
-                <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-3 px-1">Snacks & Drinks</h2>
+                <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-3 px-1">{t("productsSection.snacksDrinks", "Snacks & Drinks")}</h2>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-6">
                   {SNACKS_CATEGORIES.filter(c => topFilter === "All" || c.name === topFilter).map((cat, idx) => (
                     <motion.div 
@@ -235,9 +244,9 @@ function Products() {
                       onClick={() => { setSelectedCategory(cat.name); setSearchTerm(""); }}
                       className={`rounded-2xl cursor-pointer overflow-hidden flex flex-col h-full ${cat.color} border border-black/5 hover:shadow-md transition-all`}
                     >
-                      <div className="w-full aspect-[4/3] p-2 pb-0 flex items-center justify-center">
-                      <img src={cat.image} alt={cat.label} className="w-full h-full object-contain rounded-xl mix-blend-multiply" />
-                    </div>
+                      <div className="w-full aspect-[4/3] relative overflow-hidden">
+                        <img src={cat.image} alt={cat.label} className="absolute inset-0 w-full h-full object-cover rounded-t-2xl" />
+                      </div>
                     <div className="p-2 sm:p-3 text-center bg-white/40 backdrop-blur-sm mt-auto border-t border-black/5">
                       <h3 className="text-[11px] sm:text-sm font-bold text-gray-800 leading-tight">
                         {cat.label}
@@ -295,9 +304,9 @@ function Products() {
                   </button>
                   <div>
                     <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 leading-tight">
-                      {searchTerm !== "" ? `Search Results` : `${SIDEBAR_CATEGORIES.find(c => c.name === selectedCategory)?.label || selectedCategory}`}
+                      {searchTerm !== "" ? t("productsSection.searchResults", "Search Results") : `${SIDEBAR_CATEGORIES.find(c => c.name === selectedCategory)?.label || selectedCategory}`}
                     </h2>
-                    <p className="text-[10px] text-green-700 font-bold hidden sm:block">Delivering to Home</p>
+                    <p className="text-[10px] text-green-700 font-bold hidden sm:block">{t("productsSection.deliveringToHome", "Delivering to Home")}</p>
                   </div>
                 </div>
                 <div className="flex gap-1.5 sm:gap-2">
@@ -316,7 +325,7 @@ function Products() {
                 <button className="text-[11px] sm:text-xs font-semibold border border-gray-200 rounded-lg px-2.5 sm:px-3 py-1.5 bg-white text-gray-700 whitespace-nowrap shadow-sm hover:bg-gray-50 transition">
                   <span className="flex items-center gap-1">
                     <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                    Filters
+                    {t("productsSection.filters", "Filters")}
                   </span>
                 </button>
                 <select 
@@ -324,12 +333,12 @@ function Products() {
                   onChange={(e) => setSortOption(e.target.value)} 
                   className="text-[11px] sm:text-xs font-semibold border border-gray-200 rounded-lg px-2.5 sm:px-3 py-1.5 bg-white text-gray-700 outline-none focus:border-green-500 shadow-sm transition appearance-none cursor-pointer w-[90px] sm:w-[105px] text-ellipsis overflow-hidden"
                 >
-                  <option value="none">↑↓ Sort</option>
-                  <option value="price_asc">Low to High</option>
-                  <option value="price_desc">High to Low</option>
+                  <option value="none">{t("productsSection.sort", "↑↓ Sort")}</option>
+                  <option value="price_asc">{t("productsSection.lowToHigh", "Low to High")}</option>
+                  <option value="price_desc">{t("productsSection.highToLow", "High to Low")}</option>
                 </select>
                 <button className="text-[11px] sm:text-xs font-semibold border border-gray-200 rounded-lg px-2.5 sm:px-3 py-1.5 bg-white text-gray-700 whitespace-nowrap shadow-sm hover:bg-gray-50 transition">
-                  Brand
+                  {t("productsSection.brand", "Brand")}
                 </button>
               </div>
 
@@ -345,9 +354,9 @@ function Products() {
                 >
                   {filteredProducts.length === 0 ? (
                     <div className="text-center py-20 text-gray-500">
-                      <p className="text-lg font-bold">No products found.</p>
+                      <p className="text-lg font-bold">{t("productsSection.noProductsFound", "No products found.")}</p>
                       <button onClick={() => {setSearchTerm(""); setSelectedCategory("All");}} className="mt-4 text-green-600 font-bold hover:underline">
-                        Back to Categories
+                        {t("productsSection.backToCategories", "Back to Categories")}
                       </button>
                     </div>
                   ) : (
@@ -364,32 +373,53 @@ function Products() {
           </motion.div>
         )}
 
-        {/* GO TO CART POPUP */}
+        {/* FLOATING ACTION BUTTONS */}
         <AnimatePresence>
-          {totalItems > 0 && (
+          {(totalItems > 0 || favoriteItems.length > 0) && (
             <motion.div
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 50, scale: 0.9 }}
-              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto flex items-center gap-4"
             >
-              <Link to="/cart">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-3 bg-green-600 text-white px-6 py-3.5 rounded-full font-extrabold shadow-[0_0_20px_rgba(34,197,94,0.6)] border-2 border-green-400 hover:bg-green-500 hover:shadow-[0_0_30px_rgba(34,197,94,0.8)] transition-all duration-300 group"
-                >
-                  <span className="text-sm sm:text-base">{t("productsSection.goToCart", "Go to Cart")}</span>
-                  <span className="bg-white text-green-600 px-2 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-sm shadow-inner">{totalItems}</span>
-                  <motion.div
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                    className="text-white group-hover:text-green-100"
+              {/* FAVORITES */}
+              {favoriteItems.length > 0 && (
+                <Link to="/favorites">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 bg-red-500 text-white px-4 py-3 rounded-full font-extrabold shadow-[0_0_20px_rgba(239,68,68,0.5)] border-2 border-red-400 hover:bg-red-600 hover:shadow-[0_0_30px_rgba(239,68,68,0.7)] transition-all duration-300 group whitespace-nowrap shrink-0"
                   >
-                    <FaArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </motion.div>
-                </motion.button>
-              </Link>
+                    <span className="bg-white text-red-500 px-2 py-0.5 rounded-full text-xs shadow-inner shrink-0">{favoriteItems.length}</span>
+                    <motion.div
+                      className="text-white shrink-0"
+                    >
+                      <FaHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </motion.div>
+                  </motion.button>
+                </Link>
+              )}
+
+              {/* GO TO CART */}
+              {totalItems > 0 && (
+                <Link to="/cart">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 bg-green-600 text-white px-5 py-3 rounded-full font-extrabold shadow-[0_0_20px_rgba(34,197,94,0.5)] border-2 border-green-400 hover:bg-green-500 hover:shadow-[0_0_30px_rgba(34,197,94,0.7)] transition-all duration-300 group whitespace-nowrap shrink-0"
+                  >
+                    <span className="text-xs sm:text-sm md:text-base whitespace-nowrap">{t("productsSection.goToCart", "Go to Cart")}</span>
+                    <span className="bg-white text-green-600 px-2 py-0.5 rounded-full text-xs shadow-inner shrink-0">{totalItems}</span>
+                    <motion.div
+                      animate={{ x: [0, 4, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                      className="text-white group-hover:text-green-100 shrink-0"
+                    >
+                      <FaArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </motion.div>
+                  </motion.button>
+                </Link>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

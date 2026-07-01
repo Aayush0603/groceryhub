@@ -22,6 +22,7 @@ import {
   FaUser,
   FaSignOutAlt,
   FaLeaf,
+  FaHeart
 } from "react-icons/fa";
 
 import toast from "react-hot-toast";
@@ -81,6 +82,7 @@ function Navbar() {
   const navItems = [
     { label: t("nav.home") || "Home", to: "/", type: "link", icon: FaHome },
     { label: t("nav.products") || "Products", to: "/products", type: "link", icon: FaBox },
+    { label: t("nav.favorites", "Favourite Items"), to: "/favorites", type: "link", icon: FaHeart },
     { label: t("nav.contact") || "Contact", to: "/#contact", type: "hash", icon: FaPhone },
     ...(currentUser ? [
       { label: t("nav.myOrders") || "My Orders", to: "/my-orders", type: "link", icon: FaHistory },
@@ -107,9 +109,7 @@ function Navbar() {
             to="/"
             className="flex items-center gap-2.5 select-none shrink-0 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-md shadow-green-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-              <FaLeaf className="w-5 h-5" />
-            </div>
+            <img src="/images/logo.jpeg" alt="Gandhi Trading Co." className="h-12 w-12 rounded-full shadow-md group-hover:scale-110 transition-all duration-300" />
             <span className="text-xl lg:text-2xl font-black tracking-tight text-gray-900 group-hover:text-green-600 transition-colors duration-300">
               <span className="text-green-600">Gandhi</span>Bazaar
             </span>
@@ -170,7 +170,7 @@ function Navbar() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleLogout}
-                  className="bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 hover:text-red-700 font-bold text-sm lg:text-[15px] px-4 py-2 rounded-full transition-all duration-300 shrink-0 flex items-center gap-1.5"
+                  className="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold text-sm lg:text-[15px] px-4 py-2.5 rounded-full shadow-md shadow-red-500/10 transition-all duration-300 shrink-0 flex items-center gap-1.5 cursor-pointer"
                 >
                   <FaSignOutAlt className="w-3.5 h-3.5" />
                   {t("nav.logout") || "Logout"}
@@ -268,24 +268,24 @@ function Navbar() {
                 })}
               </div>
 
-              <div className="border-t border-gray-100 pt-4 space-y-3">
-                {/* CART (TOP OF ACTION BUTTONS) */}
+              <div className="border-t border-gray-100 pt-4 flex gap-3">
+                {/* CART (SIDE BY SIDE) */}
                 <Link
                   to="/cart"
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3.5 rounded-2xl w-full shadow-lg shadow-green-500/10 transition duration-200 active:scale-98"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 rounded-2xl shadow-lg shadow-green-500/10 transition duration-200 active:scale-98"
                   onClick={closeMenu}
                 >
-                  <FaShoppingCart className="text-lg" />
-                  <span className="text-base">{t("nav.cart") || "Cart"} ({totalItems})</span>
+                  <FaShoppingCart className="text-base" />
+                  <span className="text-sm">{t("nav.cart") || "Cart"} ({totalItems})</span>
                 </Link>
 
                 {!currentUser ? (
                   <Link
                     to="/login"
-                    className="block text-center bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-2xl w-full shadow-md transition duration-200 active:scale-98"
+                    className="flex-1 block text-center bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-2xl shadow-md transition duration-200 active:scale-98"
                     onClick={closeMenu}
                   >
-                    <span className="text-base">{t("nav.login") || "Login"}</span>
+                    <span className="text-sm">{t("nav.login") || "Login"}</span>
                   </Link>
                 ) : (
                   <button
@@ -293,10 +293,10 @@ function Navbar() {
                       closeMenu();
                       handleLogout();
                     }}
-                    className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100/80 text-red-600 font-bold py-3.5 rounded-2xl border border-red-100 shadow-sm transition duration-200 active:scale-98 cursor-pointer"
+                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold py-3 rounded-2xl shadow-sm transition duration-200 active:scale-98 cursor-pointer"
                   >
                     <FaSignOutAlt className="w-4 h-4" />
-                    <span className="text-base">{t("nav.logout") || "Logout"}</span>
+                    <span className="text-sm">{t("nav.logout") || "Logout"}</span>
                   </button>
                 )}
               </div>

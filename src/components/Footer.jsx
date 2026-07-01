@@ -35,7 +35,7 @@ function Footer() {
       <div className="relative max-w-7xl mx-auto px-6">
 
         {/* TOP GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 pb-6 border-b border-white/10">
 
           {/* BRAND */}
           <motion.div
@@ -52,7 +52,7 @@ function Footer() {
             }}
           >
 
-            <h1 className="text-4xl font-extrabold mb-6">
+            <h1 className="text-4xl font-extrabold mb-4">
 
               <span className="text-green-400">
 
@@ -64,7 +64,7 @@ function Footer() {
 
             </h1>
 
-            <p className="text-gray-300 leading-8">
+            <p className="text-gray-300 leading-7">
 
               {t("footer.description", "Fresh groceries delivered directly to your doorstep with quality products and affordable pricing.")}
 
@@ -87,13 +87,13 @@ function Footer() {
             }}
           >
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-4">
 
               {t("footer.quickLinks", "Quick Links")}
 
             </h2>
 
-            <ul className="space-y-4 text-gray-300">
+            <ul className="space-y-2 text-gray-300">
 
               {/* HOME */}
               <li>
@@ -156,56 +156,7 @@ function Footer() {
 
           </motion.div>
 
-          {/* CONTACT INFO */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 30,
-            }}
-            whileInView={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.8,
-            }}
-          >
 
-            <h2 className="text-2xl font-bold mb-6">
-
-              {t("footer.contactInfo", "Contact Info")}
-
-            </h2>
-
-            <div className="space-y-4 text-gray-300">
-
-              <p>
-
-                📍 {t("contact.locationValue", "Pune, Maharashtra, India")}
-
-              </p>
-
-              <p>
-
-                📞 +91 9172607711
-
-              </p>
-
-              <p>
-
-                ✉️ grocery@gmail.com
-
-              </p>
-
-              <p>
-
-                🕒 {t("contact.time", "8 AM - 10 PM")}
-
-              </p>
-
-            </div>
-
-          </motion.div>
 
           {/* SOCIAL LINKS */}
           <motion.div
@@ -222,13 +173,13 @@ function Footer() {
             }}
           >
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-4">
 
               {t("footer.followUs", "Follow Us")}
 
             </h2>
 
-            <p className="text-gray-300 leading-7 mb-6">
+            <p className="text-gray-300 leading-7 mb-4">
 
               {t("footer.followDescription", "Stay connected with us on social media for latest offers and grocery updates.")}
 
@@ -239,7 +190,7 @@ function Footer() {
 
               <a
                 href="#"
-                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-2xl hover:bg-blue-500 transition duration-300 hover:scale-110"
+                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-2xl text-[#1877F2] hover:bg-[#1877F2] hover:text-white transition duration-300 hover:scale-110"
               >
 
                 <FaFacebook />
@@ -247,8 +198,10 @@ function Footer() {
               </a>
 
               <a
-                href="#"
-                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-2xl hover:bg-pink-500 transition duration-300 hover:scale-110"
+                href="https://www.instagram.com/gandhitradingc?igsh=Y2x5OWlqYzAwbHg2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-2xl text-[#E1306C] hover:bg-gradient-to-tr hover:from-[#F58529] hover:via-[#DD2A7B] hover:to-[#8134AF] hover:text-white transition duration-300 hover:scale-110"
               >
 
                 <FaInstagram />
@@ -257,7 +210,7 @@ function Footer() {
 
               <a
                 href="#"
-                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-2xl hover:bg-green-500 transition duration-300 hover:scale-110"
+                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-2xl text-[#25D366] hover:bg-[#25D366] hover:text-white transition duration-300 hover:scale-110"
               >
 
                 <FaWhatsapp />
@@ -271,7 +224,7 @@ function Footer() {
         </div>
 
         {/* BOTTOM SECTION */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-10">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-6">
 
           <p className="text-gray-400 text-center">
 

@@ -21,6 +21,7 @@ import {
   FaCalendarAlt,
   FaClock,
   FaTruck,
+  FaCommentDots,
 } from "react-icons/fa";
 
 function AdminOrders() {
@@ -698,6 +699,18 @@ function AdminOrders() {
                     </h3>
 
                   </div>
+
+                  {order.customerInfo?.notes && (
+                    <div className="bg-amber-50/60 rounded-xl p-3.5 border border-amber-100 md:col-span-2 xl:col-span-4">
+                      <div className="flex items-center gap-2 text-xs text-amber-700 font-extrabold uppercase tracking-wider mb-1.5">
+                        <FaCommentDots />
+                        Delivery Instructions
+                      </div>
+                      <h3 className="text-sm font-semibold text-gray-800 leading-relaxed">
+                        {order.customerInfo.notes}
+                      </h3>
+                    </div>
+                  )}
 
                 </div>
 

@@ -103,7 +103,7 @@ function Cart() {
                 {t("cart.emptyCartDesc") || "Add fresh grocery products to start shopping."}
               </p>
 
-              <Link to="/">
+              <Link to="/products">
                 <motion.span
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
@@ -248,11 +248,11 @@ function Cart() {
                         Delivery
                       </span>
                       <div className="text-right">
-                        <span className="text-sm md:text-base font-extrabold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-                          {t("cart.freeDelivery") || "Free Delivery"}
+                        <span className="text-xs md:text-sm font-extrabold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                          Free Delivery (0-3km)
                         </span>
                         <p className="text-[10px] md:text-xs text-gray-400 font-medium mt-0.5">
-                          {t("cart.freeDeliveryDesc") || "For all orders today"}
+                          ₹15/km beyond 3km (Max 7km)
                         </p>
                       </div>
                     </div>

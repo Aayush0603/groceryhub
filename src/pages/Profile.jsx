@@ -27,7 +27,10 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 
+import { useTranslation } from "react-i18next";
+
 function Profile() {
+  const { t } = useTranslation();
 
   // AUTH CONTEXT
   const {
@@ -365,17 +368,11 @@ const [addressData, setAddressData] =
 
   // LOADING
   if (loading) {
-
     return (
-
-      <div className="min-h-screen flex items-center justify-center text-3xl font-bold">
-
-        Loading Profile...
-
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full" />
       </div>
-
     );
-
   }
 
   return (
@@ -387,7 +384,8 @@ const [addressData, setAddressData] =
       >
         {/* PROFILE CARD */}
         <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-2xl">
-          {/* TOP COVER HEADER */}
+          
+          {/* HEADER */}
           <div className="relative bg-gradient-to-r from-green-600 to-emerald-700 p-12 text-center overflow-hidden">
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-black/10 rounded-full blur-3xl"></div>
@@ -399,41 +397,41 @@ const [addressData, setAddressData] =
             >
               <FaUserCircle className="text-[7rem] md:text-[9rem] text-white/90 mx-auto mb-4 drop-shadow-xl relative z-10" />
             </motion.div>
-            <h1 className="text-4xl md:text-5xl font-black text-white relative z-10 tracking-tight">My Profile</h1>
-            <p className="mt-2 text-green-100 font-medium text-lg relative z-10">Manage your account and personal details</p>
+            <h1 className="text-4xl md:text-5xl font-black text-white relative z-10 tracking-tight">{t("profile.pageTitle")}</h1>
+            <p className="mt-2 text-green-100 font-medium text-lg relative z-10">{t("profile.subtitle")}</p>
           </div>
 
           {/* FORM */}
           <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* NAME */}
             <div className="space-y-2">
-              <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Full Name</label>
+              <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">{t("profile.fullName")}</label>
               <input
                 type="text"
                 name="name"
                 value={profileData.name}
                 onChange={handleChange}
-                placeholder="Enter your name"
+                placeholder={t("profile.enterName")}
                 className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 text-gray-800 outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-500/10 transition-all duration-300"
               />
             </div>
 
             {/* EMAIL */}
             <div className="space-y-2">
-              <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Email</label>
+              <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">{t("profile.email")}</label>
               <input
                 type="email"
                 name="email"
                 value={profileData.email}
                 onChange={handleChange}
-                placeholder="Enter email"
+                placeholder={t("profile.enterEmail")}
                 className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 text-gray-800 outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-500/10 transition-all duration-300"
               />
             </div>
 
             {/* PHONE */}
             <div className="space-y-2 md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Phone Number</label>
+              <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">{t("profile.phone")}</label>
               <input
                 type="text"
                 name="phone"
@@ -442,7 +440,7 @@ const [addressData, setAddressData] =
                   const value = e.target.value.replace(/\D/g, "");
                   if (value.length <= 10) setProfileData({ ...profileData, phone: value });
                 }}
-                placeholder="Enter 10-digit phone number"
+                placeholder={t("profile.enterPhone")}
                 className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 text-gray-800 outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-500/10 transition-all duration-300"
               />
             </div>
@@ -458,7 +456,7 @@ const [addressData, setAddressData] =
               className="w-full bg-gray-900 hover:bg-black text-white py-4 md:py-5 rounded-2xl text-lg md:text-xl font-bold transition-colors shadow-xl shadow-gray-900/20 flex items-center justify-center gap-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               <FaSave className="text-xl" />
-              {saving ? "Saving Changes..." : "Save Profile Changes"}
+              {saving ? t("profile.saving") : t("profile.saveChanges")}
             </motion.button>
           </div>
         </div>
@@ -470,14 +468,14 @@ const [addressData, setAddressData] =
               <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shadow-inner shrink-0">
                 <FaMapMarkerAlt className="text-2xl" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Saved Addresses</h2>
+              <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">{t("profile.savedAddresses")}</h2>
             </div>
           </div>
 
           {savedAddresses.length === 0 ? (
             <div className="bg-gray-50/50 rounded-[1.5rem] p-12 text-center border border-dashed border-gray-200">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-800">No Addresses Found</h3>
-              <p className="text-gray-500 mt-2 font-medium">You haven't saved any delivery addresses yet.</p>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-800">{t("profile.noAddresses")}</h3>
+              <p className="text-gray-500 mt-2 font-medium">{t("profile.noAddressesDesc")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6">
@@ -494,7 +492,7 @@ const [addressData, setAddressData] =
                   >
                     {address.isDefault && (
                       <div className="absolute top-0 right-0 bg-green-500 text-white text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-bl-xl">
-                        Default
+                        {t("profile.default")}
                       </div>
                     )}
 
@@ -502,12 +500,12 @@ const [addressData, setAddressData] =
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
                           <FaHome className={`text-2xl ${address.isDefault ? 'text-green-600' : 'text-gray-400'}`} />
-                          <h3 className="text-xl font-bold text-gray-900">{address.type}</h3>
+                          <h3 className="text-xl font-bold text-gray-900">{t(`profile.${address.type.toLowerCase()}`) || address.type}</h3>
                         </div>
                         <div className="text-gray-600 text-[15px] leading-relaxed space-y-1">
-                          <p><span className="font-semibold text-gray-800">Address:</span> {address.address}</p>
-                          <p><span className="font-semibold text-gray-800">Landmark:</span> {address.landmark || "N/A"}</p>
-                          <p><span className="font-semibold text-gray-800">Location:</span> {address.city} - {address.pincode}</p>
+                          <p><span className="font-semibold text-gray-800">{t("profile.address")}:</span> {address.address}</p>
+                          <p><span className="font-semibold text-gray-800">{t("profile.landmark")}:</span> {address.landmark || "N/A"}</p>
+                          <p><span className="font-semibold text-gray-800">{t("profile.location")}:</span> {address.city} - {address.pincode}</p>
                         </div>
                       </div>
 
@@ -517,7 +515,7 @@ const [addressData, setAddressData] =
                             onClick={() => setAsDefaultAddress(index)}
                             className="flex-1 md:flex-none px-5 py-2.5 rounded-xl text-sm font-bold text-green-700 bg-green-100 hover:bg-green-200 transition-colors"
                           >
-                            Set Default
+                            {t("profile.setDefault")}
                           </button>
                         )}
                         <button
@@ -534,7 +532,7 @@ const [addressData, setAddressData] =
                           }}
                           className="flex-1 md:flex-none px-5 py-2.5 rounded-xl text-sm font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors"
                         >
-                          Edit
+                          {t("profile.edit")}
                         </button>
                         <button
                           onClick={async () => {
@@ -556,7 +554,7 @@ const [addressData, setAddressData] =
                           }}
                           className="flex-1 md:flex-none px-5 py-2.5 rounded-xl text-sm font-bold text-red-700 bg-red-100 hover:bg-red-200 transition-colors"
                         >
-                          Delete
+                          {t("profile.delete")}
                         </button>
                       </div>
                     </div>
@@ -583,63 +581,63 @@ const [addressData, setAddressData] =
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="bg-white rounded-[2rem] p-8 md:p-10 w-full max-w-xl shadow-2xl border border-gray-100"
             >
-              <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-8">Edit Address</h2>
+              <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-8">{t("profile.editAddressTitle")}</h2>
               
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase">Address Type</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase">{t("profile.addressType")}</label>
                   <select
                     value={addressType}
                     onChange={(e) => setAddressType(e.target.value)}
                     className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 font-medium text-gray-800 outline-none focus:border-green-500 focus:bg-white transition-colors appearance-none"
                   >
-                    <option>Home</option>
-                    <option>Work</option>
-                    <option>Other</option>
+                    <option value="Home">{t("profile.home")}</option>
+                    <option value="Work">{t("profile.work")}</option>
+                    <option value="Other">{t("profile.other")}</option>
                   </select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase">Street Address</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase">{t("profile.streetAddress")}</label>
                   <input
                     type="text"
                     value={addressData.address}
                     onChange={(e) => setAddressData({ ...addressData, address: e.target.value })}
-                    placeholder="Enter full address"
+                    placeholder={t("profile.enterFullAddress")}
                     className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 font-medium text-gray-800 outline-none focus:border-green-500 focus:bg-white transition-colors"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase">City</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase">{t("profile.city")}</label>
                     <input
                       type="text"
                       value={addressData.city}
                       onChange={(e) => setAddressData({ ...addressData, city: e.target.value })}
-                      placeholder="City name"
+                      placeholder={t("profile.cityName")}
                       className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 font-medium text-gray-800 outline-none focus:border-green-500 focus:bg-white transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase">Pincode</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase">{t("profile.pincode")}</label>
                     <input
                       type="text"
                       value={addressData.pincode}
                       onChange={(e) => setAddressData({ ...addressData, pincode: e.target.value })}
-                      placeholder="Postal code"
+                      placeholder={t("profile.postalCode")}
                       className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 font-medium text-gray-800 outline-none focus:border-green-500 focus:bg-white transition-colors"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase">Landmark (Optional)</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase">{t("profile.landmarkOptional")}</label>
                   <input
                     type="text"
                     value={addressData.landmark}
                     onChange={(e) => setAddressData({ ...addressData, landmark: e.target.value })}
-                    placeholder="Near a known place"
+                    placeholder={t("profile.landmarkPlaceholder")}
                     className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 font-medium text-gray-800 outline-none focus:border-green-500 focus:bg-white transition-colors"
                   />
                 </div>
@@ -671,13 +669,13 @@ const [addressData, setAddressData] =
                   }}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl text-lg font-bold transition-colors shadow-lg shadow-green-600/20"
                 >
-                  Save Address
+                  {t("profile.saveAddress")}
                 </button>
                 <button
                   onClick={() => setShowAddressModal(false)}
                   className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 rounded-2xl text-lg font-bold transition-colors"
                 >
-                  Cancel
+                  {t("profile.cancel")}
                 </button>
               </div>
             </motion.div>

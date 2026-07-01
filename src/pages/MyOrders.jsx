@@ -36,7 +36,10 @@ import {
   FaCalendarAlt,
 } from "react-icons/fa";
 
+import { useTranslation } from "react-i18next";
+
 function MyOrders() {
+  const { t } = useTranslation();
 
   // CURRENT USER
   const { currentUser } =
@@ -89,13 +92,17 @@ function MyOrders() {
                 })
               );
 
-            // FILTER USER ORDERS
+            // FILTER USER ORDERS (by userId OR matching phone number)
             const userOrders =
               allOrders.filter(
                 (order) =>
 
                   order.userId ===
-                  currentUser.uid
+                  currentUser.uid ||
+
+                  (currentUser.phone &&
+                  order.customerPhone ===
+                  currentUser.phone)
               );
 
             // LATEST FIRST
@@ -233,6 +240,16 @@ sortedOrders.forEach(
         100
       );
 
+      let tableStartY = 120;
+      if (order.customerInfo?.notes) {
+        docPDF.text(
+          `Delivery Notes: ${order.customerInfo.notes}`,
+          20,
+          110
+        );
+        tableStartY = 130;
+      }
+
       // PRODUCTS TABLE
       const tableData =
         order.cartItems.map(
@@ -254,7 +271,7 @@ sortedOrders.forEach(
 
         {
 
-          startY: 120,
+          startY: tableStartY,
 
           head: [[
 
@@ -405,7 +422,7 @@ sortedOrders.forEach(
 
       <div className="min-h-screen flex items-center justify-center text-3xl font-bold">
 
-        Loading Orders...
+        {t("orders.loading")}
 
       </div>
 
@@ -424,9 +441,9 @@ sortedOrders.forEach(
           className="mb-6 text-center md:text-left"
         >
           <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight flex items-center justify-center md:justify-start gap-3">
-            My Orders <FaShoppingBag className="text-green-600" />
+            {t("orders.pageTitle")} <FaShoppingBag className="text-green-600" />
           </h1>
-          <p className="text-gray-500 mt-1.5 text-base">Track, manage, and view your recent purchases.</p>
+          <p className="text-gray-500 mt-1.5 text-base">{t("orders.subtitle")}</p>
         </motion.div>
 
         {/* EMPTY STATE */}
@@ -441,8 +458,8 @@ sortedOrders.forEach(
               <div className="w-24 h-24 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                 <FaBoxOpen className="text-5xl" />
               </div>
-              <h2 className="text-3xl font-extrabold text-gray-900 mb-4">No Orders Found</h2>
-              <p className="text-gray-500 text-lg">Looks like you haven't placed any orders yet.</p>
+              <h2 className="text-3xl font-extrabold text-gray-900 mb-4">{t("orders.noOrders")}</h2>
+              <p className="text-gray-500 text-lg">{t("orders.noOrdersDesc")}</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -473,11 +490,11 @@ sortedOrders.forEach(
                   {/* TOP HEADER BAR */}
                   <div className="bg-gradient-to-r from-green-600 to-emerald-700 text-white px-5 py-4 md:px-6 md:py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <div>
-                      <p className="text-green-100 text-xs font-semibold uppercase tracking-wider mb-0.5">Order ID</p>
+                      <p className="text-green-100 text-xs font-semibold uppercase tracking-wider mb-0.5">{t("orders.orderId")}</p>
                       <p className="text-base md:text-lg font-bold font-mono break-all leading-tight">#{order.id}</p>
                     </div>
                     <div className={`px-4 py-1.5 rounded-full font-bold text-xs md:text-sm border ${getStatusStyle(order.status).replace('bg-', 'bg-white/90 text-').replace('text-', 'text-').split(' ')[0]} shadow-sm shrink-0 backdrop-blur-sm`}>
-                      {order.status}
+                      {t(`orders.status${order.status.replace(/\s+/g, '')}`) || order.status}
                     </div>
                   </div>
 
@@ -490,7 +507,7 @@ sortedOrders.forEach(
                           <FaCalendarAlt className="text-xl" />
                         </div>
                         <div>
-                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">Order Date</p>
+                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">{t("orders.orderDate")}</p>
                           <h3 className="font-bold text-base sm:text-lg text-gray-800">{order.orderDate || "N/A"}</h3>
                         </div>
                       </div>
@@ -501,7 +518,7 @@ sortedOrders.forEach(
                           <FaClock className="text-xl" />
                         </div>
                         <div>
-                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">Order Time</p>
+                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">{t("orders.orderTime")}</p>
                           <h3 className="font-bold text-base sm:text-lg text-gray-800">{order.orderTime || "N/A"}</h3>
                         </div>
                       </div>
@@ -512,7 +529,7 @@ sortedOrders.forEach(
                           <FaTruck className="text-xl" />
                         </div>
                         <div>
-                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">Estimated Delivery</p>
+                          <p className="text-gray-500 text-xs font-extrabold uppercase tracking-wider">{t("orders.estimatedDelivery")}</p>
                           <h3 className="font-bold text-base sm:text-lg text-orange-700">{order.estimatedDelivery || estimatedTime}</h3>
                         </div>
                       </div>
@@ -522,7 +539,7 @@ sortedOrders.forEach(
                     {order.status !== "Cancelled" && (
                       <div className="mb-6 bg-gray-50/50 border border-gray-100 rounded-2xl p-4 sm:p-5 md:p-6">
                         <h2 className="text-xl font-extrabold text-gray-900 mb-6 flex items-center gap-2">
-                          Live Tracking
+                          {t("orders.liveTracking")}
                         </h2>
                         
                         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-5 md:gap-3">
@@ -556,7 +573,7 @@ sortedOrders.forEach(
                                 {step.icon}
                               </motion.div>
                               <p className={`font-bold text-sm md:text-base md:text-center ${stepIdx <= currentStep ? "text-gray-800" : "text-gray-400"}`}>
-                                {step.title}
+                                {t(`orders.status${step.title.replace(/\s+/g, '')}`) || step.title}
                               </p>
                             </div>
                           ))}
@@ -564,9 +581,31 @@ sortedOrders.forEach(
                       </div>
                     )}
 
+                    {/* DELIVERY ADDRESS & NOTES */}
+                    <div className="mb-6 bg-green-50/20 border border-green-100/50 rounded-2xl p-4 sm:p-5">
+                      <h3 className="text-xs font-black text-gray-400 mb-2.5 uppercase tracking-wider flex items-center gap-1.5 select-none">
+                        <FaHome className="text-green-600 text-sm" /> {t("orders.deliveryAddress")}
+                      </h3>
+                      <p className="text-gray-800 font-bold text-sm sm:text-base">
+                        {order.customerInfo?.address}
+                        {order.customerInfo?.landmark && `, ${order.customerInfo.landmark}`}
+                        {order.customerInfo?.city && `, ${order.customerInfo.city}`}
+                        {order.customerInfo?.pincode && ` - ${order.customerInfo.pincode}`}
+                      </p>
+                      {order.customerInfo?.notes && (
+                        <div className="mt-3 bg-amber-50 border border-amber-100 rounded-xl p-3 text-xs sm:text-sm text-gray-700 font-semibold flex gap-2 items-start">
+                          <span className="text-base select-none">💬</span>
+                          <div>
+                            <span className="font-black text-amber-900 block mb-0.5 text-[10px] sm:text-xs uppercase tracking-wider">{t("orders.deliveryInstructions")}:</span>
+                            {order.customerInfo.notes}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* PRODUCT LIST */}
                     <div className="space-y-2">
-                      <h3 className="text-sm font-bold text-gray-500 mb-1">Order Items</h3>
+                      <h3 className="text-sm font-bold text-gray-500 mb-1">{t("orders.orderItems")}</h3>
                       <div className="space-y-2 sm:space-y-3">
                         {order.cartItems?.map((item) => (
                           <div key={item.id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md p-2.5 sm:p-3 flex flex-row items-center gap-3 sm:gap-4 transition-all duration-300 relative">
@@ -587,13 +626,13 @@ sortedOrders.forEach(
                                     <span className="w-1 h-1 bg-green-600 rounded-full"></span>
                                   </span>
                                   <h4 className="text-base sm:text-lg font-bold text-gray-900 truncate">
-                                    {item.name}
+                                    {t(item.i18nKeyName) || item.name}
                                   </h4>
                                 </div>
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   {item.category && (
                                     <span className="text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 rounded-md bg-green-50 text-green-700 border border-green-100">
-                                      {item.category}
+                                      {t(`products.categories.${item.category.toLowerCase()}`) || item.category}
                                     </span>
                                   )}
                                   <span className="text-sm sm:text-base text-gray-500 font-medium">
@@ -616,7 +655,7 @@ sortedOrders.forEach(
                     {/* FOOTER / TOTAL / BUTTONS */}
                     <div className="mt-5 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
                       <div className="text-center sm:text-left w-full sm:w-auto">
-                        <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">Final Total</p>
+                        <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">{t("orders.finalTotal")}</p>
                         <h2 className="text-2xl sm:text-3xl font-black text-green-700 tracking-tight">₹{order.finalTotal}</h2>
                       </div>
                       
@@ -627,7 +666,7 @@ sortedOrders.forEach(
                           onClick={() => downloadInvoice(order)}
                           className="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md transition-colors cursor-pointer"
                         >
-                          <FaFileInvoice className="text-base" /> Download Invoice
+                          <FaFileInvoice className="text-base" /> {t("orders.downloadInvoice")}
                         </motion.button>
 
                         {(order.status === "Pending" || order.status === "Processing") && (
@@ -637,7 +676,7 @@ sortedOrders.forEach(
                             onClick={() => cancelOrder(order.id)}
                             className="w-full sm:w-auto bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-5 py-2 rounded-xl text-sm font-bold transition-colors cursor-pointer"
                           >
-                            Cancel Order
+                            {t("orders.cancelOrder")}
                           </motion.button>
                         )}
                       </div>
