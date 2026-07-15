@@ -152,6 +152,34 @@ function Footer() {
 
               </li>
 
+              {/* LOGIN */}
+              <li>
+
+                <Link
+                  to="/login"
+                  className="hover:text-green-400 transition duration-300"
+                >
+
+                  {t("footer.loginLink", "Login into Existing Account")}
+
+                </Link>
+
+              </li>
+
+              {/* SIGNUP */}
+              <li>
+
+                <Link
+                  to="/signup"
+                  className="hover:text-green-400 transition duration-300"
+                >
+
+                  {t("footer.signupLink", "Create Account")}
+
+                </Link>
+
+              </li>
+
             </ul>
 
           </motion.div>

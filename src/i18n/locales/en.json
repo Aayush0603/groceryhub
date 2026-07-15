@@ -112,7 +112,9 @@
     "contactInfo": "Contact Info",
     "followUs": "Follow Us",
     "followDescription": "Stay connected with us on social media for latest offers and grocery updates.",
-    "rights": "© 2026 GandhiBazaar. All rights reserved."
+    "rights": "© 2026 GandhiBazaar. All rights reserved.",
+    "loginLink": "Login into Existing Account",
+    "signupLink": "Create Account"
   },
   "auth": {
     "fillAllFields": "Please fill all fields",

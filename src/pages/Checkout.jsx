@@ -79,9 +79,9 @@ function Checkout() {
   // SHOP LOCATION
   const shopLocation = {
 
-    lat: 18.235630628281882,
+    lat: 17.6993,
 
-    lng: 75.69683612021862,
+    lng: 74.547157,
 
   };
 
